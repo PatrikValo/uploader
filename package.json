@@ -1,0 +1,31 @@
+{
+    "name": "uploader",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server/index.js",
+    "scripts": {
+        "dev": "nodemon server/index.js",
+        "prod": "node server/index.js",
+        "test": "jest"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://xvalo2@gitlab.fi.muni.cz/xvalo2/uploader.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "express": "^4.17.1",
+        "path": "^0.12.7"
+    },
+    "devDependencies": {
+        "jest": "^24.9.0",
+        "nodemon": "^1.19.4",
+        "prettier": "^1.18.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": false
+    }
+}
