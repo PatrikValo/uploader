@@ -12,6 +12,9 @@ module.exports = class FileSaver {
 
     saveMetadata(metadata) {
         const len = metadata.length;
+        if (len > 64 * 1024) {
+            throw new Error("Length of metadata is too long");
+        }
 
         let buffer = Buffer.alloc(2);
         buffer.writeUInt16BE(len, 0);
@@ -22,5 +25,9 @@ module.exports = class FileSaver {
 
     saveChunk(chunk) {
         this.stream.write(chunk);
+    }
+
+    end() {
+        this.stream.end();
     }
 };

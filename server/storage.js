@@ -48,7 +48,8 @@ module.exports = class Storage {
 
         return fs.createReadStream(path, {
             start: start || 0,
-            end: end || Infinity
+            end: end || Infinity,
+            highWaterMark: 64 * 1024
         });
     }
 

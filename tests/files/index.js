@@ -33,3 +33,26 @@ writable.write(header);
 writable.write(length);
 writable.write(metadata);
 writable.write(body);
+
+const path2 = pathObj.join(__dirname, "tooShortIv");
+const writable2 = fs.createWriteStream(path2);
+
+const header2 = Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]);
+
+const length2 = Buffer.from([0, 2]);
+
+writable2.write(header2);
+writable2.write(length2);
+
+const path3 = pathObj.join(__dirname, "tooShortMetadata");
+const writable3 = fs.createWriteStream(path3);
+
+writable3.write(header);
+writable3.write(length2);
+
+const path4 = pathObj.join(__dirname, "noFileInformation");
+const writable4 = fs.createWriteStream(path4);
+
+writable4.write(header);
+writable4.write(length);
+writable4.write(metadata);

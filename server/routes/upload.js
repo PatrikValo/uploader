@@ -1,3 +1,4 @@
 module.exports = (req, res) => {
-    res.status(200).send("/api/upload");
+    console.log(req.body);
+    return res.status(200).send("/api/upload");
 };
