@@ -10,6 +10,7 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
+        "types" : [], // it helps remove error with jest
         "noImplicitAny": true,
         "jsx": "react",
         "allowJs": true,

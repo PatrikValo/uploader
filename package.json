@@ -7,6 +7,9 @@
     "test": "tests"
   },
   "scripts": {
+    "dev": "nodemon server/index.js",
+    "prod": "node server/index.js",
+    "test": "jest",
     "build": "webpack --watch",
     "build:dev": "webpack-dev-server --open"
   },
@@ -28,6 +31,7 @@
   },
   "devDependencies": {
     "css-loader": "^0.28.1",
+    "jest": "^24.9.0",
     "nodemon": "^1.19.4",
     "prettier": "^1.18.2",
     "ts-loader": "^2.0.3",
