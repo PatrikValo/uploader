@@ -2,56 +2,52 @@ import Metadata from "./metadata";
 import FileStream from "./fileStream";
 
 export default class UploadFile {
-    private readonly _file: File;
-    private _stop: boolean = false;
+    private _fileStream: FileStream;
+    private readonly _iv: Uint8Array;
+    private readonly _meta: Uint8Array;
     private readonly _url: string;
+    private _stop: boolean = false;
+    private _id: string = "";
 
     public constructor(file: File, url: string) {
-        this._file = file;
+        this._fileStream = new FileStream(file);
+        this._iv = window.crypto.getRandomValues(new Uint8Array(16));
+        const md: Metadata = new Metadata(file);
+        this._meta = md.toUint8Array();
         this._url = url;
     }
 
-    // TODO progress and fileStream can throw e maybe create new private method
-    public async send(_progress: (u: number) => any) {
-        const iv = window.crypto.getRandomValues(new Uint8Array(16)); // initialisation vector
-
-        const m: Metadata = new Metadata(
-            this._file.name,
-            this._file.type,
-            this._file.size
-        );
-        const metadata: Uint8Array = m.toUint8Array(); // metadata
-
-        let fileStream: FileStream = new FileStream(this._file); // fileStream
-
+    // TODO fileStream can throw e
+    public async send(progress: (u: number) => any) {
         const socket = new WebSocket(this._url);
 
-        let chunk = await fileStream.read();
-        let id: string;
+        return new Promise<string>(async (resolve, reject) => {
+            let chunk = await this._fileStream.read();
 
-        return new Promise<string>((resolve, reject) => {
             socket.onmessage = async (event: MessageEvent) => {
-                if (this._stop) return socket.close(); // stop communication because user want to stop uploading
+                if (this._stop) return socket.close(); // it calls reject, because ID doesn't exist
 
                 const msg = JSON.parse(event.data);
 
                 if (msg.hasOwnProperty("id")) {
-                    id = msg.id;
+                    this._id = msg.id;
                     return socket.close();
                 }
 
                 if (msg.hasOwnProperty("nextElement")) {
-                    if (msg.nextElement == "iv") return socket.send(iv);
-                    if (msg.nextElement == "metadata")
-                        return socket.send(metadata);
+                    const nextEl = msg.nextElement;
+                    if (nextEl == "iv") return socket.send(this._iv);
+                    if (nextEl == "metadata") return socket.send(this._meta);
                     return socket.close();
                 }
 
                 if (msg.status != 200) return socket.close();
 
+                progress(chunk.value.length); // users function
+
                 if (!chunk.done) {
                     const value = chunk.value;
-                    chunk = await fileStream.read();
+                    chunk = await this._fileStream.read();
                     return socket.send(value);
                 }
 
@@ -59,8 +55,7 @@ export default class UploadFile {
             };
 
             socket.onclose = () => {
-                if (id) return resolve(id);
-                return reject();
+                return this._id ? resolve(this._id) : reject();
             };
 
             socket.onerror = reject;

@@ -1,10 +1,10 @@
 <template>
-    <div>
-        <h1>Upload</h1>
+    <b-container>
+        <h1 class="display-4">Upload</h1>
         <input v-if="!file" type="file" @change="changedInput" />
         <div v-if="file">{{ file.name }}</div>
         <button v-if="file" @click="upload">Upload</button>
-    </div>
+    </b-container>
 </template>
 
 <script lang="ts">
@@ -12,14 +12,15 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import UploadFile from "../lib/uploadFile";
 
+// TODO create new component for uploading
 @Component
 export default class Upload extends Vue {
-    private file: File | null;
-    // TODO create new component for uploading
+    public file: File | null;
+
     private _uploader: UploadFile | null;
 
     private onProgress(uploaded: number): void {
-        // TODO action called when value of uploaded bytes is increasing
+        // TODO
     }
 
     public constructor() {
@@ -39,7 +40,7 @@ export default class Upload extends Vue {
 
         this._uploader = new UploadFile(
             this.file,
-            "ws://localhost:3000/api/upload"
+            "ws://localhost:9998/api/upload"
         );
 
         try {

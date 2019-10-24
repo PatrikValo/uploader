@@ -3,12 +3,10 @@ export default class Metadata {
     private readonly _type: string;
     private readonly _size: number;
 
-    public constructor(name: string, type: string, size: number) {
-        if (!name || !size) throw new Error("Name and size must be not null");
-
-        this._name = name;
-        this._type = type || "";
-        this._size = size;
+    public constructor(file: File) {
+        this._name = file.name;
+        this._type = file.type;
+        this._size = file.size;
     }
 
     public toJSON(): string {

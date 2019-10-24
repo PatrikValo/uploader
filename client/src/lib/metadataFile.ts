@@ -13,7 +13,7 @@ export default class MetadataFile {
             };
             xhr.onabort = reject;
             xhr.onerror = reject;
-            xhr.open("get", "http://localhost:3000/api/metadata/" + this._id);
+            xhr.open("get", "http://localhost:9998/api/metadata/" + this._id);
             xhr.responseType = "json";
             xhr.send();
         });

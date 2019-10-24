@@ -28,9 +28,10 @@ export default class FileStream {
             fileReader.onload = function() {
                 return resolve({
                     done: false,
-                    value: <Uint8Array>fileReader.result
+                    value: new Uint8Array(<ArrayBuffer>fileReader.result)
                 });
             };
+
             fileReader.onerror = reject;
 
             const slice: Blob = this._file.slice(start, end);

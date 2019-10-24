@@ -22,7 +22,7 @@ export default class DownloadFile {
 
     public async downloadStream(progress: (n: number) => number | null) {
         const response: Response = await fetch(
-            "http://localhost:3000/api/download/" + this._id,
+            "http://localhost:9998/api/download/" + this._id,
             { method: "get" }
         );
 
