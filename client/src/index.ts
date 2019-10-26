@@ -6,8 +6,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 import UploadComponent from "./components/Upload.vue";
 import DownloadComponent from "./components/Download.vue";
-
-// import NoFoundComponent from "./components/NoFound.vue";
+import NotFoundComponent from "./components/NotFound.vue";
+import App from "./App.vue";
 
 Vue.use(VueRouter);
 
@@ -15,9 +15,10 @@ Vue.use(BootstrapVue);
 Vue.use(LayoutPlugin);
 
 const routes = [
+    { path: "/download/:id", component: DownloadComponent },
     { path: "/", component: UploadComponent },
-    { path: "/download/:id", component: DownloadComponent }
-    // { path: "*", component: NoFoundComponent }
+    { path: "/error", component: NotFoundComponent },
+    { path: "*", redirect: "/" }
 ];
 
 const router = new VueRouter({
@@ -27,8 +28,6 @@ const router = new VueRouter({
 
 new Vue({
     el: "#app",
-    template: `<div class="bgr">
-            <router-view></router-view>
-        </div>`,
-    router
+    router,
+    render: h => h(App)
 });

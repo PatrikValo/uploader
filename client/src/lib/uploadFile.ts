@@ -17,7 +17,6 @@ export default class UploadFile {
         this._url = url;
     }
 
-    // TODO fileStream can throw e
     public async send(progress: (u: number) => any) {
         const socket = new WebSocket(this._url);
 
@@ -25,7 +24,7 @@ export default class UploadFile {
             let chunk = await this._fileStream.read();
 
             socket.onmessage = async (event: MessageEvent) => {
-                if (this._stop) return socket.close(); // it calls reject, because ID doesn't exist
+                if (this._stop) return socket.close();
 
                 const msg = JSON.parse(event.data);
 
@@ -55,6 +54,7 @@ export default class UploadFile {
             };
 
             socket.onclose = () => {
+                console.log("Close");
                 return this._id ? resolve(this._id) : reject();
             };
 
