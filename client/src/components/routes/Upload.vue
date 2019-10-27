@@ -4,7 +4,12 @@
             <div style="position: relative">
                 <h1 class="display-4">Upload file</h1>
                 <input v-if="!file" type="file" @change="changedInput" />
-                <upload-area v-if="file" :file="file"></upload-area>
+                <upload-area
+                    v-if="file"
+                    :file="file"
+                    @finish="finish"
+                    @error="error"
+                ></upload-area>
             </div>
         </b-row>
     </b-container>
@@ -13,8 +18,8 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import UploadFile from "../../lib/uploadFile";
 import UploadArea from "../UploadArea.vue";
+
 @Component({
     components: { UploadArea }
 })
@@ -30,6 +35,16 @@ export default class Upload extends Vue {
         if (e.target.files.length > 0) {
             this.file = e.target.files[0];
         }
+    }
+
+    public finish(e: { id: string }) {
+        console.log(e);
+        this.file = null;
+    }
+
+    public error() {
+        console.log("Nastala chyba!");
+        this.file = null;
     }
 }
 </script>

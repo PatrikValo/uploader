@@ -1,9 +1,5 @@
 <template>
-    <div>
-        <b-button variant="warning" @click="copyToClipboard">{{
-            info
-        }}</b-button>
-    </div>
+    <div></div>
 </template>
 
 <script lang="ts">
@@ -12,11 +8,10 @@ import Component from "vue-class-component";
 
 @Component({
     props: {
-        id: String,
-        hash: String
+        id: String
     }
 })
-export default class Copy extends Vue {
+export default class CopyModal extends Vue {
     private readonly base: string;
     private copy: boolean = false;
 
@@ -25,22 +20,13 @@ export default class Copy extends Vue {
         this.base = "localhost:8080/";
     }
 
-    async mounted() {
-        this.$props.id = this.$route.params.id;
-        this.$props.hash = this.$route.hash;
-    }
-
-    get url() {
-        return this.base + this.$props.id + "/" + this.$props.hash;
-    }
-
     get info() {
-        return this.copy ? "Copied!" : "Copy";
+        return this.copy ? "Copied!" : "CopyModal.vue";
     }
 
     public copyToClipboard() {
         const el = document.createElement("textarea");
-        el.value = this.url;
+        el.value = this.$props.id;
         document.body.appendChild(el);
         el.select();
         document.execCommand("copy");

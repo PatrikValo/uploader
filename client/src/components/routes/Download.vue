@@ -5,7 +5,7 @@
                 <h1 class="display-4">Download</h1>
                 <h4>{{ name }}</h4>
                 <size-indicator v-bind:size="size"></size-indicator>
-                <b-button variant="primary" @click="download"
+                <b-button variant="warning" @click="download"
                     >Download</b-button
                 >
             </div>
