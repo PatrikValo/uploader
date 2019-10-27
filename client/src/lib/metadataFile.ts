@@ -5,11 +5,21 @@ export default class MetadataFile {
         this._id = id;
     }
 
-    public getInfo() {
+    public getInfo(): Promise<{ iv: Uint8Array; metadata: Uint8Array }> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = function() {
-                resolve(xhr.response);
+                if (xhr.status == 404) {
+                    return reject();
+                }
+
+                if (xhr.response) {
+                    const iv = new Uint8Array(xhr.response.iv.data);
+                    const metadata = new Uint8Array(xhr.response.metadata.data);
+                    return resolve({ iv: iv, metadata: metadata });
+                }
+
+                return reject();
             };
             xhr.onabort = reject;
             xhr.onerror = reject;

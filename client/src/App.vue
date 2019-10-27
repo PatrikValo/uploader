@@ -7,7 +7,11 @@ import Vue from "vue";
 import Component from "vue-class-component";
 
 @Component
-export default class App extends Vue {}
+export default class App extends Vue {
+    public constructor() {
+        super();
+    }
+}
 </script>
 
 <style scoped>

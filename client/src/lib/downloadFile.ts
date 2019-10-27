@@ -1,10 +1,12 @@
-// import * as streamSaver from "./StreamSaver";
+import streamSaver from "../js/StreamSaver";
 
 export default class DownloadFile {
     private readonly _id: string;
+    private readonly _name: string;
 
-    public constructor(id: string) {
+    public constructor(id: string, name: string, size?: number) {
         this._id = id;
+        this._name = name;
     }
 
     /*public downloadBlob() {
@@ -20,7 +22,7 @@ export default class DownloadFile {
         xhr.send();
     }*/
 
-    public async downloadStream(progress: (n: number) => number | null) {
+    public async downloadStream(progress: (n: number) => any) {
         const response: Response = await fetch(
             "http://localhost:9998/api/download/" + this._id,
             { method: "get" }
@@ -31,12 +33,21 @@ export default class DownloadFile {
         }
 
         const stream: ReadableStream<Uint8Array> = response.body;
+        const fileStream = streamSaver.createWriteStream(
+            this._name,
+            {
+                size: 85
+            },
+            0
+        );
         const reader = stream.getReader();
+        const writer = fileStream.getWriter();
 
         let state = await reader.read();
         while (!state.done) {
-            console.log(state.value);
+            await writer.write(state.value);
             state = await reader.read();
         }
+        await writer.close();
     }
 }

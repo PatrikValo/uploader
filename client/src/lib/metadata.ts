@@ -1,24 +1,35 @@
 export default class Metadata {
-    private readonly _name: string;
-    private readonly _type: string;
-    private readonly _size: number;
+    public readonly name: string;
+    public readonly type: string;
+    public readonly size: number;
 
-    public constructor(file: File) {
-        this._name = file.name;
-        this._type = file.type;
-        this._size = file.size;
+    public constructor(file: File | Uint8Array) {
+        if (file instanceof File) {
+            this.name = file.name;
+            this.type = file.type;
+            this.size = file.size;
+        } else {
+            const obj = this.createJSONObject(file);
+            this.name = obj.name;
+            this.type = obj.type;
+            this.size = obj.size;
+        }
     }
 
-    public toJSON(): string {
-        return JSON.stringify({
-            name: this._name,
-            type: this._type,
-            size: this._size
-        });
+    private createJSONObject(arr: Uint8Array) {
+        const decoder: TextDecoder = new TextDecoder();
+        const json = decoder.decode(arr);
+        return JSON.parse(json);
     }
 
     public toUint8Array(): Uint8Array {
         const encoder: TextEncoder = new TextEncoder();
-        return encoder.encode(this.toJSON());
+        return encoder.encode(
+            JSON.stringify({
+                name: this.name,
+                type: this.type,
+                size: this.size
+            })
+        );
     }
 }
