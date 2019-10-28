@@ -9,6 +9,7 @@
                     :file="file"
                     @finish="finish"
                     @error="error"
+                    @cancel="cancel"
                 ></upload-area>
             </div>
         </b-row>
@@ -25,7 +26,6 @@ import UploadArea from "../UploadArea.vue";
 })
 export default class Upload extends Vue {
     public file: File | null;
-    public ahoj: string = "ahoj";
 
     public constructor() {
         super();
@@ -45,6 +45,11 @@ export default class Upload extends Vue {
 
     public error() {
         console.log("Nastala chyba!");
+        this.file = null;
+    }
+
+    public cancel() {
+        console.log("Nahravanie bolo zastavené");
         this.file = null;
     }
 }

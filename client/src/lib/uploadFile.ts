@@ -18,9 +18,10 @@ export default class UploadFile {
     }
 
     public async send(progress: (u: number) => any) {
-        const socket = new WebSocket(this._url);
-
         return new Promise<string>(async (resolve, reject) => {
+            // TODO this can throw ERR_CONNECTION_REFUSED but it isn't catchable
+            const socket = new WebSocket(this._url);
+
             let chunk = await this._fileStream.read();
 
             socket.onmessage = async (event: MessageEvent) => {
@@ -54,7 +55,7 @@ export default class UploadFile {
             };
 
             socket.onclose = () => {
-                console.log("Close");
+                if (this._stop) return resolve("");
                 return this._id ? resolve(this._id) : reject();
             };
 

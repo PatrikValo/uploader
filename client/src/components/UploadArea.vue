@@ -42,7 +42,7 @@ export default class UploadArea extends Vue {
         this.uploading = false;
     }
 
-    public async upload(): Promise<void> {
+    public async upload() {
         this._uploader = new UploadFile(
             this.$props.file,
             "ws://localhost:9998/api/upload"
@@ -51,11 +51,14 @@ export default class UploadArea extends Vue {
         this.uploading = true;
 
         try {
-            const id = await this._uploader.send(this.onProgress); // id of file on server
-            this.$emit("finish", { id: id });
+            const id = await this._uploader.send(this.onProgress);
+            if (!id) {
+                return this.$emit("cancel");
+            }
+
+            return this.$emit("finish", { id: id });
         } catch (e) {
-            // TODO if I push button cancel error is throw, but it is correct operation
-            this.$emit("error", e);
+            return this.$emit("error", e);
         }
     }
 
