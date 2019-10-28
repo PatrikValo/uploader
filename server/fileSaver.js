@@ -2,8 +2,9 @@ const Storage = require("./storage");
 
 module.exports = class FileSaver {
     constructor(id, path) {
-        let storage = new Storage(path);
-        this.stream = storage.writableStream(id);
+        this.id = id;
+        this.storage = new Storage(path);
+        this.stream = this.storage.writableStream(id);
     }
 
     saveInitializationVector(iv) {
@@ -25,6 +26,11 @@ module.exports = class FileSaver {
 
     saveChunk(chunk) {
         this.stream.write(chunk);
+    }
+
+    clear() {
+        this.end();
+        this.storage.remove(this.id);
     }
 
     end() {

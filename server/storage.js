@@ -43,6 +43,17 @@ module.exports = class Storage {
         });
     }
 
+    remove(id) {
+        return new Promise((resolve, reject) => {
+            const path = pathObj.join(this.path, id);
+
+            fs.unlink(path, err => {
+                if (err) return reject(err);
+                return resolve(true);
+            });
+        });
+    }
+
     readableStream(id, start, end) {
         const path = pathObj.join(this.path, id);
 

@@ -37,6 +37,7 @@ module.exports = (ws, _req) => {
     ws.onclose = event => {
         console.log("Websocket is closed");
         if (!id) {
+            fileSaver.clear();
             console.log("\tID didn't send to client");
         }
     };
