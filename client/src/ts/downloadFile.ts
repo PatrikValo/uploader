@@ -25,15 +25,17 @@ export default class DownloadFile {
         const stream: ReadableStream<Uint8Array> = response.body;
 
         streamSaver.WritableStream = WritableStream; // firefox
-        const fileStream = streamSaver.createWriteStream(
+
+        const writeStream: WritableStream = streamSaver.createWriteStream(
             this._name,
             {
                 size: this._size
             },
             this._size
         );
+
         const reader = stream.getReader();
-        const writer = fileStream.getWriter();
+        const writer = writeStream.getWriter();
 
         let state = await reader.read();
         while (!state.done) {

@@ -5,7 +5,10 @@
                 <h1 class="display-4">Download</h1>
                 <h4>{{ name }}</h4>
                 <size-indicator v-bind:size="size"></size-indicator>
-                <b-button variant="warning" @click="download"
+                <b-button
+                    variant="warning"
+                    v-if="!downloading"
+                    @click="download"
                     >Download</b-button
                 >
             </div>
@@ -16,7 +19,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import MetadataFile from "../../ts/metadataFile";
+import DownloadMetadata from "../../ts/downloadMetadata";
 import Metadata from "../../ts/metadata";
 import DownloadFile from "../../ts/downloadFile";
 import SizeIndicator from "../SizeIndicator.vue";
@@ -28,6 +31,7 @@ export default class Download extends Vue {
     public size: number = 0;
     public name: string = "";
     public metadata: Metadata | undefined;
+    public downloading: boolean = false;
 
     public constructor() {
         super();
@@ -36,9 +40,9 @@ export default class Download extends Vue {
     async mounted() {
         const id: string = this.$route.params.id;
 
-        const metadataFile = new MetadataFile(id);
+        const downloadMetadata = new DownloadMetadata(id);
         try {
-            const result = await metadataFile.getInfo();
+            const result = await downloadMetadata.getInfo();
             const iv = result.iv;
             const metadata = new Metadata(result.metadata);
             this.name = metadata.name;
@@ -48,14 +52,15 @@ export default class Download extends Vue {
         }
     }
 
-    public download() {
+    public async download() {
         const download = new DownloadFile(
             this.$route.params.id,
             this.name,
             this.size
         );
-
-        download.download();
+        this.downloading = true;
+        await download.download();
+        this.downloading = false;
     }
 }
 </script>

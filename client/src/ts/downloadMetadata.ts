@@ -1,4 +1,4 @@
-export default class MetadataFile {
+export default class DownloadMetadata {
     private readonly _id: string;
 
     public constructor(id: string) {
