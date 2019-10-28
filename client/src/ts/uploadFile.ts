@@ -3,6 +3,7 @@ import FileStream from "./fileStream";
 
 export default class UploadFile {
     private _fileStream: FileStream;
+    private readonly _iv: Uint8Array;
     private readonly _meta: Uint8Array;
     private readonly _url: string;
     private _stop: boolean = false;
@@ -10,22 +11,25 @@ export default class UploadFile {
 
     public constructor(file: File, url: string) {
         this._fileStream = new FileStream(file);
-        const md: Metadata = new Metadata(file);
-        this._meta = md.toUint8Array();
+        this._iv = UploadFile.createIV(16);
+        this._meta = UploadFile.createMetadata(file);
         this._url = url;
     }
 
-    private iv(size: number = 16): Uint8Array {
-        // TODO if (!window.crypto)...
+    private static createIV(size: number = 16): Uint8Array {
+        // TODO if (!window.crypto)... move to Crypto class as static class
         return window.crypto.getRandomValues(new Uint8Array(size));
+    }
+
+    private static createMetadata(file: File): Uint8Array {
+        const md: Metadata = new Metadata(file);
+        return md.toUint8Array();
     }
 
     public async send(progress: (u: number) => any): Promise<string> {
         return new Promise<string>(async (resolve, reject) => {
             // TODO this can throw ERR_CONNECTION_REFUSED but it isn't catchable
             const socket = new WebSocket(this._url);
-
-            let chunk = await this._fileStream.read();
 
             socket.onmessage = async (event: MessageEvent) => {
                 if (this._stop) return socket.close();
@@ -40,10 +44,7 @@ export default class UploadFile {
                 if (msg.hasOwnProperty("nextElement")) {
                     const nextEl = msg.nextElement;
 
-                    if (nextEl == "iv") {
-                        const iv = this.iv();
-                        return socket.send(iv);
-                    }
+                    if (nextEl == "iv") return socket.send(this._iv);
 
                     if (nextEl == "metadata") return socket.send(this._meta);
 
@@ -69,6 +70,8 @@ export default class UploadFile {
             };
 
             socket.onerror = reject;
+
+            let chunk = await this._fileStream.read();
         });
     }
 

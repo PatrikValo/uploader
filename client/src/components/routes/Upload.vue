@@ -49,7 +49,7 @@ export default class Upload extends Vue {
     }
 
     public cancel() {
-        console.log("Nahravanie bolo zastavené");
+        console.log("Nahravanie bolo zastavené!");
         this.file = null;
     }
 }
