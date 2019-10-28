@@ -1,28 +1,18 @@
+import { WritableStream } from "web-streams-polyfill/ponyfill/es6";
 import streamSaver from "../js/StreamSaver";
 
 export default class DownloadFile {
     private readonly _id: string;
     private readonly _name: string;
+    private readonly _size: number;
 
-    public constructor(id: string, name: string, size?: number) {
+    public constructor(id: string, name: string, size: number) {
         this._id = id;
         this._name = name;
+        this._size = size;
     }
 
-    /*public downloadBlob() {
-        console.log("OK");
-        const xhr: XMLHttpRequest = new XMLHttpRequest();
-
-        xhr.onprogress = function(event) {
-            console.log(event.loaded, xhr);
-        };
-
-        xhr.open("get", "http://localhost:3000/api/download/" + this._id);
-        xhr.responseType = "arraybuffer";
-        xhr.send();
-    }*/
-
-    public async downloadStream(progress: (n: number) => any) {
+    public async download() {
         const response: Response = await fetch(
             "http://localhost:9998/api/download/" + this._id,
             { method: "get" }
@@ -33,12 +23,14 @@ export default class DownloadFile {
         }
 
         const stream: ReadableStream<Uint8Array> = response.body;
+
+        streamSaver.WritableStream = WritableStream; // firefox
         const fileStream = streamSaver.createWriteStream(
             this._name,
             {
-                size: 85
+                size: this._size
             },
-            0
+            this._size
         );
         const reader = stream.getReader();
         const writer = fileStream.getWriter();

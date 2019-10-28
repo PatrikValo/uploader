@@ -25,6 +25,7 @@ import UploadArea from "../UploadArea.vue";
 })
 export default class Upload extends Vue {
     public file: File | null;
+    public ahoj: string = "ahoj";
 
     public constructor() {
         super();

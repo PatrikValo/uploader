@@ -1,6 +1,4 @@
-<template>
-    <div></div>
-</template>
+<template> </template>
 
 <script lang="ts">
 import Vue from "vue";
@@ -18,6 +16,10 @@ export default class CopyModal extends Vue {
     public constructor() {
         super();
         this.base = "localhost:8080/";
+    }
+
+    get show() {
+        return true;
     }
 
     get info() {

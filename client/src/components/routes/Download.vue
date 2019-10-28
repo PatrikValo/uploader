@@ -27,6 +27,7 @@ import SizeIndicator from "../SizeIndicator.vue";
 export default class Download extends Vue {
     public size: number = 0;
     public name: string = "";
+    public metadata: Metadata | undefined;
 
     public constructor() {
         super();
@@ -48,10 +49,13 @@ export default class Download extends Vue {
     }
 
     public download() {
-        const download = new DownloadFile(this.$route.params.id, this.name);
-        download.downloadStream((n: number) => {
-            console.log(n);
-        });
+        const download = new DownloadFile(
+            this.$route.params.id,
+            this.name,
+            this.size
+        );
+
+        download.download();
     }
 }
 </script>
