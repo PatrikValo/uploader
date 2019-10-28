@@ -1,7 +1,8 @@
 const FileSaver = require("../fileSaver");
+const uuid = require("uuid/v1");
+
 module.exports = (ws, _req) => {
-    const date = new Date();
-    const FILE_ID = date.getTime() + "";
+    const FILE_ID = uuid();
     const fileSaver = new FileSaver(FILE_ID);
 
     let iv = false;
