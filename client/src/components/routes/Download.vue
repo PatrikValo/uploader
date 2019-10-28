@@ -16,9 +16,9 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import MetadataFile from "../../lib/metadataFile";
-import Metadata from "../../lib/metadata";
-import DownloadFile from "../../lib/downloadFile";
+import MetadataFile from "../../ts/metadataFile";
+import Metadata from "../../ts/metadata";
+import DownloadFile from "../../ts/downloadFile";
 import SizeIndicator from "../SizeIndicator.vue";
 
 @Component({

@@ -16,7 +16,9 @@ export default class Metadata {
         }
     }
 
-    private createJSONObject(arr: Uint8Array) {
+    private createJSONObject(
+        arr: Uint8Array
+    ): { name: string; type: string; size: number } {
         const decoder: TextDecoder = new TextDecoder();
         const json = decoder.decode(arr);
         return JSON.parse(json);

@@ -2,14 +2,17 @@
     <div>
         <h4 v-if="file">{{ file.name }}</h4>
         <progress-bar
-            v-if="uploading"
+            v-if="uploadingProcess"
             :uploaded="uploaded"
             :total="file.size"
         ></progress-bar>
-        <b-button variant="warning" v-if="!uploading" @click="upload"
+        <b-button variant="warning" v-if="!uploadingProcess" @click="upload"
             >Upload</b-button
         >
-        <b-button variant="warning" v-if="uploading" @click="cancelUpload"
+        <b-button
+            variant="warning"
+            v-if="uploadingProcess"
+            @click="cancelUpload"
             >Close</b-button
         >
     </div>
@@ -18,7 +21,7 @@
 <script lang="ts">
 import Vue from "vue";
 import Component from "vue-class-component";
-import UploadFile from "../lib/uploadFile";
+import UploadFile from "../ts/uploadFile";
 import ProgressBar from "./ProgressBar.vue";
 
 @Component({
@@ -28,18 +31,16 @@ import ProgressBar from "./ProgressBar.vue";
     }
 })
 export default class UploadArea extends Vue {
-    private _uploader: UploadFile | null;
-    public uploading: boolean;
+    private _uploader: UploadFile | null = null;
+    public uploadingProcess: boolean = false;
     public uploaded: number = 0;
-
-    private onProgress(uploaded: number): void {
-        this.uploaded += uploaded;
-    }
 
     public constructor() {
         super();
-        this._uploader = null;
-        this.uploading = false;
+    }
+
+    private onProgress(uploaded: number): void {
+        this.uploaded += uploaded;
     }
 
     public async upload() {
@@ -48,14 +49,13 @@ export default class UploadArea extends Vue {
             "ws://localhost:9998/api/upload"
         );
 
-        this.uploading = true;
+        this.uploadingProcess = true;
 
         try {
             const id = await this._uploader.send(this.onProgress);
             if (!id) {
                 return this.$emit("cancel");
             }
-
             return this.$emit("finish", { id: id });
         } catch (e) {
             return this.$emit("error", e);
