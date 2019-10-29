@@ -23,6 +23,7 @@ import Vue from "vue";
 import Component from "vue-class-component";
 import UploadFile from "../ts/uploadFile";
 import ProgressBar from "./ProgressBar.vue";
+import Config from "../ts/config";
 
 @Component({
     components: { ProgressBar },
@@ -39,6 +40,14 @@ export default class UploadArea extends Vue {
         super();
     }
 
+    public mounted() {
+        const file = this.$props.file;
+        // control of size limit
+        if (file.size > Config.constrains.file.sizeLimit) {
+            this.$emit("limit");
+        }
+    }
+
     private onProgress(uploaded: number): void {
         this.uploaded += uploaded;
     }
@@ -46,7 +55,7 @@ export default class UploadArea extends Vue {
     public async upload() {
         this._uploader = new UploadFile(
             this.$props.file,
-            "ws://localhost:9998/api/upload"
+            Config.websocketUrl("/api/upload")
         );
 
         this.uploadingProcess = true;

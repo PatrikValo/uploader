@@ -10,6 +10,7 @@
                     @finish="finish"
                     @error="error"
                     @cancel="cancel"
+                    @limit="limit"
                 ></upload-area>
             </div>
         </b-row>
@@ -43,13 +44,18 @@ export default class Upload extends Vue {
         this.file = null;
     }
 
-    public error() {
-        console.log("Nastala chyba!");
+    public error(e: any) {
+        console.log("Nastala chyba!", e);
         this.file = null;
     }
 
     public cancel() {
         console.log("Nahravanie bolo zastavené!");
+        this.file = null;
+    }
+
+    public limit() {
+        console.log("Súbor presahuje veľkostný limit!");
         this.file = null;
     }
 }

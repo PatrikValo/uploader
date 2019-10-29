@@ -2,10 +2,10 @@ import Metadata from "./metadata";
 import FileStream from "./fileStream";
 
 export default class UploadFile {
-    private _fileStream: FileStream;
     private readonly _iv: Uint8Array;
     private readonly _meta: Uint8Array;
     private readonly _url: string;
+    private _fileStream: FileStream;
     private _stop: boolean = false;
     private _id: string = "";
 
@@ -27,8 +27,7 @@ export default class UploadFile {
     }
 
     public async send(progress: (u: number) => any): Promise<string> {
-        return new Promise<string>(async (resolve, reject) => {
-            // TODO this can throw ERR_CONNECTION_REFUSED but it isn't catchable
+        return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this._url);
 
             socket.onmessage = async (event: MessageEvent) => {
