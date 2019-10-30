@@ -1,17 +1,26 @@
 <template>
     <b-container style="height: 100%">
-        <b-row class="align-items-center" style="height: 640px">
-            <div style="position: relative">
-                <h1 class="display-4">Download</h1>
+        <b-row align-v="center" style="height: 100%">
+            <b-col style="min-height: 300px">
+                <h1 class="display-2 font-weight-bold">Download</h1>
                 <h4>{{ name }}</h4>
                 <size-indicator v-bind:size="size"></size-indicator>
                 <b-button
                     variant="warning"
-                    v-if="!downloading"
+                    :disabled="downloading"
                     @click="download"
-                    >Download</b-button
+                    >{{ buttonName }}</b-button
                 >
-            </div>
+                <b-button
+                    variant="dark"
+                    title="Upload file"
+                    @click="$router.push('/')"
+                    >+</b-button
+                >
+            </b-col>
+            <b-col>
+                <img id="image" src="../../assets/image.svg" />
+            </b-col>
         </b-row>
     </b-container>
 </template>
@@ -69,6 +78,10 @@ export default class Download extends Vue {
         }
 
         this.downloading = false;
+    }
+
+    get buttonName() {
+        return this.downloading ? "Downloading..." : "Download";
     }
 }
 </script>

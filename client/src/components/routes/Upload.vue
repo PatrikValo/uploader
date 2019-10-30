@@ -1,7 +1,7 @@
 <template>
     <b-container style="height: 100%">
         <b-row align-v="center" style="height: 100%">
-            <b-col style="height: 300px">
+            <b-col style="min-height: 300px">
                 <h1 class="display-2 font-weight-bold">Upload file</h1>
                 <input
                     id="file-upload"
@@ -29,6 +29,9 @@
                 <img id="image" src="../../assets/image.svg" />
             </b-col>
         </b-row>
+        <!--<div class="modal-backdrop fade show">
+            <img id="cloud" src="../../assets/cloud.svg" width="200px" />
+        </div>-->
     </b-container>
 </template>
 
@@ -85,5 +88,13 @@ export default class Upload extends Vue {
 
 label {
     cursor: pointer;
+}
+
+#cloud {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    height: 100%;
+    opacity: 1;
 }
 </style>

@@ -21,4 +21,8 @@ export default class App extends Vue {
 
 <style scoped>
 @import "./style/css.css";
+@import url("https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap");
+* {
+    font-family: "Roboto", sans-serif;
+}
 </style>
