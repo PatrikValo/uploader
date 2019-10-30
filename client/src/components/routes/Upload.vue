@@ -58,8 +58,8 @@ export default class Upload extends Vue {
     }
 
     public finish(e: { id: string }) {
-        console.log(e);
         this.file = null;
+        this.$router.push("/copy/" + e.id);
     }
 
     public error(e: Error) {

@@ -5,6 +5,7 @@ import "bootstrap/dist/css/bootstrap.css";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App.vue";
+import CopyComponent from "./components/routes/Copy.vue";
 import DownloadComponent from "./components/routes/Download.vue";
 import NotFoundComponent from "./components/routes/NotFound.vue";
 import UploadComponent from "./components/routes/Upload.vue";
@@ -19,6 +20,7 @@ Vue.use(ModalPlugin);
 const routes = [
     { path: "/download/:id", component: DownloadComponent },
     { path: "/", component: UploadComponent },
+    { path: "/copy/:id", component: CopyComponent },
     { path: "/error", component: NotFoundComponent },
     { path: "*", redirect: "/" }
 ];
@@ -28,6 +30,7 @@ const router = new VueRouter({
     routes
 });
 
+// noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
 const vue = new Vue({
     el: "#app",
     render: h => h(App),

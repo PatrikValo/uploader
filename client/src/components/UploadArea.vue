@@ -67,8 +67,7 @@ export default class UploadArea extends Vue {
             if (!id) {
                 return this.$emit("cancel");
             }
-            const url = Utils.buildUrl(id, "");
-            return this.$emit("finish", url);
+            return this.$emit("finish", { id });
         } catch (e) {
             return this.$emit("error", new Error("Error during sending file"));
         }
