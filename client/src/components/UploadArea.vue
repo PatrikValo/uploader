@@ -19,11 +19,11 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
-import Component from "vue-class-component";
-import UploadFile from "../ts/uploadFile";
-import ProgressBar from "./ProgressBar.vue";
 import Config from "../ts/config";
+import Component from "vue-class-component";
+import ProgressBar from "./ProgressBar.vue";
+import UploadFile from "../ts/uploadFile";
+import Vue from "vue";
 
 @Component({
     components: { ProgressBar },
@@ -32,7 +32,7 @@ import Config from "../ts/config";
     }
 })
 export default class UploadArea extends Vue {
-    private _uploader: UploadFile | null = null;
+    private uploader: UploadFile | null = null;
     public uploadingProcess: boolean = false;
     public uploaded: number = 0;
 
@@ -53,7 +53,7 @@ export default class UploadArea extends Vue {
     }
 
     public async upload() {
-        this._uploader = new UploadFile(
+        this.uploader = new UploadFile(
             this.$props.file,
             Config.websocketUrl("/api/upload")
         );
@@ -61,7 +61,7 @@ export default class UploadArea extends Vue {
         this.uploadingProcess = true;
 
         try {
-            const id = await this._uploader.send(this.onProgress);
+            const id = await this.uploader.send(this.onProgress);
             if (!id) {
                 return this.$emit("cancel");
             }
@@ -72,8 +72,8 @@ export default class UploadArea extends Vue {
     }
 
     public cancelUpload(): void {
-        if (this._uploader) {
-            this._uploader.cancel();
+        if (this.uploader) {
+            this.uploader.cancel();
         }
     }
 }

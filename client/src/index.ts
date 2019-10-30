@@ -1,13 +1,13 @@
+import BootstrapVue from "bootstrap-vue";
+import { LayoutPlugin, ModalPlugin, ProgressPlugin } from "bootstrap-vue";
+import "bootstrap-vue/dist/bootstrap-vue.css";
+import "bootstrap/dist/css/bootstrap.css";
 import Vue from "vue";
 import VueRouter from "vue-router";
-import BootstrapVue from "bootstrap-vue";
-import { LayoutPlugin, ProgressPlugin, ModalPlugin } from "bootstrap-vue";
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap-vue/dist/bootstrap-vue.css";
-import UploadComponent from "./components/routes/Upload.vue";
+import App from "./App.vue";
 import DownloadComponent from "./components/routes/Download.vue";
 import NotFoundComponent from "./components/routes/NotFound.vue";
-import App from "./App.vue";
+import UploadComponent from "./components/routes/Upload.vue";
 
 Vue.use(VueRouter);
 
@@ -25,11 +25,11 @@ const routes = [
 
 const router = new VueRouter({
     mode: "history",
-    routes: routes
+    routes
 });
 
-new Vue({
+const vue = new Vue({
     el: "#app",
-    router,
-    render: h => h(App)
+    render: h => h(App),
+    router
 });

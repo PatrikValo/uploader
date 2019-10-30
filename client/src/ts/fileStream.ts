@@ -1,40 +1,41 @@
 export default class FileStream {
-    private _file: File;
-    private readonly _size: number;
-    private _index: number = 0;
-    private _chunkSize: number = 65536;
+    private file: File;
+    private readonly size: number;
+    private index: number = 0;
+    private chunkSize: number = 65536;
 
     public constructor(file: File) {
-        this._file = file;
-        this._size = file.size;
+        this.file = file;
+        this.size = file.size;
     }
 
     public read(): Promise<{ done: boolean; value: Uint8Array }> {
         return new Promise((resolve, reject) => {
-            if (this._index >= this._size) {
+            if (this.index >= this.size) {
                 return resolve({ done: true, value: new Uint8Array(0) });
             }
 
-            const start = this._index;
-            let end = this._index + this._chunkSize;
+            const start = this.index;
+            let end = this.index + this.chunkSize;
 
-            if (end > this._size) {
-                end = this._size;
+            if (end > this.size) {
+                end = this.size;
             }
 
-            this._index = end;
+            this.index = end;
 
             const fileReader: FileReader = new FileReader();
-            fileReader.onload = function() {
+
+            fileReader.onload = () => {
                 return resolve({
                     done: false,
-                    value: new Uint8Array(<ArrayBuffer>fileReader.result)
+                    value: new Uint8Array(fileReader.result as ArrayBuffer)
                 });
             };
 
             fileReader.onerror = reject;
 
-            const slice: Blob = this._file.slice(start, end);
+            const slice: Blob = this.file.slice(start, end);
             fileReader.readAsArrayBuffer(slice);
         });
     }

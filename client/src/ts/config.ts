@@ -1,8 +1,8 @@
 export default class Config {
     public static readonly server = {
-        protocol: "http",
         host: "localhost",
-        port: "9998"
+        port: "9998",
+        protocol: "http"
     };
 
     public static readonly constrains = {
@@ -10,6 +10,20 @@ export default class Config {
             sizeLimit: 1073741824
         }
     };
+
+    /*public static classicUrl(path?: string): string {
+        const protocol = Config.server.protocol;
+
+        return protocol + "://" + Config.urlWithoutProtocol(path);
+    }*/
+
+    public static websocketUrl(path?: string): string {
+        const protocol = Config.server.protocol;
+
+        let url = protocol === "http" ? "ws" : "wss";
+        url += "://" + Config.urlWithoutProtocol(path);
+        return url;
+    }
 
     private static urlWithoutProtocol(path?: string): string {
         const host = Config.server.host;
@@ -24,20 +38,6 @@ export default class Config {
             url += path;
         }
 
-        return url;
-    }
-
-    public static classicUrl(path?: string): string {
-        const protocol = Config.server.protocol;
-
-        return protocol + "://" + Config.urlWithoutProtocol(path);
-    }
-
-    public static websocketUrl(path?: string): string {
-        const protocol = Config.server.protocol;
-
-        let url = protocol == "http" ? "ws" : "wss";
-        url += "://" + Config.urlWithoutProtocol(path);
         return url;
     }
 }

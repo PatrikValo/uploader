@@ -17,12 +17,12 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import Component from "vue-class-component";
 import DownloadMetadata from "../../ts/downloadMetadata";
-import Metadata from "../../ts/metadata";
 import DownloadFile from "../../ts/downloadFile";
+import Metadata from "../../ts/metadata";
 import SizeIndicator from "../SizeIndicator.vue";
+import Vue from "vue";
 
 @Component({
     components: { SizeIndicator }

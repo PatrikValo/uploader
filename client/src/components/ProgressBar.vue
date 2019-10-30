@@ -12,8 +12,8 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import Component from "vue-class-component";
+import Vue from "vue";
 
 @Component({
     props: {
@@ -22,7 +22,7 @@ import Component from "vue-class-component";
     }
 })
 export default class ProgressBar extends Vue {
-    private _interval: number | undefined; // setInterval
+    private interval: number | undefined; // setInterval
     public percentage: number = 0;
 
     public constructor() {
@@ -31,7 +31,7 @@ export default class ProgressBar extends Vue {
 
     public mounted() {
         // rendering each 500ms
-        this._interval = setInterval(() => {
+        this.interval = setInterval(() => {
             const uploaded = this.$props.uploaded;
             const total = this.$props.total;
             this.percentage = Math.round((uploaded / total) * 100);
@@ -39,7 +39,7 @@ export default class ProgressBar extends Vue {
     }
 
     public destroyed() {
-        clearInterval(this._interval);
+        clearInterval(this.interval);
     }
 }
 </script>

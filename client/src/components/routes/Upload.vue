@@ -18,9 +18,9 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue";
 import Component from "vue-class-component";
 import UploadArea from "../UploadArea.vue";
+import Vue from "vue";
 
 @Component({
     components: { UploadArea }
