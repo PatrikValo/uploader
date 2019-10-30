@@ -19,7 +19,11 @@
                 >
             </b-col>
             <b-col>
-                <img id="image" src="../../assets/image.svg" />
+                <img
+                    id="image"
+                    src="../../assets/image.svg"
+                    alt="Paper planes"
+                />
             </b-col>
         </b-row>
     </b-container>

@@ -26,12 +26,13 @@
                 ></upload-area>
             </b-col>
             <b-col>
-                <img id="image" src="../../assets/image.svg" />
+                <img
+                    id="image"
+                    src="../../assets/image.svg"
+                    alt="Paper planes"
+                />
             </b-col>
         </b-row>
-        <!--<div class="modal-backdrop fade show">
-            <img id="cloud" src="../../assets/cloud.svg" width="200px" />
-        </div>-->
     </b-container>
 </template>
 
@@ -88,13 +89,5 @@ export default class Upload extends Vue {
 
 label {
     cursor: pointer;
-}
-
-#cloud {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    height: 100%;
-    opacity: 1;
 }
 </style>
