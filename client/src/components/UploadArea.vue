@@ -43,7 +43,7 @@ export default class UploadArea extends Vue {
     public mounted() {
         const file = this.$props.file;
         // control of size limit
-        if (file.size > Config.constrains.file.sizeLimit) {
+        if (file.size > Config.client.fileSizeLimit) {
             this.$emit("limit");
         }
     }
@@ -55,7 +55,7 @@ export default class UploadArea extends Vue {
     public async upload() {
         this.uploader = new UploadFile(
             this.$props.file,
-            Config.websocketUrl("/api/upload")
+            Config.server.websocketUrl("/api/upload")
         );
 
         this.uploadingProcess = true;
@@ -65,7 +65,9 @@ export default class UploadArea extends Vue {
             if (!id) {
                 return this.$emit("cancel");
             }
-            return this.$emit("finish", { id: id });
+
+            const url = Config.client.createUrl(id, "");
+            return this.$emit("finish", url);
         } catch (e) {
             return this.$emit("error", e);
         }
