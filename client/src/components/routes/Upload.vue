@@ -1,8 +1,8 @@
 <template>
     <b-container style="height: 100%">
-        <b-row class="align-items-center" style="height: 640px">
-            <div style="position: relative">
-                <h1 class="display-4">Upload file</h1>
+        <b-row align-v="center" style="height: 100%">
+            <b-col style="height: 300px">
+                <h1 class="display-2 font-weight-bold">Upload file</h1>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -24,7 +24,10 @@
                     @cancel="cancel"
                     @limit="limit"
                 ></upload-area>
-            </div>
+            </b-col>
+            <b-col>
+                <img id="image" src="../../assets/image.svg" />
+            </b-col>
         </b-row>
     </b-container>
 </template>

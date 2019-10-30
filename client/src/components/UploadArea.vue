@@ -1,6 +1,6 @@
 <template>
     <div>
-        <h4 v-if="file">{{ file.name }}</h4>
+        <h4 id="filename" v-if="file">{{ file.name }}</h4>
         <progress-bar
             v-if="uploadingProcess"
             :uploaded="uploaded"
@@ -81,3 +81,8 @@ export default class UploadArea extends Vue {
     }
 }
 </script>
+<style scoped>
+#filename {
+    padding: 10px 0 10px 0;
+}
+</style>
