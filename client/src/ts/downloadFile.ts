@@ -1,4 +1,7 @@
-import { WritableStream } from "web-streams-polyfill/ponyfill/es6";
+import {
+    WritableStream,
+    WritableStreamDefaultWriter
+} from "web-streams-polyfill/ponyfill/es6";
 import streamSaver from "../js/StreamSaver";
 import Config from "./config";
 
@@ -36,11 +39,31 @@ export default class DownloadFile {
         const reader = stream.getReader();
         const writer = writeStream.getWriter();
 
+        this.initDownload(writer);
+
         let state = await reader.read();
         while (!state.done) {
             await writer.write(state.value);
             state = await reader.read();
         }
         await writer.close();
+
+        this.termDownload();
+    }
+
+    private initDownload(writer: WritableStreamDefaultWriter<any>): void {
+        window.onunload = async () => {
+            await writer.abort("Close window");
+        };
+
+        window.onbeforeunload = (e: BeforeUnloadEvent) => {
+            e.returnValue = "Are you sure you want to close window?";
+        };
+    }
+
+    // noinspection JSMethodCanBeStatic
+    private termDownload(): void {
+        window.onunload = null;
+        window.onbeforeunload = null;
     }
 }

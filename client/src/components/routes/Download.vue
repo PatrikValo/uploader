@@ -37,6 +37,7 @@ export default class Download extends Vue {
         super();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     async mounted() {
         const id: string = this.$route.params.id;
 
@@ -44,6 +45,7 @@ export default class Download extends Vue {
         try {
             const result = await downloadMetadata.getInfo();
             const iv = result.iv;
+            console.log({ iv });
             const metadata = new Metadata(result.metadata);
             this.name = metadata.name;
             this.size = metadata.size;
