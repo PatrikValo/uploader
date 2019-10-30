@@ -13,7 +13,7 @@ export default class UploadFile {
     }
 
     private readonly iv: Uint8Array;
-    private readonly meta: Uint8Array;
+    private readonly metadata: Uint8Array;
     private readonly url: string;
     private fileStream: FileStream;
     private stop: boolean = false;
@@ -22,7 +22,7 @@ export default class UploadFile {
     public constructor(file: File, url: string) {
         this.fileStream = new FileStream(file);
         this.iv = UploadFile.createIV(16);
-        this.meta = UploadFile.createMetadata(file);
+        this.metadata = UploadFile.createMetadata(file);
         this.url = url;
     }
 
@@ -50,7 +50,7 @@ export default class UploadFile {
                     }
 
                     if (nextEl === "metadata") {
-                        return socket.send(this.meta);
+                        return socket.send(this.metadata);
                     }
 
                     return socket.close();

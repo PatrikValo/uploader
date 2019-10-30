@@ -15,12 +15,13 @@ export default class Metadata {
             this.name = file.name;
             this.type = file.type;
             this.size = file.size;
-        } else {
-            const obj = Metadata.createJSONObject(file);
-            this.name = obj.name;
-            this.type = obj.type;
-            this.size = obj.size;
+            return;
         }
+
+        const obj = Metadata.createJSONObject(file);
+        this.name = obj.name;
+        this.type = obj.type;
+        this.size = obj.size;
     }
 
     public toUint8Array(): Uint8Array {
