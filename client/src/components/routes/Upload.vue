@@ -56,8 +56,8 @@ export default class Upload extends Vue {
         this.file = null;
     }
 
-    public error(e: any) {
-        console.log("Nastala chyba!", e);
+    public error(e: Error) {
+        console.log("Nastala chyba!", e.message);
         this.file = null;
     }
 

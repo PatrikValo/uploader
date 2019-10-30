@@ -40,6 +40,7 @@ export default class UploadArea extends Vue {
         super();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public mounted() {
         const file = this.$props.file;
         // control of size limit
@@ -65,11 +66,10 @@ export default class UploadArea extends Vue {
             if (!id) {
                 return this.$emit("cancel");
             }
-
             const url = Config.client.createUrl(id, "");
             return this.$emit("finish", url);
         } catch (e) {
-            return this.$emit("error", e);
+            return this.$emit("error", new Error("Error during sending file"));
         }
     }
 
