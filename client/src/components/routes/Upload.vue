@@ -3,7 +3,19 @@
         <b-row class="align-items-center" style="height: 640px">
             <div style="position: relative">
                 <h1 class="display-4">Upload file</h1>
-                <input v-if="!file" type="file" @change="changedInput" />
+                <input
+                    id="file-upload"
+                    v-if="!file"
+                    type="file"
+                    @change="changedInput"
+                />
+                <label
+                    v-if="!file"
+                    for="file-upload"
+                    class="btn btn-warning"
+                    title="Choose file"
+                    >Choose file</label
+                >
                 <upload-area
                     v-if="file"
                     :file="file"
@@ -60,3 +72,15 @@ export default class Upload extends Vue {
     }
 }
 </script>
+<style scoped>
+#file-upload {
+    position: absolute;
+    height: 0;
+    width: 0;
+    opacity: 0;
+}
+
+label {
+    cursor: pointer;
+}
+</style>
