@@ -32,7 +32,7 @@ class Client {
     public readonly host: string = "localhost";
     public readonly port: string = "8080";
     public readonly protocol: string = "http";
-    public readonly fileSizeLimit: number = 1073741824;
+    public readonly fileSizeLimit: number = 1024 * 1024 * 1024;
 
     // TODO utils object
     public createUrl(id: string, key: string): string {
