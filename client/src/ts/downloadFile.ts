@@ -3,7 +3,7 @@ import {
     WritableStreamDefaultWriter
 } from "web-streams-polyfill/ponyfill/es6";
 import streamSaver from "../js/StreamSaver";
-import Config from "./config";
+import Utils from "./utils";
 
 export default class DownloadFile {
     private readonly id: string;
@@ -17,7 +17,7 @@ export default class DownloadFile {
     }
 
     public async download() {
-        const url = Config.server.classicUrl("/api/download/" + this.id);
+        const url = Utils.server.classicUrl("/api/download/" + this.id);
         const response: Response = await fetch(url, { method: "get" });
 
         if (!response.body) {

@@ -23,6 +23,7 @@ import Config from "../ts/config";
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
 import UploadFile from "../ts/uploadFile";
+import Utils from "../ts/utils";
 import Vue from "vue";
 
 @Component({
@@ -56,7 +57,7 @@ export default class UploadArea extends Vue {
     public async upload() {
         this.uploader = new UploadFile(
             this.$props.file,
-            Config.server.websocketUrl("/api/upload")
+            Utils.server.websocketUrl("/api/upload")
         );
 
         this.uploadingProcess = true;
@@ -66,7 +67,7 @@ export default class UploadArea extends Vue {
             if (!id) {
                 return this.$emit("cancel");
             }
-            const url = Config.client.createUrl(id, "");
+            const url = Utils.buildUrl(id, "");
             return this.$emit("finish", url);
         } catch (e) {
             return this.$emit("error", new Error("Error during sending file"));
