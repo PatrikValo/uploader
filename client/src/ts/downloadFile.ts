@@ -46,6 +46,7 @@ export default class DownloadFile {
             await writer.write(state.value);
             state = await reader.read();
         }
+
         await writer.close();
 
         this.termDownload();

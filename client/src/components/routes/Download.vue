@@ -60,8 +60,14 @@ export default class Download extends Vue {
             this.name,
             this.size
         );
-        this.downloading = true;
-        await download.download();
+
+        try {
+            this.downloading = true;
+            await download.download();
+        } catch (e) {
+            console.log("Nastala chyba!", e);
+        }
+
         this.downloading = false;
     }
 }
