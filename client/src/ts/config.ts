@@ -18,13 +18,13 @@ class Server {
     public readonly protocol: string = "http";
 
     public websocketUrl(path?: string): string {
-        const protocol = Config.server.protocol;
-        const host = Config.server.host;
-        const port = Config.server.port;
-
-        let url = protocol === "http" ? "ws" : "wss";
-        url += "://" + basicUrl(host, port, path);
+        let url = this.protocol === "http" ? "ws" : "wss";
+        url += "://" + basicUrl(this.host, this.port, path);
         return url;
+    }
+
+    public classicUrl(path?: string): string {
+        return this.protocol + "://" + basicUrl(this.host, this.port, path);
     }
 }
 

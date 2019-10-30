@@ -1,3 +1,5 @@
+import Config from "./config";
+
 export default class DownloadMetadata {
     private readonly id: string;
 
@@ -23,7 +25,8 @@ export default class DownloadMetadata {
             };
             xhr.onabort = reject;
             xhr.onerror = reject;
-            xhr.open("get", "http://localhost:9998/api/metadata/" + this.id);
+            const url = Config.server.classicUrl("/api/metadata/" + this.id);
+            xhr.open("get", url);
             xhr.responseType = "json";
             xhr.send();
         });

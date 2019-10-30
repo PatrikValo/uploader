@@ -1,5 +1,6 @@
 import { WritableStream } from "web-streams-polyfill/ponyfill/es6";
 import streamSaver from "../js/StreamSaver";
+import Config from "./config";
 
 export default class DownloadFile {
     private readonly id: string;
@@ -13,10 +14,8 @@ export default class DownloadFile {
     }
 
     public async download() {
-        const response: Response = await fetch(
-            "http://localhost:9998/api/download/" + this.id,
-            { method: "get" }
-        );
+        const url = Config.server.classicUrl("/api/download/" + this.id);
+        const response: Response = await fetch(url, { method: "get" });
 
         if (!response.body) {
             throw new Error("Response Error");
