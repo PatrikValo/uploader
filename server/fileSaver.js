@@ -7,11 +7,11 @@ module.exports = class FileSaver {
         this.stream = this.storage.writableStream(id);
     }
 
-    saveInitializationVector(iv) {
-        this.stream.write(iv);
+    async saveInitializationVector(iv) {
+        await this.saveChunk(iv);
     }
 
-    saveMetadata(metadata) {
+    async saveMetadata(metadata) {
         const len = metadata.length;
         if (len > 64 * 1024) {
             throw new Error("Length of metadata is too long");
@@ -20,17 +20,23 @@ module.exports = class FileSaver {
         let buffer = Buffer.alloc(2);
         buffer.writeUInt16BE(len, 0);
 
-        this.stream.write(buffer);
-        this.stream.write(metadata);
+        await this.saveChunk(buffer);
+        await this.saveChunk(metadata);
     }
 
     saveChunk(chunk) {
-        this.stream.write(chunk);
+        return new Promise((resolve, _reject) => {
+            if (!this.stream.write(chunk)) {
+                this.stream.once("drain", resolve);
+            } else {
+                resolve();
+            }
+        });
     }
 
-    clear() {
+    async clear() {
         this.end();
-        this.storage.remove(this.id);
+        await this.storage.remove(this.id);
     }
 
     end() {

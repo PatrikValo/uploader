@@ -11,7 +11,7 @@ module.exports = (ws, _req) => {
 
     ws.send(JSON.stringify({ nextElement: "iv" }));
 
-    ws.onmessage = event => {
+    ws.onmessage = async event => {
         if (iv && metadata) {
             if (event.data === "null") {
                 fileSaver.end();
@@ -19,26 +19,35 @@ module.exports = (ws, _req) => {
                 return ws.send(JSON.stringify({ id: FILE_ID }));
             }
 
-            fileSaver.saveChunk(event.data);
+            await fileSaver.saveChunk(event.data);
             return ws.send(JSON.stringify({ status: 200 }));
         }
 
         if (!iv) {
             iv = true;
-            fileSaver.saveChunk(event.data);
+            await fileSaver.saveInitializationVector(event.data);
             return ws.send(JSON.stringify({ nextElement: "metadata" }));
         }
 
-        metadata = true;
-        fileSaver.saveMetadata(event.data);
-        return ws.send(JSON.stringify({ status: 200 }));
+        // it can throw exception if metadata is too long
+        try {
+            metadata = true;
+            await fileSaver.saveMetadata(event.data);
+            return ws.send(JSON.stringify({ status: 200 }));
+        } catch (e) {
+            return ws.send(JSON.stringify({ status: 500 }));
+        }
+    };
+
+    ws.onerror = async _event => {
+        await fileSaver.clear();
     };
 
     // delete file from storage
-    ws.onclose = event => {
+    ws.onclose = async _event => {
         console.log("Websocket is closed");
         if (!id) {
-            fileSaver.clear();
+            await fileSaver.clear();
             console.log("\tID didn't send to client");
         }
     };

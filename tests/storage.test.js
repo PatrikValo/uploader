@@ -337,9 +337,9 @@ describe("FileSaver", () => {
 
             const body = Buffer.from([254, 128, 13, 0, 1, 0]);
 
-            fileSaver.saveInitializationVector(iv);
-            fileSaver.saveMetadata(metadata);
-            fileSaver.saveChunk(body);
+            await fileSaver.saveInitializationVector(iv);
+            await fileSaver.saveMetadata(metadata);
+            await fileSaver.saveChunk(body);
             fileSaver.end();
             await onFinish(fileSaver.stream);
 
