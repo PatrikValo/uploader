@@ -14,6 +14,7 @@
                 <b-button
                     variant="dark"
                     title="Upload file"
+                    :disabled="downloading"
                     @click="$router.push('/')"
                     >+</b-button
                 >
