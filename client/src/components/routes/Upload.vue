@@ -1,8 +1,8 @@
 <template>
     <b-container style="height: 100%">
         <b-row align-v="center" style="height: 100%">
-            <b-col lg="6" md="8">
-                <h1 class="display-3 font-weight-bold">Nahrať súbor</h1>
+            <b-col lg="6" md="8" class="center-align-xs">
+                <main-title title="Nahrať súbor"></main-title>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -39,11 +39,12 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
+import MainTitle from "../MainTitle.vue";
 import UploadArea from "../UploadArea.vue";
 import Vue from "vue";
 
 @Component({
-    components: { UploadArea }
+    components: { UploadArea, MainTitle }
 })
 export default class Upload extends Vue {
     public file: File | null;

@@ -1,18 +1,18 @@
 <template>
     <div>
-        <h4 v-if="file" class="text-break">{{ file.name }}</h4>
-        <size-indicator v-bind:size="file.size"></size-indicator>
+        <file-info :name="file.name" :size="file.size"></file-info>
+        <password-toggle v-if="!startTime"></password-toggle>
         <progress-bar
             v-if="startTime"
             :uploaded="uploaded"
             :total="file.size"
         ></progress-bar>
-        <b-button variant="warning" v-if="!startTime" @click="upload"
-            >Upload</b-button
-        >
-        <b-button variant="warning" v-if="startTime" @click="cancelUpload"
-            >Close</b-button
-        >
+        <remaining-time
+            v-if="startTime"
+            :size="file.size"
+            :uploaded="uploaded"
+        ></remaining-time>
+        <upload-button @upload="upload" @cancel="cancelUpload"></upload-button>
     </div>
 </template>
 
@@ -24,9 +24,24 @@ import SizeIndicator from "./SizeIndicator.vue";
 import UploadFile from "../ts/uploadFile";
 import Utils from "../ts/utils";
 import Vue from "vue";
+import FileName from "./FileName.vue";
+import FileIcon from "./FileIcon.vue";
+import FileInfo from "./FileInfo.vue";
+import PasswordToggle from "./PasswordToggle.vue";
+import UploadButton from "./UploadButton.vue";
+import RemainingTime from "./RemainingTime.vue";
 
 @Component({
-    components: { ProgressBar, SizeIndicator },
+    components: {
+        RemainingTime,
+        UploadButton,
+        PasswordToggle,
+        FileInfo,
+        FileIcon,
+        FileName,
+        ProgressBar,
+        SizeIndicator
+    },
     props: {
         file: File
     }

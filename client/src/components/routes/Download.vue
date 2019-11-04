@@ -1,10 +1,9 @@
 <template>
     <b-container style="height: 100%">
         <b-row align-v="center" style="height: 100%">
-            <b-col lg="6" md="8">
-                <h1 class="display-3 font-weight-bold">Stiahnuť súbor</h1>
-                <h4>{{ name }}</h4>
-                <size-indicator v-bind:size="size"></size-indicator>
+            <b-col lg="6" md="8" class="center-align-xs">
+                <main-title title="Stiahnuť súbor"></main-title>
+                <file-info :name="name" :size="size"></file-info>
                 <b-button
                     variant="warning"
                     :disabled="downloading"
@@ -37,9 +36,11 @@ import DownloadFile from "../../ts/downloadFile";
 import Metadata from "../../ts/metadata";
 import SizeIndicator from "../SizeIndicator.vue";
 import Vue from "vue";
+import MainTitle from "../MainTitle.vue";
+import FileInfo from "../FileInfo.vue";
 
 @Component({
-    components: { SizeIndicator }
+    components: { FileInfo, MainTitle, SizeIndicator }
 })
 export default class Download extends Vue {
     public size: number = 0;

@@ -1,8 +1,8 @@
 <template>
     <b-container style="height: 100%">
         <b-row align-v="center" style="height: 100%">
-            <b-col lg="6" md="8">
-                <h1 class="display-3 font-weight-bold">Copy Url</h1>
+            <b-col lg="6" md="8" class="center-align-xs">
+                <main-title title="Kopírovať odkaz"></main-title>
                 <b-input id="input" v-model="url"></b-input>
                 <b-button variant="warning" @click="copyToClipboard">{{
                     info
@@ -23,8 +23,10 @@
 import Component from "vue-class-component";
 import Utils from "../../ts/utils";
 import Vue from "vue";
-
-@Component
+import MainTitle from "../MainTitle.vue";
+@Component({
+    components: { MainTitle }
+})
 export default class Copy extends Vue {
     private copy: boolean = false;
 
@@ -33,7 +35,7 @@ export default class Copy extends Vue {
     }
 
     get info(): string {
-        return this.copy ? "Copied!" : "Copy";
+        return this.copy ? "Skopírované!" : "Kopírovať";
     }
 
     get url(): string {
@@ -55,6 +57,6 @@ export default class Copy extends Vue {
 }
 #input:focus {
     border-color: #ffc107;
-    box-shadow: 0 0 0 0.2rem rgba(222, 170, 12, 0.5);
+    box-shadow: none;
 }
 </style>

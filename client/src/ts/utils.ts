@@ -44,16 +44,4 @@ export default class Utils {
         const path = "/download/" + id + "#" + key;
         return protocol + "://" + basicUrl(host, port, path);
     }
-
-    public static remainingSeconds(
-        uploaded: number,
-        startTime: Date,
-        size: number
-    ): number {
-        const secondsElapsed =
-            (new Date().getTime() - startTime.getTime()) / 1000;
-        const bytesPerSecond = uploaded / secondsElapsed;
-        const remainingBytes = size - uploaded;
-        return Math.round(remainingBytes / bytesPerSecond);
-    }
 }

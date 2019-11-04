@@ -5,9 +5,10 @@
             variant="warning"
             striped
             :animated="true"
+            height="1.5rem"
             class="mt-2"
         ></b-progress>
-        <div class="percentage">{{ percentage }}%</div>
+        <p class="text-secondary percentage">{{ percentage }}%</p>
     </div>
 </template>
 
@@ -45,7 +46,7 @@ export default class ProgressBar extends Vue {
 </script>
 <style scoped>
 .progress-bar-area {
-    padding: 15px 0 15px 0;
+    padding: 15px 10px 15px 10px;
 }
 
 .percentage {

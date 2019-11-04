@@ -3,7 +3,7 @@ html, body {
 }
 
 body {
-    background-image: url(../assets/bg.svg);
+    background-image: url("../assets/bg.svg");
     background-position: 15%;
     background-repeat: no-repeat;
     background-size: cover;
@@ -15,8 +15,20 @@ body {
     color: #343a40;
 }
 
+.center-align-xs {
+    text-align: center;
+}
+
+button {
+    margin: 2rem 0 2rem;
+}
+
 @media (max-width: 576px) {
-    .display-3{
-        font-size: 3rem;
+    .display-4{
+        font-size: 2.5rem;
+    }
+
+    .center-align-xs {
+        text-align: center;
     }
 }

@@ -1,5 +1,5 @@
 <template>
-    <h6>{{ computedSize }}</h6>
+    <p class="text-muted">{{ computedSize }}</p>
 </template>
 
 <script lang="ts">
@@ -33,3 +33,8 @@ export default class SizeIndicator extends Vue {
     }
 }
 </script>
+<style scoped>
+p {
+    margin: 0;
+}
+</style>
