@@ -1,18 +1,16 @@
 <template>
     <div>
-        <h4 id="filename" v-if="file">{{ file.name }}</h4>
+        <h4 v-if="file" class="text-break">{{ file.name }}</h4>
+        <size-indicator v-bind:size="file.size"></size-indicator>
         <progress-bar
-            v-if="uploadingProcess"
+            v-if="startTime"
             :uploaded="uploaded"
             :total="file.size"
         ></progress-bar>
-        <b-button variant="warning" v-if="!uploadingProcess" @click="upload"
+        <b-button variant="warning" v-if="!startTime" @click="upload"
             >Upload</b-button
         >
-        <b-button
-            variant="warning"
-            v-if="uploadingProcess"
-            @click="cancelUpload"
+        <b-button variant="warning" v-if="startTime" @click="cancelUpload"
             >Close</b-button
         >
     </div>
@@ -22,19 +20,20 @@
 import Config from "../ts/config";
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
+import SizeIndicator from "./SizeIndicator.vue";
 import UploadFile from "../ts/uploadFile";
 import Utils from "../ts/utils";
 import Vue from "vue";
 
 @Component({
-    components: { ProgressBar },
+    components: { ProgressBar, SizeIndicator },
     props: {
         file: File
     }
 })
 export default class UploadArea extends Vue {
     private uploader: UploadFile | null = null;
-    public uploadingProcess: boolean = false;
+    public startTime: Date | null = null;
     public uploaded: number = 0;
 
     public constructor() {
@@ -60,7 +59,7 @@ export default class UploadArea extends Vue {
             Utils.server.websocketUrl("/api/upload")
         );
 
-        this.uploadingProcess = true;
+        this.startTime = new Date();
 
         try {
             const id = await this.uploader.send(this.onProgress);
@@ -80,8 +79,3 @@ export default class UploadArea extends Vue {
     }
 }
 </script>
-<style scoped>
-#filename {
-    padding: 10px 0 10px 0;
-}
-</style>

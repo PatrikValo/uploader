@@ -1,9 +1,9 @@
 <template>
     <b-container style="height: 100%">
         <b-row class="align-items-center" style="height: 640px">
-            <div style="position: relative">
-                <h1 class="display-4">Not Found</h1>
-            </div>
+            <b-col>
+                <h1 class="display-3 font-weight-bold">Súbor už neexistuje</h1>
+            </b-col>
         </b-row>
     </b-container>
 </template>

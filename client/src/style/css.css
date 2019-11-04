@@ -4,7 +4,7 @@ html, body {
 
 body {
     background-image: url(../assets/bg.svg);
-    background-position: 50%;
+    background-position: 15%;
     background-repeat: no-repeat;
     background-size: cover;
     background-color: #ffffff;
@@ -13,4 +13,10 @@ body {
     font-weight: 400;
     line-height: 1.5;
     color: #343a40;
+}
+
+@media (max-width: 576px) {
+    .display-3{
+        font-size: 3rem;
+    }
 }

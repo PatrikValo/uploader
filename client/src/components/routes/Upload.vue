@@ -1,8 +1,8 @@
 <template>
     <b-container style="height: 100%">
         <b-row align-v="center" style="height: 100%">
-            <b-col style="min-height: 300px">
-                <h1 class="display-2 font-weight-bold">Upload file</h1>
+            <b-col lg="6" md="8">
+                <h1 class="display-3 font-weight-bold">Nahrať súbor</h1>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -10,11 +10,12 @@
                     @change="changedInput"
                 />
                 <label
+                    id="file-upload-label"
                     v-if="!file"
                     for="file-upload"
                     class="btn btn-warning"
-                    title="Choose file"
-                    >Choose file</label
+                    title="Vybrať súbor"
+                    >Vybrať súbor</label
                 >
                 <upload-area
                     v-if="file"
@@ -25,7 +26,7 @@
                     @limit="limit"
                 ></upload-area>
             </b-col>
-            <b-col>
+            <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
                 <img
                     id="image"
                     src="../../assets/image.svg"
@@ -85,6 +86,10 @@ export default class Upload extends Vue {
     height: 0;
     width: 0;
     opacity: 0;
+}
+
+#file-upload-label {
+    margin-top: 5px;
 }
 
 label {
