@@ -1,5 +1,11 @@
 <template>
-    <h5 class="text-truncate">{{ name }}</h5>
+    <h5
+        :class="{ 'text-truncate': truncate }"
+        class="text-break"
+        @click="click"
+    >
+        {{ name }}
+    </h5>
 </template>
 
 <script lang="ts">
@@ -12,8 +18,14 @@ import Vue from "vue";
     }
 })
 export default class FileName extends Vue {
+    public truncate: boolean = true;
+
     public constructor() {
         super();
+    }
+
+    public click() {
+        this.truncate = !this.truncate;
     }
 }
 </script>

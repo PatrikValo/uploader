@@ -30,6 +30,7 @@ export default class ProgressBar extends Vue {
         super();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public mounted() {
         // rendering each 500ms
         this.interval = setInterval(() => {
@@ -39,6 +40,7 @@ export default class ProgressBar extends Vue {
         }, 500);
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public destroyed() {
         clearInterval(this.interval);
     }

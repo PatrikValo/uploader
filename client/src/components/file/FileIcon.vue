@@ -2,7 +2,7 @@
     <div>
         <div class="icon">
             <p>{{ format }}</p>
-            <img src="../assets/file.svg" width="50px" />
+            <img src="../../assets/file.svg" width="50px" alt="File Icon" />
         </div>
     </div>
 </template>

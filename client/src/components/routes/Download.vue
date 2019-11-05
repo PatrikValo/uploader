@@ -1,22 +1,15 @@
 <template>
-    <b-container style="height: 100%">
-        <b-row align-v="center" style="height: 100%">
-            <b-col lg="6" md="8" class="center-align-xs">
+    <b-container class="h-100">
+        <b-row align-v="center" class="h-100">
+            <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
                 <file-info :name="name" :size="size"></file-info>
-                <b-button
-                    variant="warning"
-                    :disabled="downloading"
-                    @click="download"
-                    >{{ buttonName }}</b-button
-                >
-                <b-button
-                    variant="dark"
-                    title="Upload file"
-                    :disabled="downloading"
-                    @click="$router.push('/')"
-                    >+</b-button
-                >
+                <download-button @download="download"></download-button>
+                <redirect-button
+                    title="+"
+                    to="/"
+                    v-if="!downloading"
+                ></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
                 <img
@@ -34,18 +27,26 @@ import Component from "vue-class-component";
 import DownloadMetadata from "../../ts/downloadMetadata";
 import DownloadFile from "../../ts/downloadFile";
 import Metadata from "../../ts/metadata";
-import SizeIndicator from "../SizeIndicator.vue";
+import SizeIndicator from "../file/SizeIndicator.vue";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
-import FileInfo from "../FileInfo.vue";
+import FileInfo from "../file/FileInfo.vue";
+import DownloadButton from "../buttons/DownloadButton.vue";
+import RedirectButton from "../buttons/RedirectButton.vue";
 
 @Component({
-    components: { FileInfo, MainTitle, SizeIndicator }
+    components: {
+        RedirectButton,
+        DownloadButton,
+        FileInfo,
+        MainTitle,
+        SizeIndicator
+    }
 })
 export default class Download extends Vue {
     public size: number = 0;
     public name: string = "";
-    public metadata: Metadata | undefined;
+    public metadata: Metadata | null = null;
     public downloading: boolean = false;
 
     public constructor() {
@@ -84,10 +85,6 @@ export default class Download extends Vue {
         }
 
         this.downloading = false;
-    }
-
-    get buttonName() {
-        return this.downloading ? "Downloading..." : "Download";
     }
 }
 </script>

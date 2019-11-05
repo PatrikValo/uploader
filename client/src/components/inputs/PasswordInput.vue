@@ -1,7 +1,10 @@
 <template>
-    <div>
-        <b-input id="password" placeholder="Heslo" type="password" />
-    </div>
+    <b-input
+        id="password"
+        placeholder="Heslo"
+        type="password"
+        @input="change"
+    />
 </template>
 
 <script lang="ts">
@@ -12,6 +15,10 @@ import Vue from "vue";
 export default class PasswordInput extends Vue {
     public constructor() {
         super();
+    }
+
+    public change(password: string) {
+        this.$emit("input", password);
     }
 }
 </script>

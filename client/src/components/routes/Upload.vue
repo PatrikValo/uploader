@@ -1,7 +1,7 @@
 <template>
-    <b-container style="height: 100%">
-        <b-row align-v="center" style="height: 100%">
-            <b-col lg="6" md="8" class="center-align-xs">
+    <b-container class="h-100">
+        <b-row align-v="center" class="h-100">
+            <b-col lg="6" md="8" class="text-center">
                 <main-title title="Nahrať súbor"></main-title>
                 <input
                     id="file-upload"

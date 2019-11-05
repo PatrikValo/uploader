@@ -1,17 +1,15 @@
 <template>
     <div>
         <file-info :name="file.name" :size="file.size"></file-info>
-        <password-toggle v-if="!startTime"></password-toggle>
+        <password-toggle
+            v-if="!startUploading"
+            @input="changePassword"
+        ></password-toggle>
         <progress-bar
-            v-if="startTime"
+            v-if="startUploading"
             :uploaded="uploaded"
             :total="file.size"
         ></progress-bar>
-        <remaining-time
-            v-if="startTime"
-            :size="file.size"
-            :uploaded="uploaded"
-        ></remaining-time>
         <upload-button @upload="upload" @cancel="cancelUpload"></upload-button>
     </div>
 </template>
@@ -20,20 +18,18 @@
 import Config from "../ts/config";
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
-import SizeIndicator from "./SizeIndicator.vue";
+import SizeIndicator from "./file/SizeIndicator.vue";
 import UploadFile from "../ts/uploadFile";
 import Utils from "../ts/utils";
 import Vue from "vue";
-import FileName from "./FileName.vue";
-import FileIcon from "./FileIcon.vue";
-import FileInfo from "./FileInfo.vue";
-import PasswordToggle from "./PasswordToggle.vue";
-import UploadButton from "./UploadButton.vue";
-import RemainingTime from "./RemainingTime.vue";
+import FileName from "./file/FileName.vue";
+import FileIcon from "./file/FileIcon.vue";
+import FileInfo from "./file/FileInfo.vue";
+import PasswordToggle from "./inputs/PasswordToggle.vue";
+import UploadButton from "./buttons/UploadButton.vue";
 
 @Component({
     components: {
-        RemainingTime,
         UploadButton,
         PasswordToggle,
         FileInfo,
@@ -48,7 +44,8 @@ import RemainingTime from "./RemainingTime.vue";
 })
 export default class UploadArea extends Vue {
     private uploader: UploadFile | null = null;
-    public startTime: Date | null = null;
+    private password: string = "";
+    public startUploading: boolean = false;
     public uploaded: number = 0;
 
     public constructor() {
@@ -74,7 +71,7 @@ export default class UploadArea extends Vue {
             Utils.server.websocketUrl("/api/upload")
         );
 
-        this.startTime = new Date();
+        this.startUploading = true;
 
         try {
             const id = await this.uploader.send(this.onProgress);
@@ -91,6 +88,10 @@ export default class UploadArea extends Vue {
         if (this.uploader) {
             this.uploader.cancel();
         }
+    }
+
+    public changePassword(password: string) {
+        this.password = password;
     }
 }
 </script>

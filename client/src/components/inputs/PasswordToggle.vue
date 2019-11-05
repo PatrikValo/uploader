@@ -6,7 +6,7 @@
             @click="toggle"
             >{{ name }}</b-badge
         >
-        <password-input v-if="show"></password-input>
+        <password-input v-if="show" @input="change"></password-input>
     </div>
 </template>
 
@@ -31,6 +31,11 @@ export default class PasswordToggle extends Vue {
 
     public toggle() {
         this.show = !this.show;
+        this.change("");
+    }
+
+    public change(password: string) {
+        this.$emit("input", password);
     }
 }
 </script>
