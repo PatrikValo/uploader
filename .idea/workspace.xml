@@ -2,7 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/js/StreamSaver.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -13,8 +18,8 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="TypeScript File" />
         <option value="Vue Single File Component" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -50,16 +55,16 @@
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src/assets" />
+      <recent name="$PROJECT_DIR$/client/src/js" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src" />
       <recent name="$PROJECT_DIR$/client/src/components/inputs" />
       <recent name="$PROJECT_DIR$/client/src/components/file" />
       <recent name="$PROJECT_DIR$/client/src/components/buttons" />
       <recent name="$PROJECT_DIR$/client/src/components" />
-      <recent name="$PROJECT_DIR$/client/src/components/routes" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/client/src/assets" />
-      <recent name="$PROJECT_DIR$/client/src/js" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -106,7 +111,9 @@
       <workItem from="1572642610167" duration="832000" />
       <workItem from="1572864100122" duration="11852000" />
       <workItem from="1572882253633" duration="19822000" />
-      <workItem from="1572973930945" duration="7775000" />
+      <workItem from="1572973930945" duration="9269000" />
+      <workItem from="1573237259055" duration="75000" />
+      <workItem from="1573237369768" duration="3934000" />
     </task>
     <servers />
   </component>

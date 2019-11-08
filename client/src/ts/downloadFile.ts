@@ -1,8 +1,8 @@
+import streamSaver from "streamsaver";
 import {
     WritableStream,
     WritableStreamDefaultWriter
 } from "web-streams-polyfill/ponyfill/es6";
-import streamSaver from "../js/StreamSaver";
 import Utils from "./utils";
 
 export default class DownloadFile {
@@ -57,9 +57,9 @@ export default class DownloadFile {
             await writer.abort("Close window");
         };
 
-        window.onbeforeunload = (e: BeforeUnloadEvent) => {
+        /*window.onbeforeunload = (e: BeforeUnloadEvent) => {
             e.returnValue = "Are you sure you want to close window?";
-        };
+        };*/
     }
 
     // noinspection JSMethodCanBeStatic
