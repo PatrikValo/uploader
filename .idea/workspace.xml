@@ -3,11 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/js/StreamSaver.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/config.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -113,7 +109,7 @@
       <workItem from="1572882253633" duration="19822000" />
       <workItem from="1572973930945" duration="9269000" />
       <workItem from="1573237259055" duration="75000" />
-      <workItem from="1573237369768" duration="3934000" />
+      <workItem from="1573237369768" duration="6175000" />
     </task>
     <servers />
   </component>

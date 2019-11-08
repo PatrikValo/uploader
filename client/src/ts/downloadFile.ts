@@ -1,9 +1,11 @@
 import streamSaver from "streamsaver";
+const { createWriteStream } = streamSaver;
 import {
     WritableStream,
     WritableStreamDefaultWriter
 } from "web-streams-polyfill/ponyfill/es6";
 import Utils from "./utils";
+streamSaver.WritableStream = WritableStream; // firefox
 
 export default class DownloadFile {
     private readonly id: string;
@@ -26,9 +28,7 @@ export default class DownloadFile {
 
         const stream: ReadableStream<Uint8Array> = response.body;
 
-        streamSaver.WritableStream = WritableStream; // firefox
-
-        const writeStream: WritableStream = streamSaver.createWriteStream(
+        const writeStream: WritableStream = createWriteStream(
             this.name,
             {
                 size: this.size
@@ -57,9 +57,9 @@ export default class DownloadFile {
             await writer.abort("Close window");
         };
 
-        /*window.onbeforeunload = (e: BeforeUnloadEvent) => {
+        window.onbeforeunload = (e: BeforeUnloadEvent) => {
             e.returnValue = "Are you sure you want to close window?";
-        };*/
+        };
     }
 
     // noinspection JSMethodCanBeStatic
