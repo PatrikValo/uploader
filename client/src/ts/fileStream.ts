@@ -1,4 +1,6 @@
-export default class FileStream {
+export default class FileStream implements UnderlyingSource {
+    public pull: ReadableStreamDefaultControllerCallback<any> = this.read;
+
     private file: File;
     private readonly size: number;
     private index: number = 0;
@@ -9,10 +11,12 @@ export default class FileStream {
         this.size = file.size;
     }
 
-    public read(): Promise<{ done: boolean; value: Uint8Array }> {
+    private read(
+        controller: ReadableStreamDefaultController<any>
+    ): PromiseLike<void> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
-                return resolve({ done: true, value: new Uint8Array(0) });
+                return resolve(controller.close());
             }
 
             const start = this.index;
@@ -27,10 +31,11 @@ export default class FileStream {
             const fileReader: FileReader = new FileReader();
 
             fileReader.onload = () => {
-                return resolve({
-                    done: false,
-                    value: new Uint8Array(fileReader.result as ArrayBuffer)
-                });
+                return resolve(
+                    controller.enqueue(
+                        new Uint8Array(fileReader.result as ArrayBuffer)
+                    )
+                );
             };
 
             fileReader.onerror = reject;
