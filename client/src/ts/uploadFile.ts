@@ -1,32 +1,25 @@
+import Cipher from "./cipher";
 import FileStream from "./fileStream";
 import Metadata from "./metadata";
 
 export default class UploadFile {
-    private static createIV(size: number = 16): Uint8Array {
-        // TODO if (!window.crypto)... move to Ciphering class as static class
-        return window.crypto.getRandomValues(new Uint8Array(size));
-    }
-
-    private static createMetadata(file: File): Uint8Array {
-        const md: Metadata = new Metadata(file);
-        return md.toUint8Array();
-    }
-
-    private readonly iv: Uint8Array;
-    private readonly metadata: Uint8Array;
+    private readonly fileStream: ReadableStream;
+    private readonly cipher: Cipher;
+    private readonly metadata: Metadata;
     private readonly url: string;
-    private fileStream: ReadableStream;
     private stop: boolean = false;
     private id: string = "";
 
     public constructor(file: File, url: string) {
         this.fileStream = new ReadableStream(new FileStream(file));
-        this.iv = UploadFile.createIV(16);
-        this.metadata = UploadFile.createMetadata(file);
+        this.cipher = new Cipher();
+        this.metadata = new Metadata(file);
         this.url = url;
     }
 
-    public async send(progress: (u: number) => any): Promise<string> {
+    public async send(
+        progress: (u: number) => any
+    ): Promise<{ id: string; key: string }> {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this.url);
             const reader = this.fileStream.getReader();
@@ -47,11 +40,15 @@ export default class UploadFile {
                     const nextEl = msg.nextElement;
 
                     if (nextEl === "iv") {
-                        return socket.send(this.iv);
+                        const iv = this.cipher.initializationVector();
+                        return socket.send(iv);
                     }
 
                     if (nextEl === "metadata") {
-                        return socket.send(this.metadata);
+                        const metadata = await this.cipher.encryptMetadata(
+                            this.metadata
+                        );
+                        return socket.send(metadata);
                     }
 
                     return socket.close();
@@ -65,7 +62,7 @@ export default class UploadFile {
                 progress(uploaded); // users function
 
                 if (!chunk.done) {
-                    const value = chunk.value;
+                    const value = await this.cipher.encryptChunk(chunk.value);
                     chunk = await reader.read();
                     return socket.send(value);
                 }
@@ -76,9 +73,10 @@ export default class UploadFile {
             socket.onclose = async () => {
                 if (this.stop) {
                     await reader.cancel();
-                    return resolve("");
+                    return resolve({ id: "", key: "" });
                 }
-                return this.id ? resolve(this.id) : reject();
+                const key = await this.cipher.exportedKey();
+                return this.id ? resolve({ id: this.id, key }) : reject();
             };
 
             socket.onerror = reject;

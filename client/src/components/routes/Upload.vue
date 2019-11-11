@@ -42,6 +42,7 @@ import Component from "vue-class-component";
 import MainTitle from "../MainTitle.vue";
 import UploadArea from "../UploadArea.vue";
 import Vue from "vue";
+import Utils from "../../ts/utils";
 
 @Component({
     components: { UploadArea, MainTitle }
@@ -60,22 +61,23 @@ export default class Upload extends Vue {
         }
     }
 
-    public finish(e: { id: string }) {
+    public finish(e: { id: string; key: string }): void {
         this.file = null;
-        this.$router.push("/copy/" + e.id);
+        const path = Utils.buildPath("copy", e.id, e.key);
+        this.$router.push(path);
     }
 
-    public error(e: Error) {
+    public error(e: Error): void {
         console.log("Nastala chyba!", e.message);
         this.file = null;
     }
 
-    public cancel() {
+    public cancel(): void {
         console.log("Nahravanie bolo zastavené!");
         this.file = null;
     }
 
-    public limit() {
+    public limit(): void {
         console.log("Súbor presahuje veľkostný limit!");
         this.file = null;
     }

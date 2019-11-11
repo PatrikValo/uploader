@@ -36,12 +36,16 @@ export default class Utils {
     };
 
     // client
-    public static buildUrl(id: string, key: string): string {
+    public static buildUrl(base: string, id: string, key: string): string {
         const protocol = Config.client.protocol;
         const host = Config.client.host;
         const port = Config.client.port;
 
-        const path = "/download/" + id + "#" + key;
+        const path = Utils.buildPath(base, id, key);
         return protocol + "://" + basicUrl(host, port, path);
+    }
+
+    public static buildPath(base: string, id: string, key: string): string {
+        return `/${base}/${id}#${key}`;
     }
 }

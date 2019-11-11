@@ -29,14 +29,17 @@ import CopyButton from "../buttons/CopyButton.vue";
     components: { RedirectButton, CopyButton, MainTitle }
 })
 export default class Copy extends Vue {
-    private copy: boolean = false;
-
     public constructor() {
         super();
     }
 
     get url(): string {
-        return Utils.buildUrl(this.$route.params.id, this.$route.hash);
+        let key: string = this.$route.hash;
+        if (key.length > 1) {
+            key = key.substr(1);
+        }
+
+        return Utils.buildUrl("download", this.$route.params.id, key);
     }
 }
 </script>

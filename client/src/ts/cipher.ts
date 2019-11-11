@@ -1,6 +1,6 @@
 import Metadata from "./metadata";
 
-export default class Ciphering {
+export default class Cipher {
     private readonly crypto: SubtleCrypto;
     private readonly keyPromise: Promise<CryptoKey>;
     private readonly iv: Uint8Array;

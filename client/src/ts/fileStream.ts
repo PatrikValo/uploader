@@ -4,7 +4,7 @@ export default class FileStream implements UnderlyingSource {
     private file: File;
     private readonly size: number;
     private index: number = 0;
-    private chunkSize: number = 65536;
+    private chunkSize: number = 64 * 1024 - 16;
 
     public constructor(file: File) {
         this.file = file;

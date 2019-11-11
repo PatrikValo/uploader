@@ -65,7 +65,7 @@ export default class UploadArea extends Vue {
         this.uploaded += uploaded;
     }
 
-    public async upload() {
+    public async upload(): Promise<void> {
         this.uploader = new UploadFile(
             this.$props.file,
             Utils.server.websocketUrl("/api/upload")
@@ -74,13 +74,14 @@ export default class UploadArea extends Vue {
         this.startUploading = true;
 
         try {
-            const id = await this.uploader.send(this.onProgress);
-            if (!id) {
-                return this.$emit("cancel");
+            const result = await this.uploader.send(this.onProgress);
+            if (!result.id) {
+                this.$emit("cancel");
+                return;
             }
-            return this.$emit("finish", { id });
+            this.$emit("finish", result);
         } catch (e) {
-            return this.$emit("error", new Error("Error during sending file"));
+            this.$emit("error", new Error("Error during sending file"));
         }
     }
 
@@ -90,7 +91,7 @@ export default class UploadArea extends Vue {
         }
     }
 
-    public changePassword(password: string) {
+    public changePassword(password: string): void {
         this.password = password;
     }
 }
