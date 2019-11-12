@@ -3,7 +3,10 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
-                <file-info :name="name" :size="size"></file-info>
+                <file-info
+                    :name="metadata.name"
+                    :size="metadata.size"
+                ></file-info>
                 <download-button @download="download"></download-button>
                 <redirect-button
                     title="+"
@@ -26,13 +29,14 @@
 import Component from "vue-class-component";
 import DownloadMetadata from "../../ts/downloadMetadata";
 import DownloadFile from "../../ts/downloadFile";
-import Metadata from "../../ts/metadata";
 import SizeIndicator from "../file/SizeIndicator.vue";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../file/FileInfo.vue";
 import DownloadButton from "../buttons/DownloadButton.vue";
 import RedirectButton from "../buttons/RedirectButton.vue";
+import Metadata from "../../ts/metadata";
+import metadata from "../../ts/metadata";
 
 @Component({
     components: {
@@ -44,37 +48,49 @@ import RedirectButton from "../buttons/RedirectButton.vue";
     }
 })
 export default class Download extends Vue {
-    public size: number = 0;
-    public name: string = "";
-    public metadata: Metadata | null = null;
     public downloading: boolean = false;
+    public metadata: Metadata;
+    private id: string = "";
+    private key: string = "";
+    private iv: Uint8Array | null = null;
 
     public constructor() {
         super();
+        this.metadata = new Metadata({ name: "", size: 0 });
     }
 
     // noinspection JSUnusedGlobalSymbols
     async mounted() {
-        const id: string = this.$route.params.id;
+        this.id = this.$route.params.id;
 
-        const downloadMetadata = new DownloadMetadata(id);
+        if (this.$route.hash.length <= 1) {
+            return await this.$router.push("/error");
+        }
+
+        this.key = this.$route.hash.substr(1);
+
+        const downloadMetadata = new DownloadMetadata(this.id, this.key);
+
         try {
-            const result = await downloadMetadata.getInfo();
-            const iv = result.iv;
-            console.log({ iv });
-            const metadata = new Metadata(result.metadata);
-            this.name = metadata.name;
-            this.size = metadata.size;
+            ({
+                iv: this.iv,
+                metadata: this.metadata
+            } = await downloadMetadata.download());
         } catch (e) {
             await this.$router.push("/error");
         }
     }
 
-    public async download() {
+    public async download(): Promise<void> {
+        if (!this.iv || !this.key) {
+            return;
+        }
+
         const download = new DownloadFile(
             this.$route.params.id,
-            this.name,
-            this.size
+            this.metadata,
+            this.key,
+            this.iv
         );
 
         try {

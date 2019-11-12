@@ -3,14 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/UploadArea.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadArea.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Copy.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Copy.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/ciphering.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/cipher.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/config.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/fileStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/fileStream.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/file/FileIcon.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/file/FileIcon.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/file/FileName.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/file/FileName.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Download.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Download.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadMetadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadMetadata.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -119,7 +116,8 @@
       <workItem from="1573237369768" duration="8379000" />
       <workItem from="1573329245489" duration="8383000" />
       <workItem from="1573411667115" duration="11422000" />
-      <workItem from="1573478595927" duration="4137000" />
+      <workItem from="1573478595927" duration="6066000" />
+      <workItem from="1573562772044" duration="5690000" />
     </task>
     <servers />
   </component>

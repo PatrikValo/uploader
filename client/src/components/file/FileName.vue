@@ -2,7 +2,8 @@
     <h5
         :class="{ 'text-truncate': truncate }"
         class="text-break"
-        @click="click"
+        @mouseover="over"
+        @mouseleave="leave"
     >
         {{ name }}
     </h5>
@@ -24,8 +25,12 @@ export default class FileName extends Vue {
         super();
     }
 
-    public click() {
-        this.truncate = !this.truncate;
+    public over() {
+        this.truncate = false;
+    }
+
+    public leave() {
+        this.truncate = true;
     }
 }
 </script>

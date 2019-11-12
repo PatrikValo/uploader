@@ -23,9 +23,14 @@ export default class FileName extends Vue {
 
     get format() {
         const name: string = this.$props.name;
-        let format: string | undefined = name.split(".").pop();
+        const arr = name.split(".");
+        if (arr.length < 2) {
+            return "file";
+        }
+
+        let format: string | undefined = arr.pop();
         if (format) {
-            return format.length > 7 ? ".file" : "." + format;
+            return format.length > 7 ? "file" : "." + format;
         }
         return "file";
     }

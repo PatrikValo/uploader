@@ -4,18 +4,25 @@ import {
     WritableStream,
     WritableStreamDefaultWriter
 } from "web-streams-polyfill/ponyfill/es6";
+import Cipher from "./cipher";
+import Metadata from "./metadata";
 import Utils from "./utils";
 streamSaver.WritableStream = WritableStream; // firefox
 
 export default class DownloadFile {
     private readonly id: string;
-    private readonly name: string;
-    private readonly size: number;
+    private readonly metadata: Metadata;
+    private readonly cipher: Cipher;
 
-    public constructor(id: string, name: string, size: number) {
+    public constructor(
+        id: string,
+        metadata: Metadata,
+        key: string,
+        iv: Uint8Array
+    ) {
         this.id = id;
-        this.name = name;
-        this.size = size;
+        this.metadata = metadata;
+        this.cipher = new Cipher(key, iv);
     }
 
     public async download() {
@@ -29,11 +36,11 @@ export default class DownloadFile {
         const stream: ReadableStream<Uint8Array> = response.body;
 
         const writeStream: WritableStream = createWriteStream(
-            this.name,
+            this.metadata.name,
             {
-                size: this.size
+                size: this.metadata.size
             },
-            this.size
+            this.metadata.size
         );
 
         const reader = stream.getReader();
@@ -41,10 +48,11 @@ export default class DownloadFile {
 
         this.initDownload(writer);
 
-        let state = await reader.read();
-        while (!state.done) {
-            await writer.write(state.value);
-            state = await reader.read();
+        let chunk = await reader.read();
+        while (!chunk.done) {
+            const decrypted = await this.cipher.decryptChunk(chunk.value);
+            await writer.write(decrypted);
+            chunk = await reader.read();
         }
 
         await writer.close();
