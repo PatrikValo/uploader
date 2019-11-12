@@ -3,23 +3,12 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
-                <file-info
-                    :name="metadata.name"
-                    :size="metadata.size"
-                ></file-info>
+                <file-info :name="metadata.name" :size="metadata.size"></file-info>
                 <download-button @download="download"></download-button>
-                <redirect-button
-                    title="+"
-                    to="/"
-                    v-if="!downloading"
-                ></redirect-button>
+                <redirect-button title="+" to="/" v-if="!downloading"></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/image.svg"
-                    alt="Paper planes"
-                />
+                <img id="image" src="../../assets/image.svg" alt="Paper planes" />
             </b-col>
         </b-row>
     </b-container>
@@ -36,7 +25,6 @@ import FileInfo from "../file/FileInfo.vue";
 import DownloadButton from "../buttons/DownloadButton.vue";
 import RedirectButton from "../buttons/RedirectButton.vue";
 import Metadata from "../../ts/metadata";
-import metadata from "../../ts/metadata";
 
 @Component({
     components: {
@@ -72,10 +60,7 @@ export default class Download extends Vue {
         const downloadMetadata = new DownloadMetadata(this.id, this.key);
 
         try {
-            ({
-                iv: this.iv,
-                metadata: this.metadata
-            } = await downloadMetadata.download());
+            ({ iv: this.iv, metadata: this.metadata } = await downloadMetadata.download());
         } catch (e) {
             await this.$router.push("/error");
         }
@@ -86,12 +71,7 @@ export default class Download extends Vue {
             return;
         }
 
-        const download = new DownloadFile(
-            this.$route.params.id,
-            this.metadata,
-            this.key,
-            this.iv
-        );
+        const download = new DownloadFile(this.$route.params.id, this.metadata, this.key, this.iv);
 
         try {
             this.downloading = true;
