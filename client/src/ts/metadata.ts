@@ -1,27 +1,24 @@
+interface IFile {
+    name: string;
+    size: number;
+}
+
 export default class Metadata {
-    private static createJSONObject(
-        arr: Uint8Array
-    ): { name: string; type: string; size: number } {
-        const decoder: TextDecoder = new TextDecoder();
-        const json = decoder.decode(arr);
-        return JSON.parse(json);
-    }
     public readonly name: string;
-    public readonly type: string;
     public readonly size: number;
 
-    public constructor(file: File | Uint8Array) {
-        if (file instanceof File) {
-            this.name = file.name;
-            this.type = file.type;
-            this.size = file.size;
+    public constructor(file: IFile | Uint8Array) {
+        // Uint8Array
+        if (file instanceof Uint8Array) {
+            const obj = this.createJSONObject(file);
+            this.name = obj.name;
+            this.size = obj.size;
             return;
         }
 
-        const obj = Metadata.createJSONObject(file);
-        this.name = obj.name;
-        this.type = obj.type;
-        this.size = obj.size;
+        // IFile
+        this.name = file.name;
+        this.size = file.size;
     }
 
     public toUint8Array(): Uint8Array {
@@ -29,9 +26,15 @@ export default class Metadata {
         return encoder.encode(
             JSON.stringify({
                 name: this.name,
-                size: this.size,
-                type: this.type
+                size: this.size
             })
         );
+    }
+
+    // noinspection JSMethodCanBeStatic
+    private createJSONObject(arr: Uint8Array): IFile {
+        const decoder: TextDecoder = new TextDecoder();
+        const json = decoder.decode(arr);
+        return JSON.parse(json);
     }
 }
