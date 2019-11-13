@@ -43,10 +43,10 @@ import UploadButton from "./UploadButton.vue";
     }
 })
 export default class UploadArea extends Vue {
-    private uploader: UploadFile | null = null;
-    private password: string = "";
     public startUploading: boolean = false;
     public uploaded: number = 0;
+    private uploader: UploadFile | null = null;
+    private password: string = "";
 
     public constructor() {
         super();
@@ -54,15 +54,10 @@ export default class UploadArea extends Vue {
 
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
-        const file = this.$props.file;
         // control of size limit
-        if (file.size > Config.client.fileSizeLimit) {
+        if (!this.limit()) {
             this.$emit("limit");
         }
-    }
-
-    private onProgress(uploaded: number): void {
-        this.uploaded += uploaded;
     }
 
     public async upload(): Promise<void> {
@@ -74,7 +69,7 @@ export default class UploadArea extends Vue {
         this.startUploading = true;
 
         try {
-            const result = await this.uploader.send(this.onProgress);
+            const result = await this.uploader.upload(this.onProgress);
             if (!result.id) {
                 this.$emit("cancel");
                 return;
@@ -93,6 +88,15 @@ export default class UploadArea extends Vue {
 
     public changePassword(password: string): void {
         this.password = password;
+    }
+
+    private onProgress(uploaded: number): void {
+        this.uploaded += uploaded;
+    }
+
+    private limit(): boolean {
+        const file: File = this.$props.file;
+        return file.size <= Config.client.fileSizeLimit;
     }
 }
 </script>

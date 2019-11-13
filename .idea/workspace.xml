@@ -3,8 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/UploadArea.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadArea.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/ts/cipher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/cipher.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/utils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/utils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/webpack.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/webpack.config.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -116,7 +120,8 @@
       <workItem from="1573411667115" duration="11422000" />
       <workItem from="1573478595927" duration="6066000" />
       <workItem from="1573562772044" duration="7002000" />
-      <workItem from="1573630179849" duration="1032000" />
+      <workItem from="1573630179849" duration="5379000" />
+      <workItem from="1573644047635" duration="3953000" />
     </task>
     <servers />
   </component>

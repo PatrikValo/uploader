@@ -1,5 +1,6 @@
 import BootstrapVue from "bootstrap-vue";
 import {
+    AlertPlugin,
     ButtonPlugin,
     LayoutPlugin,
     ModalPlugin,
@@ -18,6 +19,7 @@ import "./style/css.css";
 
 Vue.use(VueRouter);
 
+Vue.use(AlertPlugin);
 Vue.use(BootstrapVue);
 Vue.use(LayoutPlugin);
 Vue.use(ProgressPlugin);

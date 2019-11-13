@@ -2,29 +2,11 @@ import Metadata from "./metadata";
 import Utils from "./utils";
 
 export default class Cipher {
-    public static compatibility(): boolean {
-        const crypto: Crypto = window.crypto;
-
-        if (!crypto) {
-            return false;
-        }
-
-        if (!crypto.subtle) {
-            return false;
-        }
-
-        return !!crypto.getRandomValues;
-    }
-
     private readonly crypto: SubtleCrypto;
     private readonly keyPromise: Promise<CryptoKey>;
     private readonly iv: Uint8Array;
 
-    public constructor(
-        key?: CryptoKey | string,
-        iv?: Uint8Array,
-        password?: string
-    ) {
+    public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
         this.crypto = window.crypto.subtle;
         this.keyPromise = this.initKeyPromise(key);
         this.iv = iv || window.crypto.getRandomValues(new Uint8Array(16));

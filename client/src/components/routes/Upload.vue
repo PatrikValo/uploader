@@ -3,6 +3,9 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Nahrať súbor"></main-title>
+                <b-alert v-if="alert" show variant="warning">{{
+                    alert
+                }}</b-alert>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -15,6 +18,7 @@
                     for="file-upload"
                     class="btn btn-warning"
                     title="Vybrať súbor"
+                    @click="clearAlert"
                     >Vybrať súbor</label
                 >
                 <upload-area
@@ -49,10 +53,12 @@ import Utils from "../../ts/utils";
 })
 export default class Upload extends Vue {
     public file: File | null;
+    public alert: string;
 
     public constructor() {
         super();
         this.file = null;
+        this.alert = "";
     }
 
     public changedInput(e: any): void {
@@ -68,18 +74,22 @@ export default class Upload extends Vue {
     }
 
     public error(e: Error): void {
-        console.log("Nastala chyba!", e.message);
+        this.alert = "Počas nahrávania nastala chyba";
         this.file = null;
     }
 
     public cancel(): void {
-        console.log("Nahravanie bolo zastavené!");
+        this.alert = "Nahrávanie bolo zastavené";
         this.file = null;
     }
 
     public limit(): void {
-        console.log("Súbor presahuje veľkostný limit!");
         this.file = null;
+        this.alert = "Veľkosť súboru presahuje 1GB";
+    }
+
+    public clearAlert(): void {
+        this.alert = "";
     }
 }
 </script>

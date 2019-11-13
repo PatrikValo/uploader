@@ -17,7 +17,7 @@ export default class UploadFile {
         this.url = url;
     }
 
-    public async send(
+    public async upload(
         progress: (u: number) => any
     ): Promise<{ id: string; key: string }> {
         return new Promise(async (resolve, reject) => {
