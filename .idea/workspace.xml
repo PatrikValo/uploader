@@ -2,7 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/UploadArea.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadArea.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/buttons/CopyButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/CopyButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/buttons/DownloadButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/DownloadButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/buttons/RedirectButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/RedirectButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/buttons/UploadButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Copy.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Copy.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Download.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Download.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/NotFound.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/NotFound.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -114,7 +121,7 @@
       <workItem from="1573411667115" duration="11422000" />
       <workItem from="1573478595927" duration="6066000" />
       <workItem from="1573562772044" duration="7002000" />
-      <workItem from="1573630179849" duration="255000" />
+      <workItem from="1573630179849" duration="576000" />
     </task>
     <servers />
   </component>

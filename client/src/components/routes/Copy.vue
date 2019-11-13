@@ -23,8 +23,8 @@ import Component from "vue-class-component";
 import Utils from "../../ts/utils";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
-import RedirectButton from "../buttons/RedirectButton.vue";
-import CopyButton from "../buttons/CopyButton.vue";
+import RedirectButton from "../RedirectButton.vue";
+import CopyButton from "../CopyButton.vue";
 @Component({
     components: { RedirectButton, CopyButton, MainTitle }
 })

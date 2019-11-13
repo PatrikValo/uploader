@@ -18,15 +18,15 @@
 import Config from "../ts/config";
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
-import SizeIndicator from "./file/SizeIndicator.vue";
+import SizeIndicator from "./SizeIndicator.vue";
 import UploadFile from "../ts/uploadFile";
 import Utils from "../ts/utils";
 import Vue from "vue";
-import FileName from "./file/FileName.vue";
-import FileIcon from "./file/FileIcon.vue";
-import FileInfo from "./file/FileInfo.vue";
-import PasswordToggle from "./inputs/PasswordToggle.vue";
-import UploadButton from "./buttons/UploadButton.vue";
+import FileName from "./FileName.vue";
+import FileIcon from "./FileIcon.vue";
+import FileInfo from "./FileInfo.vue";
+import PasswordToggle from "./PasswordToggle.vue";
+import UploadButton from "./UploadButton.vue";
 
 @Component({
     components: {

@@ -23,7 +23,7 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
-import RedirectButton from "../buttons/RedirectButton.vue";
+import RedirectButton from "../RedirectButton.vue";
 @Component({
     components: { RedirectButton, MainTitle }
 })

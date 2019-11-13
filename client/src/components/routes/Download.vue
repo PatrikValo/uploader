@@ -29,12 +29,12 @@
 import Component from "vue-class-component";
 import DownloadMetadata from "../../ts/downloadMetadata";
 import DownloadFile from "../../ts/downloadFile";
-import SizeIndicator from "../file/SizeIndicator.vue";
+import SizeIndicator from "../SizeIndicator.vue";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
-import FileInfo from "../file/FileInfo.vue";
-import DownloadButton from "../buttons/DownloadButton.vue";
-import RedirectButton from "../buttons/RedirectButton.vue";
+import FileInfo from "../FileInfo.vue";
+import DownloadButton from "../DownloadButton.vue";
+import RedirectButton from "../RedirectButton.vue";
 import Metadata from "../../ts/metadata";
 
 @Component({
