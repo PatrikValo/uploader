@@ -1,6 +1,11 @@
 <template>
     <div>
-        <b-badge id="add-password" :variant="show ? 'secondary' : 'dark'" @click="toggle">{{ name }}</b-badge>
+        <b-badge
+            id="add-password"
+            :variant="show ? 'secondary' : 'dark'"
+            @click="toggle"
+            >{{ name }}</b-badge
+        >
         <password-input v-if="show" @input="change"></password-input>
     </div>
 </template>

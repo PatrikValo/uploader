@@ -35,7 +35,8 @@ module.exports = class Storage {
             fs.read(fd, buffer, 0, length, start, (err, bytesRead, buffer) => {
                 if (err) return reject(err);
 
-                if (bytesRead !== length) return reject("File doesn't have correct size");
+                if (bytesRead !== length)
+                    return reject("File doesn't have correct size");
 
                 return resolve(buffer);
             });

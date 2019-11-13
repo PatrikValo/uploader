@@ -27,4 +27,6 @@ app.use((req, res, next) => {
     next();
 });
 
-app.listen(config.port, () => console.log(`Listening for port ${config.port}...`));
+app.listen(config.port, () =>
+    console.log(`Listening for port ${config.port}...`)
+);

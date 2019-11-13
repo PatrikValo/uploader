@@ -19,7 +19,11 @@ export default class Cipher {
     private readonly keyPromise: Promise<CryptoKey>;
     private readonly iv: Uint8Array;
 
-    public constructor(key?: CryptoKey | string, iv?: Uint8Array, password?: string) {
+    public constructor(
+        key?: CryptoKey | string,
+        iv?: Uint8Array,
+        password?: string
+    ) {
         this.crypto = window.crypto.subtle;
         this.keyPromise = this.initKeyPromise(key);
         this.iv = iv || window.crypto.getRandomValues(new Uint8Array(16));
@@ -104,7 +108,10 @@ export default class Cipher {
                     return c.charCodeAt(0);
                 })
         );
-        return this.crypto.importKey("raw", uint, "AES-GCM", true, ["encrypt", "decrypt"]);
+        return this.crypto.importKey("raw", uint, "AES-GCM", true, [
+            "encrypt",
+            "decrypt"
+        ]);
     }
 
     private async exportKey(key: CryptoKey): Promise<string> {

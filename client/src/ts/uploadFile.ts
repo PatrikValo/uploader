@@ -17,7 +17,9 @@ export default class UploadFile {
         this.url = url;
     }
 
-    public async send(progress: (u: number) => any): Promise<{ id: string; key: string }> {
+    public async send(
+        progress: (u: number) => any
+    ): Promise<{ id: string; key: string }> {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this.url);
             const reader = this.fileStream.getReader();
@@ -43,7 +45,9 @@ export default class UploadFile {
                     }
 
                     if (nextEl === "metadata") {
-                        const metadata = await this.cipher.encryptMetadata(this.metadata);
+                        const metadata = await this.cipher.encryptMetadata(
+                            this.metadata
+                        );
                         return socket.send(metadata);
                     }
 

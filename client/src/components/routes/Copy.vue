@@ -8,7 +8,11 @@
                 <redirect-button title="+" to="/"></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img id="image" src="../../assets/image.svg" alt="Paper planes" />
+                <img
+                    id="image"
+                    src="../../assets/image.svg"
+                    alt="Paper planes"
+                />
             </b-col>
         </b-row>
     </b-container>

@@ -1,6 +1,9 @@
 import streamSaver from "streamsaver";
 const { createWriteStream } = streamSaver;
-import { WritableStream, WritableStreamDefaultWriter } from "web-streams-polyfill/ponyfill/es6";
+import {
+    WritableStream,
+    WritableStreamDefaultWriter
+} from "web-streams-polyfill/ponyfill/es6";
 import Cipher from "./cipher";
 import Metadata from "./metadata";
 import Utils from "./utils";
@@ -11,7 +14,12 @@ export default class DownloadFile {
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
 
-    public constructor(id: string, metadata: Metadata, key: string, iv: Uint8Array) {
+    public constructor(
+        id: string,
+        metadata: Metadata,
+        key: string,
+        iv: Uint8Array
+    ) {
         this.id = id;
         this.metadata = metadata;
         this.cipher = new Cipher(key, iv);

@@ -11,7 +11,9 @@ export default class FileStream implements UnderlyingSource {
         this.size = file.size;
     }
 
-    private read(controller: ReadableStreamDefaultController<any>): PromiseLike<void> {
+    private read(
+        controller: ReadableStreamDefaultController<any>
+    ): PromiseLike<void> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
                 return resolve(controller.close());
@@ -29,7 +31,11 @@ export default class FileStream implements UnderlyingSource {
             const fileReader: FileReader = new FileReader();
 
             fileReader.onload = () => {
-                return resolve(controller.enqueue(new Uint8Array(fileReader.result as ArrayBuffer)));
+                return resolve(
+                    controller.enqueue(
+                        new Uint8Array(fileReader.result as ArrayBuffer)
+                    )
+                );
             };
 
             fileReader.onerror = reject;

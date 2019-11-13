@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/cipher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/cipher.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -117,7 +114,7 @@
       <workItem from="1573411667115" duration="11422000" />
       <workItem from="1573478595927" duration="6066000" />
       <workItem from="1573562772044" duration="7002000" />
-      <workItem from="1573630179849" duration="114000" />
+      <workItem from="1573630179849" duration="255000" />
     </task>
     <servers />
   </component>

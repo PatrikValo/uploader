@@ -26,7 +26,11 @@ module.exports = class FileReader {
         const fd = this.storage.open(this.id);
         const length = await lengthMetadata(fd, this.storage);
 
-        const metadata = await this.storage.read(fd, config.ivSize + 2, config.ivSize + 1 + length);
+        const metadata = await this.storage.read(
+            fd,
+            config.ivSize + 2,
+            config.ivSize + 1 + length
+        );
         this.storage.close(fd);
         return metadata;
     }
