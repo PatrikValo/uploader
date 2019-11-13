@@ -1,6 +1,20 @@
 import Metadata from "./metadata";
 
 export default class Cipher {
+    public static compatibility(): boolean {
+        const crypto: Crypto = window.crypto;
+
+        if (!crypto) {
+            return false;
+        }
+
+        if (!crypto.subtle) {
+            return false;
+        }
+
+        return !!crypto.getRandomValues;
+    }
+
     private readonly crypto: SubtleCrypto;
     private readonly keyPromise: Promise<CryptoKey>;
     private readonly iv: Uint8Array;
@@ -98,22 +112,4 @@ export default class Cipher {
         const array = Array.from(new Uint8Array(buffer));
         return btoa(String.fromCharCode.apply(null, array));
     }
-
-    /*public static support(): boolean {
-        const crypto: Crypto = window.crypto;
-
-        if (!crypto) {
-            return false;
-        }
-
-        if (!crypto.subtle) {
-            return false;
-        }
-
-        if (!crypto.getRandomValues) {
-            return false;
-        }
-
-        return true;
-    }*/
 }

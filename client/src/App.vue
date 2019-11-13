@@ -11,11 +11,6 @@ export default class App extends Vue {
     public constructor() {
         super();
     }
-
-    // noinspection JSUnusedGlobalSymbols
-    public mounted() {
-        // middleware control of compatibility
-    }
 }
 </script>
 
