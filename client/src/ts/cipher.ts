@@ -1,4 +1,5 @@
 import Metadata from "./metadata";
+import Utils from "./utils";
 
 export default class Cipher {
     public static compatibility(): boolean {
@@ -101,13 +102,7 @@ export default class Cipher {
     }
 
     private importKey(key: string): PromiseLike<CryptoKey> {
-        const uint = new Uint8Array(
-            atob(key)
-                .split("")
-                .map((c: string) => {
-                    return c.charCodeAt(0);
-                })
-        );
+        const uint = Utils.base64toUint8Array(key);
         return this.crypto.importKey("raw", uint, "AES-GCM", true, [
             "encrypt",
             "decrypt"
@@ -116,7 +111,6 @@ export default class Cipher {
 
     private async exportKey(key: CryptoKey): Promise<string> {
         const buffer = await this.crypto.exportKey("raw", key);
-        const array = Array.from(new Uint8Array(buffer));
-        return btoa(String.fromCharCode.apply(null, array));
+        return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
     }
 }
