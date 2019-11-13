@@ -6,7 +6,7 @@
         "module": "es6",
         "moduleResolution": "node",
         "strictFunctionTypes": false,
-        "target": "es6",
+        "target": "es5",
         "skipLibCheck": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
@@ -16,7 +16,8 @@
         "allowJs": true,
         "lib": [
             "dom",
-            "es6",
+            "es5",
+            "es2015.promise",
             "scripthost"
         ]
     },

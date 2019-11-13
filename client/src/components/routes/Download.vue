@@ -63,6 +63,7 @@ export default class Download extends Vue {
         this.id = this.$route.params.id;
 
         if (this.$route.hash.length <= 1) {
+            // there is no key
             return await this.$router.push("/error");
         }
 
