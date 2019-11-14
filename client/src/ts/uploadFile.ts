@@ -23,6 +23,7 @@ export default class UploadFile {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this.url);
             const reader = this.fileStream.getReader();
+            let chunk: ReadableStreamReadResult<any>;
 
             socket.onmessage = async (event: MessageEvent) => {
                 if (this.stop) {
@@ -58,13 +59,14 @@ export default class UploadFile {
                     return socket.close();
                 }
 
-                const uploaded = chunk.value ? chunk.value.length : 0;
+                chunk = await reader.read();
+                const uploaded = chunk && chunk.value ? chunk.value.length : 0;
                 progress(uploaded); // users function
 
                 if (!chunk.done) {
-                    const value = await this.cipher.encryptChunk(chunk.value);
-                    chunk = await reader.read();
-                    return socket.send(value);
+                    const value = new Uint8Array(chunk.value);
+                    const encrypted = await this.cipher.encryptChunk(value);
+                    return socket.send(encrypted);
                 }
 
                 return socket.send("null");
@@ -80,8 +82,6 @@ export default class UploadFile {
             };
 
             socket.onerror = reject;
-
-            let chunk = await reader.read();
         });
     }
 

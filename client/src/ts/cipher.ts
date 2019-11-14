@@ -54,7 +54,6 @@ export default class Cipher {
             key,
             chunk
         );
-
         return new Uint8Array(decrypted);
     }
 

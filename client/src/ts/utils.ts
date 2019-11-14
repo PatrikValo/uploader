@@ -60,7 +60,7 @@ export default class Utils {
     }
 
     public static Uint8ArrayToBase64(buff: Uint8Array): string {
-        const array = Array.from(buff);
+        const array = [].slice.call(buff);
         return btoa(String.fromCharCode.apply(null, array));
     }
 }
