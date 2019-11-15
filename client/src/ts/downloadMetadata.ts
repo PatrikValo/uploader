@@ -15,7 +15,7 @@ export default class DownloadMetadata {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = async () => {
-                if (xhr.status === 404) {
+                if (xhr.status !== 200) {
                     return reject();
                 }
 
@@ -37,7 +37,7 @@ export default class DownloadMetadata {
             xhr.onerror = reject;
             const url = Utils.server.classicUrl("/api/metadata/" + this.id);
             xhr.open("get", url);
-            xhr.responseType = "json";
+            xhr.responseType = "jso";
             xhr.send();
         });
     }
