@@ -35,6 +35,17 @@ module.exports = class FileReader {
         return metadata;
     }
 
+    async chunk(chunkNumber) {
+        const fd = this.storage.open(this.id);
+        const length = await lengthMetadata(fd, this.storage);
+        const start = config.ivSize + 2 + length;
+
+        const chunk = await this.storage.readChunk(fd, chunkNumber, start);
+
+        this.storage.close(fd);
+        return chunk;
+    }
+
     async readableStream() {
         const fd = this.storage.open(this.id);
         const length = await lengthMetadata(fd, this.storage);

@@ -16,7 +16,7 @@ app.use((req, res, next) => {
 
 app.get("/api/metadata/:id", metadata);
 
-app.get("/api/download/:id", download);
+app.get("/api/download/:id/:chunk", download);
 
 app.post("/api/upload", upload);
 

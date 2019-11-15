@@ -43,6 +43,32 @@ module.exports = class Storage {
         });
     }
 
+    readChunk(fd, chunkNumber, startData) {
+        return new Promise((resolve, reject) => {
+            const self = this;
+            fs.fstat(fd, async (err, stats) => {
+                if (err) return reject(err);
+
+                const fileSize = stats.size;
+                const chunkSize = config.chunkSize;
+
+                const start = startData + chunkNumber * chunkSize;
+
+                if (start > fileSize) {
+                    return resolve(null);
+                }
+
+                const end =
+                    start + chunkSize - 1 > fileSize
+                        ? fileSize - 1
+                        : start + chunkSize - 1;
+
+                const chunk = await self.read(fd, start, end);
+                return resolve(chunk);
+            });
+        });
+    }
+
     remove(id) {
         return new Promise((resolve, reject) => {
             const path = pathObj.join(this.path, id);
@@ -60,7 +86,7 @@ module.exports = class Storage {
         return fs.createReadStream(path, {
             start: start || 0,
             end: end || Infinity,
-            highWaterMark: 64 * 1024
+            highWaterMark: config.chunkSize
         });
     }
 
