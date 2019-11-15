@@ -23,7 +23,6 @@ export default class UploadFile {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this.url);
             const reader = this.fileStream.getReader();
-            let chunk: ReadableStreamReadResult<any>;
 
             socket.onmessage = async (event: MessageEvent) => {
                 if (this.stop) {
@@ -59,7 +58,7 @@ export default class UploadFile {
                     return socket.close();
                 }
 
-                chunk = await reader.read();
+                const chunk = await reader.read();
                 const uploaded = chunk && chunk.value ? chunk.value.length : 0;
                 progress(uploaded); // users function
 
