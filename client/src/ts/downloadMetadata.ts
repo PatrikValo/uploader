@@ -37,7 +37,7 @@ export default class DownloadMetadata {
             xhr.onerror = reject;
             const url = Utils.server.classicUrl("/api/metadata/" + this.id);
             xhr.open("get", url);
-            xhr.responseType = "jso";
+            xhr.responseType = "json";
             xhr.send();
         });
     }
