@@ -16,7 +16,7 @@ export default class DownloadMetadata {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = async () => {
                 if (xhr.status !== 200) {
-                    return reject();
+                    return reject(new Error(String(xhr.status)));
                 }
 
                 if (xhr.response) {
@@ -27,11 +27,11 @@ export default class DownloadMetadata {
                         return resolve({ iv, metadata });
                     } catch (e) {
                         // key is not correct because creation of metadata instance failed
-                        return reject();
+                        return reject(new Error("Key is not correct"));
                     }
                 }
 
-                return reject();
+                return reject(new Error("Response is empty"));
             };
             xhr.onabort = reject;
             xhr.onerror = reject;

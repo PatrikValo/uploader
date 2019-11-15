@@ -57,11 +57,20 @@ export default class DownloadFile {
 
         this.initAbortEvent(writer);
 
-        let chunk = await reader.read();
-        while (!chunk.done) {
-            const decrypted = await this.cipher.decryptChunk(chunk.value);
-            await writer.write(decrypted);
-            chunk = await reader.read();
+        try {
+            let chunk = await reader.read();
+
+            while (!chunk.done) {
+                const decrypted = await this.cipher.decryptChunk(chunk.value);
+                await writer.write(decrypted);
+                chunk = await reader.read();
+            }
+        } catch (e) {
+            // stop download window in browser
+            await writer.abort("Exception");
+            this.termAbortEvent();
+
+            throw e;
         }
 
         await writer.close();

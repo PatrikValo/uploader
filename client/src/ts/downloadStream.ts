@@ -13,13 +13,17 @@ export default class DownloadStream implements UnderlyingSource {
         controller: ReadableStreamDefaultController<any>
     ): PromiseLike<void> {
         return new Promise(async (resolve, reject) => {
-            const chunk = await this.downloadChunk(this.chunkNumber);
-            this.chunkNumber++;
+            try {
+                const chunk = await this.downloadChunk(this.chunkNumber);
+                this.chunkNumber++;
 
-            if (!chunk) {
-                return resolve(controller.close());
+                if (!chunk) {
+                    return resolve(controller.close());
+                }
+                return resolve(controller.enqueue(chunk));
+            } catch (e) {
+                return reject(e);
             }
-            return resolve(controller.enqueue(chunk));
         });
     }
 
@@ -28,7 +32,7 @@ export default class DownloadStream implements UnderlyingSource {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = async () => {
                 if (xhr.status !== 200) {
-                    return reject();
+                    return reject(new Error(String(xhr.status)));
                 }
 
                 if (xhr.response) {
@@ -39,6 +43,7 @@ export default class DownloadStream implements UnderlyingSource {
                     return resolve(chunk);
                 }
             };
+
             xhr.onabort = reject;
             xhr.onerror = reject;
             // TODO replace by custom header X-Chunk-...

@@ -78,7 +78,9 @@ export default class UploadFile {
                     return resolve({ id: "", key: "" });
                 }
                 const key = await this.cipher.exportedKey();
-                return this.id ? resolve({ id: this.id, key }) : reject();
+                return this.id
+                    ? resolve({ id: this.id, key })
+                    : reject(new Error("Websocket problem"));
             };
 
             socket.onerror = reject;
