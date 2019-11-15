@@ -33,11 +33,11 @@ export default class DownloadFile {
 
     private async downloadBlob(reader: ReadableStreamDefaultReader) {
         let chunk = await reader.read();
-        const blobArray: BlobPart[] = [];
+        let blobArray: BlobPart[] = [];
         while (!chunk.done) {
             const decrypted = await this.cipher.decryptChunk(chunk.value);
             const arr = [].slice.call(decrypted);
-            blobArray.concat(arr);
+            blobArray = blobArray.concat(arr);
             chunk = await reader.read();
         }
 
