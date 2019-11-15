@@ -62,9 +62,12 @@ module.exports = class Storage {
                     start + chunkSize - 1 > fileSize
                         ? fileSize - 1
                         : start + chunkSize - 1;
-
-                const chunk = await self.read(fd, start, end);
-                return resolve(chunk);
+                try {
+                    const chunk = await self.read(fd, start, end);
+                    return resolve(chunk);
+                } catch (e) {
+                    return reject(e);
+                }
             });
         });
     }
