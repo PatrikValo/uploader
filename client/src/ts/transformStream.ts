@@ -1,9 +1,11 @@
+import config from "./config";
+
 export default class TransformStream implements UnderlyingSource {
     public pull: ReadableStreamDefaultControllerCallback<any> = this.read;
 
     private buffer: number[];
     private readonly reader: ReadableStreamDefaultReader<Uint8Array>;
-    private readonly chunkSize: number = 64 * 1024;
+    private readonly chunkSize: number = config.client.chunkSize;
     private doneReader: boolean = false;
 
     public constructor(reader: ReadableStreamDefaultReader<Uint8Array>) {

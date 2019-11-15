@@ -9,6 +9,7 @@ class Client {
     public readonly port: string = "8080";
     public readonly protocol: string = "http";
     public readonly fileSizeLimit: number = 1024 * 1024 * 1024;
+    public readonly chunkSize: number = 64 * 1024;
 }
 
 export default class Config {

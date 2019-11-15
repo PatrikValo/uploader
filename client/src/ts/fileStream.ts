@@ -1,10 +1,12 @@
+import config from "./config";
+
 export default class FileStream implements UnderlyingSource {
     public pull: ReadableStreamDefaultControllerCallback<any> = this.read;
 
     private file: File;
     private readonly size: number;
     private index: number = 0;
-    private chunkSize: number = 64 * 1024 - 16;
+    private chunkSize: number = config.client.chunkSize - 16;
 
     public constructor(file: File) {
         this.file = file;
