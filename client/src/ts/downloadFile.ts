@@ -1,21 +1,17 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import {
-    WritableStream,
-    WritableStreamDefaultController
-} from "web-streams-polyfill/ponyfill";
-const { createWriteStream } = streamSaver;
+import { WritableStream } from "web-streams-polyfill/ponyfill";
 import Cipher from "./cipher";
+import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
-import TransformStream from "./transformStream";
 import Utils from "./utils";
+const { createWriteStream } = streamSaver;
 streamSaver.WritableStream = WritableStream; // firefox
 
 export default class DownloadFile {
     private readonly id: string;
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
-    private readonly blob: boolean = false;
 
     public constructor(
         id: string,
@@ -30,30 +26,9 @@ export default class DownloadFile {
 
     public async download() {
         const url = Utils.server.classicUrl("/api/download/" + this.id);
-        const response: Response = await fetch(url, { method: "get" });
-
-        if (!response.body) {
-            throw new Error("Response Error");
-        }
-
-        const reader = response.body.getReader();
-
-        if (this.blob) {
-            return await this.downloadBlob(reader);
-        }
-
-        return await this.downloadStream(reader);
-    }
-
-    private initDownload(writer: WritableStreamDefaultWriter<any>): void {
-        window.onunload = async () => {
-            await writer.abort("Close window");
-        };
-    }
-
-    // noinspection JSMethodCanBeStatic
-    private termDownload(): void {
-        window.onunload = null;
+        const stream = new ReadableStream(new DownloadStream(url));
+        const reader = stream.getReader();
+        await this.downloadStream(reader);
     }
 
     private async downloadBlob(reader: ReadableStreamDefaultReader) {
@@ -69,10 +44,7 @@ export default class DownloadFile {
         saveAs(new Blob(blobArray), this.metadata.name);
     }
 
-    private async downloadStream(resReader: ReadableStreamDefaultReader) {
-        const transformer = new ReadableStream(new TransformStream(resReader));
-        const reader = transformer.getReader();
-
+    private async downloadStream(reader: ReadableStreamDefaultReader) {
         const writeStream: WritableStream = createWriteStream(
             this.metadata.name,
             {
@@ -83,7 +55,7 @@ export default class DownloadFile {
 
         const writer = writeStream.getWriter();
 
-        this.initDownload(writer);
+        this.initAbortEvent(writer);
 
         let chunk = await reader.read();
         while (!chunk.done) {
@@ -94,6 +66,24 @@ export default class DownloadFile {
 
         await writer.close();
 
-        this.termDownload();
+        this.termAbortEvent();
+    }
+
+    /**
+     * Set function, which abort writer when window in browser is closed
+     * @param writer
+     */
+    private initAbortEvent(writer: WritableStreamDefaultWriter<any>): void {
+        window.onunload = async () => {
+            await writer.abort("Close window");
+        };
+    }
+
+    // noinspection JSMethodCanBeStatic
+    /**
+     * Unset function for abort writer when window is closed
+     */
+    private termAbortEvent(): void {
+        window.onunload = null;
     }
 }
