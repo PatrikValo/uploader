@@ -10,7 +10,7 @@ export default class UploadFile {
     private stop: boolean = false;
     private id: string = "";
 
-    public constructor(file: File, url: string) {
+    public constructor(file: File, url: string, password?: string) {
         this.fileStream = new ReadableStream(new FileStream(file));
         this.cipher = new Cipher();
         this.metadata = new Metadata(file);
@@ -31,44 +31,18 @@ export default class UploadFile {
 
                 const msg = JSON.parse(event.data);
 
-                if (msg.hasOwnProperty("id")) {
-                    this.id = msg.id;
-                    return socket.close();
-                }
+                try {
+                    const answer = await this.message(msg, reader, progress);
 
-                if (msg.hasOwnProperty("nextElement")) {
-                    const nextEl = msg.nextElement;
-
-                    if (nextEl === "iv") {
-                        const iv = this.cipher.initializationVector();
-                        return socket.send(iv);
+                    if (!answer) {
+                        return socket.close();
                     }
 
-                    if (nextEl === "metadata") {
-                        const metadata = await this.cipher.encryptMetadata(
-                            this.metadata
-                        );
-                        return socket.send(metadata);
-                    }
-
+                    return socket.send(answer);
+                } catch (e) {
+                    // close socket connection and there is thrown exception because id is not received
                     return socket.close();
                 }
-
-                if (msg.status !== 200) {
-                    return socket.close();
-                }
-
-                const chunk = await reader.read();
-                const uploaded = chunk && chunk.value ? chunk.value.length : 0;
-                progress(uploaded); // users function
-
-                if (!chunk.done) {
-                    const value = new Uint8Array(chunk.value);
-                    const encrypted = await this.cipher.encryptChunk(value);
-                    return socket.send(encrypted);
-                }
-
-                return socket.send("null");
             };
 
             socket.onclose = async () => {
@@ -88,5 +62,45 @@ export default class UploadFile {
 
     public cancel(): void {
         this.stop = true;
+    }
+
+    private async message(
+        msg: any,
+        reader: ReadableStreamReader,
+        progress: (u: number) => any
+    ): Promise<null | Uint8Array | string> {
+        if (msg.hasOwnProperty("id")) {
+            this.id = msg.id;
+            return null;
+        }
+
+        if (msg.hasOwnProperty("nextElement")) {
+            const nextEl = msg.nextElement;
+
+            if (nextEl === "iv") {
+                return this.cipher.initializationVector();
+            }
+
+            if (nextEl === "metadata") {
+                return await this.cipher.encryptMetadata(this.metadata);
+            }
+
+            return null;
+        }
+
+        if (msg.status !== 200) {
+            return null;
+        }
+
+        const chunk = await reader.read();
+        const uploaded = chunk && chunk.value ? chunk.value.length : 0;
+        progress(uploaded); // users function
+
+        if (!chunk.done) {
+            const value = new Uint8Array(chunk.value);
+            return await this.cipher.encryptChunk(value);
+        }
+
+        return "null";
     }
 }
