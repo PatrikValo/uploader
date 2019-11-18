@@ -12,6 +12,7 @@ export default class DownloadFile {
     private readonly id: string;
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
+    private readonly downloadStream: DownloadStream;
 
     public constructor(
         id: string,
@@ -22,29 +23,11 @@ export default class DownloadFile {
         this.id = id;
         this.metadata = metadata;
         this.cipher = new Cipher(key, iv);
+        const url = Utils.server.classicUrl("/api/download/" + this.id);
+        this.downloadStream = new DownloadStream(url);
     }
 
     public async download() {
-        const url = Utils.server.classicUrl("/api/download/" + this.id);
-        const stream = new ReadableStream(new DownloadStream(url));
-        const reader = stream.getReader();
-        await this.downloadStream(reader);
-    }
-
-    private async downloadBlob(reader: ReadableStreamDefaultReader) {
-        let chunk = await reader.read();
-        let blobArray: BlobPart[] = [];
-        while (!chunk.done) {
-            const decrypted = await this.cipher.decryptChunk(chunk.value);
-            const arr = [].slice.call(decrypted);
-            blobArray = blobArray.concat(arr);
-            chunk = await reader.read();
-        }
-
-        saveAs(new Blob(blobArray), this.metadata.name);
-    }
-
-    private async downloadStream(reader: ReadableStreamDefaultReader) {
         const writeStream: WritableStream = createWriteStream(
             this.metadata.name,
             {
@@ -58,12 +41,12 @@ export default class DownloadFile {
         this.initAbortEvent(writer);
 
         try {
-            let chunk = await reader.read();
+            let chunk = await this.downloadStream.read();
 
             while (!chunk.done) {
                 const decrypted = await this.cipher.decryptChunk(chunk.value);
                 await writer.write(decrypted);
-                chunk = await reader.read();
+                chunk = await this.downloadStream.read();
             }
         } catch (e) {
             // stop download window in browser
@@ -76,6 +59,12 @@ export default class DownloadFile {
         await writer.close();
 
         this.termAbortEvent();
+    }
+
+    private async downloadBlob() {
+        // TODO
+        const blobArray: BlobPart[] = [];
+        saveAs(new Blob(blobArray), this.metadata.name);
     }
 
     /**

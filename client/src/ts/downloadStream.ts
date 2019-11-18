@@ -1,26 +1,25 @@
-export default class DownloadStream implements UnderlyingSource {
-    public pull: ReadableStreamDefaultControllerCallback<any> = this.read;
+import { IReadStreamReturnValue, ReadStream } from "./ReadStream";
 
+export default class DownloadStream extends ReadStream {
     private readonly url: string;
     private chunkNumber: number;
 
     public constructor(url: string) {
+        super();
         this.url = url;
         this.chunkNumber = 0;
     }
 
-    private read(
-        controller: ReadableStreamDefaultController<any>
-    ): PromiseLike<void> {
+    public read(): Promise<IReadStreamReturnValue> {
         return new Promise(async (resolve, reject) => {
             try {
                 const chunk = await this.downloadChunk(this.chunkNumber);
                 this.chunkNumber++;
 
                 if (!chunk) {
-                    return resolve(controller.close());
+                    return resolve(super.close());
                 }
-                return resolve(controller.enqueue(chunk));
+                return resolve(super.enqueue(chunk));
             } catch (e) {
                 return reject(e);
             }
@@ -47,7 +46,7 @@ export default class DownloadStream implements UnderlyingSource {
             xhr.onabort = reject;
             xhr.onerror = reject;
             // TODO replace by custom header X-Chunk-...
-            xhr.open("get", this.url + "/" + this.chunkNumber);
+            xhr.open("get", this.url + "/" + numberOfChunk);
             xhr.responseType = "arraybuffer";
             xhr.send();
         });
