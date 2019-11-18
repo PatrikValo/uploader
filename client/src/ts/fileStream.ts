@@ -1,24 +1,22 @@
 import config from "./config";
+import { IReadStreamReturnValue, ReadStream } from "./ReadStream";
 
-export default class FileStream implements UnderlyingSource {
-    public pull: ReadableStreamDefaultControllerCallback<any> = this.read;
-
+export default class FileStream extends ReadStream {
     private file: File;
     private readonly size: number;
     private index: number = 0;
     private chunkSize: number = config.client.chunkSize - 16;
 
     public constructor(file: File) {
+        super();
         this.file = file;
         this.size = file.size;
     }
 
-    private read(
-        controller: ReadableStreamDefaultController<any>
-    ): PromiseLike<void> {
+    public read(): Promise<IReadStreamReturnValue> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
-                return resolve(controller.close());
+                return resolve(super.close());
             }
 
             const start = this.index;
@@ -34,7 +32,7 @@ export default class FileStream implements UnderlyingSource {
 
             fileReader.onload = () => {
                 return resolve(
-                    controller.enqueue(
+                    super.enqueue(
                         new Uint8Array(fileReader.result as ArrayBuffer)
                     )
                 );

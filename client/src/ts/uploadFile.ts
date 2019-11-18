@@ -3,7 +3,7 @@ import FileStream from "./fileStream";
 import Metadata from "./metadata";
 
 export default class UploadFile {
-    private readonly fileStream: ReadableStream;
+    private readonly fileStream: FileStream;
     private readonly cipher: Cipher;
     private readonly metadata: Metadata;
     private readonly url: string;
@@ -11,7 +11,7 @@ export default class UploadFile {
     private id: string = "";
 
     public constructor(file: File, url: string, password?: string) {
-        this.fileStream = new ReadableStream(new FileStream(file));
+        this.fileStream = new FileStream(file);
         this.cipher = new Cipher();
         this.metadata = new Metadata(file);
         this.url = url;
@@ -22,7 +22,6 @@ export default class UploadFile {
     ): Promise<{ id: string; key: string }> {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(this.url);
-            const reader = this.fileStream.getReader();
 
             socket.onmessage = async (event: MessageEvent) => {
                 if (this.stop) {
@@ -32,7 +31,7 @@ export default class UploadFile {
                 const msg = JSON.parse(event.data);
 
                 try {
-                    const answer = await this.message(msg, reader, progress);
+                    const answer = await this.message(msg, progress);
 
                     if (!answer) {
                         return socket.close();
@@ -47,7 +46,6 @@ export default class UploadFile {
 
             socket.onclose = async () => {
                 if (this.stop) {
-                    await reader.cancel();
                     return resolve({ id: "", key: "" });
                 }
                 const key = await this.cipher.exportedKey();
@@ -66,7 +64,6 @@ export default class UploadFile {
 
     private async message(
         msg: any,
-        reader: ReadableStreamReader,
         progress: (u: number) => any
     ): Promise<null | Uint8Array | string> {
         if (msg.hasOwnProperty("id")) {
@@ -92,7 +89,7 @@ export default class UploadFile {
             return null;
         }
 
-        const chunk = await reader.read();
+        const chunk = await this.fileStream.read();
         const uploaded = chunk && chunk.value ? chunk.value.length : 0;
         progress(uploaded); // users function
 
