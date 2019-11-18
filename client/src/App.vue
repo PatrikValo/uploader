@@ -13,10 +13,3 @@ export default class App extends Vue {
     }
 }
 </script>
-
-<style scoped>
-@import url("https://fonts.googleapis.com/css?family=Roboto:400,700&display=swap");
-* {
-    font-family: "Roboto", sans-serif;
-}
-</style>

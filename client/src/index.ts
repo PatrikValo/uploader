@@ -6,8 +6,6 @@ import {
     ModalPlugin,
     ProgressPlugin
 } from "bootstrap-vue";
-import "bootstrap-vue/dist/bootstrap-vue.css";
-import "bootstrap/dist/css/bootstrap.css";
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App.vue";
@@ -15,7 +13,7 @@ import CopyComponent from "./components/routes/Copy.vue";
 import DownloadComponent from "./components/routes/Download.vue";
 import NotFoundComponent from "./components/routes/NotFound.vue";
 import UploadComponent from "./components/routes/Upload.vue";
-import "./style/css.css";
+import "./style/style.scss";
 
 Vue.use(VueRouter);
 
