@@ -1,5 +1,7 @@
 <template>
-    <b-button variant="warning" @click="copyToClipboard">{{ name }}</b-button>
+    <b-button variant="warning" @click="copyToClipboard" :title="name">{{
+        name
+    }}</b-button>
 </template>
 
 <script lang="ts">

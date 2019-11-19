@@ -1,7 +1,11 @@
 <template>
-    <b-button variant="warning" :disabled="downloading" @click="download">{{
-        name
-    }}</b-button>
+    <b-button
+        variant="warning"
+        :disabled="downloading"
+        @click="download"
+        :title="name"
+        >{{ name }}</b-button
+    >
 </template>
 
 <script lang="ts">

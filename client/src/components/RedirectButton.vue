@@ -1,5 +1,7 @@
 <template>
-    <b-button variant="dark" @click="redirect">{{ title }}</b-button>
+    <b-button variant="dark" @click="redirect" :title="destination">{{
+        title
+    }}</b-button>
 </template>
 
 <script lang="ts">
@@ -19,6 +21,10 @@ export default class RedirectButton extends Vue {
 
     public redirect() {
         this.$router.push(this.$props.to);
+    }
+
+    public get destination() {
+        return this.$props.to == "/" ? "Domov" : this.$props.to;
     }
 }
 </script>

@@ -1,6 +1,10 @@
 <template>
     <div>
-        <b-button variant="warning" v-if="uploadButton" @click="upload"
+        <b-button
+            variant="warning"
+            v-if="uploadButton"
+            @click="upload"
+            title="Nahrať súbor"
             >Nahrať súbor</b-button
         >
         <b-button
