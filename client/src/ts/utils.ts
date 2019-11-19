@@ -50,8 +50,9 @@ export default class Utils {
     }
 
     public static base64toUint8Array(str: string): Uint8Array {
+        const replaced = str.replace(/_/g, "/").replace(/-/g, "+");
         return new Uint8Array(
-            atob(str)
+            atob(replaced)
                 .split("")
                 .map((c: string) => {
                     return c.charCodeAt(0);
@@ -61,6 +62,7 @@ export default class Utils {
 
     public static Uint8ArrayToBase64(buff: Uint8Array): string {
         const array = [].slice.call(buff);
-        return btoa(String.fromCharCode.apply(null, array));
+        const str = btoa(String.fromCharCode.apply(null, array));
+        return str.replace(/\//g, "_").replace(/[+]/g, "-");
     }
 }
