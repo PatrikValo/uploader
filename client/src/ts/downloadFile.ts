@@ -12,7 +12,7 @@ export default class DownloadFile {
     private readonly id: string;
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
-    private readonly downloadStream: DownloadStream;
+    private readonly stream: DownloadStream;
 
     public constructor(
         id: string,
@@ -24,10 +24,14 @@ export default class DownloadFile {
         this.metadata = metadata;
         this.cipher = new Cipher(key, iv);
         const url = Utils.server.classicUrl("/api/download/" + this.id);
-        this.downloadStream = new DownloadStream(url);
+        this.stream = new DownloadStream(url);
     }
 
     public async download() {
+        return await this.downloadStream();
+    }
+
+    private async downloadStream() {
         const writeStream: WritableStream = createWriteStream(
             this.metadata.name,
             {
@@ -41,12 +45,12 @@ export default class DownloadFile {
         this.initAbortEvent(writer);
 
         try {
-            let chunk = await this.downloadStream.read();
+            let chunk = await this.stream.read();
 
             while (!chunk.done) {
                 const decrypted = await this.cipher.decryptChunk(chunk.value);
                 await writer.write(decrypted);
-                chunk = await this.downloadStream.read();
+                chunk = await this.stream.read();
             }
         } catch (e) {
             // stop download window in browser
@@ -62,9 +66,21 @@ export default class DownloadFile {
     }
 
     private async downloadBlob() {
-        // TODO
-        const blobArray: BlobPart[] = [];
-        saveAs(new Blob(blobArray), this.metadata.name);
+        let blob = new Blob([], { type: "application/octet-stream" });
+        try {
+            let chunk = await this.stream.read();
+
+            while (!chunk.done) {
+                const decrypted = await this.cipher.decryptChunk(chunk.value);
+                blob = new Blob([blob, decrypted], {
+                    type: "application/octet-stream"
+                });
+                chunk = await this.stream.read();
+            }
+        } catch (e) {
+            throw e;
+        }
+        saveAs(blob, this.metadata.name);
     }
 
     /**
