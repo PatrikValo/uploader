@@ -6,18 +6,21 @@
             @click="toggle"
             >{{ name }}</b-badge
         >
-        <password-input v-if="show" @input="change"></password-input>
+        <b-input
+            v-if="show"
+            id="password"
+            placeholder="Heslo"
+            type="password"
+            @input="change"
+        />
     </div>
 </template>
 
 <script lang="ts">
 import Component from "vue-class-component";
 import Vue from "vue";
-import PasswordInput from "./PasswordInput.vue";
 
-@Component({
-    components: { PasswordInput }
-})
+@Component({})
 export default class PasswordToggle extends Vue {
     public show: boolean = false;
 
@@ -42,5 +45,16 @@ export default class PasswordToggle extends Vue {
 <style scoped>
 #add-password {
     cursor: pointer;
+}
+
+#password {
+    width: 200px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#password:focus {
+    border-color: #343a40;
+    box-shadow: none;
 }
 </style>
