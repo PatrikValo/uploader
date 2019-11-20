@@ -2,8 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/metadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/metadata.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/files/16bytesHeader" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/16bytesHeader" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/files/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/files/noFileInformation" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/noFileInformation" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/files/tooShortIv" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/tooShortIv" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/files/tooShortMetadata" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/tooShortMetadata" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/storage.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/storage.test.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -16,6 +27,7 @@
       <list>
         <option value="Vue Single File Component" />
         <option value="TypeScript File" />
+        <option value="tsconfig.json" />
       </list>
     </option>
   </component>
@@ -32,10 +44,12 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="NewWatcherDialog.advanced.open" value="true" />
+    <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="8.10.0" />
     <property name="js.linters.configure.manually.selectedtslint" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/ts" />
+    <property name="last.edited.regexp" value="Sample Text" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/tests" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -45,6 +59,7 @@
     <property name="node.js.selected.package.eslint" value="(autodetect)" />
     <property name="node.js.selected.package.standard" value="" />
     <property name="node.js.selected.package.tslint" value="(autodetect)" />
+    <property name="nodejs.jest.jest_package" value="$PROJECT_DIR$/node_modules/jest" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
     <property name="settings.editor.selected.configurable" value="settings.javascript.linters.tslint" />
@@ -52,18 +67,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/client/src/ts" />
-      <recent name="$PROJECT_DIR$/client/src" />
-      <recent name="$PROJECT_DIR$/client/src/components/routes" />
+      <recent name="$PROJECT_DIR$/tests" />
+      <recent name="$PROJECT_DIR$/tests/client" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/tests/server" />
       <recent name="$PROJECT_DIR$/client/src/assets" />
-      <recent name="$PROJECT_DIR$/client/src/js" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/tests/client" />
+      <recent name="$PROJECT_DIR$/tests" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/tests/server" />
       <recent name="$PROJECT_DIR$/client/src/components" />
-      <recent name="$PROJECT_DIR$/client/src" />
-      <recent name="$PROJECT_DIR$/client/src/components/inputs" />
-      <recent name="$PROJECT_DIR$/client/src/components/file" />
-      <recent name="$PROJECT_DIR$/client/src/components/buttons" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -77,6 +92,37 @@
         </RuleState>
       </list>
     </option>
+  </component>
+  <component name="RunManager" selected="Jest.Storage">
+    <configuration name="Storage" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="SUITE" />
+      <test-file value="$PROJECT_DIR$/tests/client/utils.test.ts" />
+      <test-names>
+        <test-name value="Storage" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="test:client" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="test:client" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Jest.Storage" />
+        <item itemvalue="npm.test:client" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -135,7 +181,16 @@
       <workItem from="1573748798441" duration="1346000" />
       <workItem from="1573756778754" duration="2753000" />
       <workItem from="1573759790360" duration="8429000" />
-      <workItem from="1573801507913" duration="4844000" />
+      <workItem from="1573801507913" duration="5795000" />
+      <workItem from="1573846815001" duration="10796000" />
+      <workItem from="1574065350039" duration="3786000" />
+      <workItem from="1574092070484" duration="4301000" />
+      <workItem from="1574097541927" duration="119000" />
+      <workItem from="1574098420084" duration="1842000" />
+      <workItem from="1574107405345" duration="3080000" />
+      <workItem from="1574111571485" duration="1770000" />
+      <workItem from="1574176215362" duration="2388000" />
+      <workItem from="1574192205246" duration="10957000" />
     </task>
     <servers />
   </component>
