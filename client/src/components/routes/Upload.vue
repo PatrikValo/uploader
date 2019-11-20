@@ -75,6 +75,7 @@ export default class Upload extends Vue {
 
     public error(e: Error): void {
         this.alert = "Počas nahrávania nastala chyba";
+        console.error(e.message);
         this.file = null;
     }
 

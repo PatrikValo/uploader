@@ -31,6 +31,7 @@ import FileIcon from "./FileIcon.vue";
 import FileInfo from "./FileInfo.vue";
 import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
+import Limiter from "../ts/limiter";
 
 @Component({
     components: {
@@ -60,7 +61,8 @@ export default class UploadArea extends Vue {
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
         // control of size limit
-        if (!this.limit()) {
+        const limiter = new Limiter();
+        if (!limiter.validateFileSize(this.$props.file)) {
             this.$emit("limit");
         }
     }
@@ -111,11 +113,6 @@ export default class UploadArea extends Vue {
 
     private onProgress(uploaded: number): void {
         this.uploaded += uploaded;
-    }
-
-    private limit(): boolean {
-        const file: File = this.$props.file;
-        return file.size <= Config.client.fileSizeLimit;
     }
 
     private validatePassword(closeButton: (v: boolean) => any): boolean {
