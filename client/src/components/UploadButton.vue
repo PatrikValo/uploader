@@ -35,8 +35,11 @@ export default class UploadButton extends Vue {
     }
 
     public upload(e: any): void {
-        this.uploadButton = false;
-        this.$emit("upload", e);
+        this.$emit("upload", (v: boolean) => {
+            if (v) {
+                this.uploadButton = false;
+            }
+        });
     }
 
     public cancel(e: any): void {

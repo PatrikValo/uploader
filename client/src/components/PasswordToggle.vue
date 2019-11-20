@@ -31,7 +31,7 @@ export default class PasswordToggle extends Vue {
 
     public toggle() {
         this.show = !this.show;
-        this.change("");
+        this.$emit("toggle", this.show);
     }
 
     public change(password: string) {

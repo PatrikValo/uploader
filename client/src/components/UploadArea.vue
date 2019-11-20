@@ -1,9 +1,13 @@
 <template>
     <div>
+        <b-alert v-if="emptyPassword" show variant="warning" fade
+            >Heslo nesmie byť prázdné</b-alert
+        >
         <file-info :name="file.name" :size="file.size"></file-info>
         <password-toggle
             v-if="!startUploading"
             @input="changePassword"
+            @toggle="togglePassword"
         ></password-toggle>
         <progress-bar
             v-if="startUploading"
@@ -45,6 +49,7 @@ import UploadButton from "./UploadButton.vue";
 export default class UploadArea extends Vue {
     public startUploading: boolean = false;
     public uploaded: number = 0;
+    public hasPassword: boolean = false;
     private uploader: UploadFile | null = null;
     private password: string = "";
 
@@ -60,7 +65,12 @@ export default class UploadArea extends Vue {
         }
     }
 
-    public async upload(): Promise<void> {
+    public async upload(event: (v: boolean) => any): Promise<void> {
+        if (this.emptyPassword) {
+            return event(false);
+        }
+        event(true);
+
         this.uploader = new UploadFile(
             this.$props.file,
             Utils.server.websocketUrl("/api/upload")
@@ -88,6 +98,15 @@ export default class UploadArea extends Vue {
 
     public changePassword(password: string): void {
         this.password = password;
+    }
+
+    public togglePassword(value: boolean): void {
+        this.hasPassword = value;
+        this.password = "";
+    }
+
+    public get emptyPassword() {
+        return this.hasPassword && !this.password;
     }
 
     private onProgress(uploaded: number): void {
