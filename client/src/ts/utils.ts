@@ -65,4 +65,14 @@ export default class Utils {
         const str = btoa(String.fromCharCode.apply(null, array));
         return str.replace(/\//g, "_").replace(/[+]/g, "-");
     }
+
+    public static stringToUint8Array(str: string): Uint8Array {
+        const encoder: TextEncoder = new TextEncoder();
+        return encoder.encode(str);
+    }
+
+    public static Uint8ArrayToString(uint: Uint8Array): string {
+        const decoder: TextDecoder = new TextDecoder();
+        return decoder.decode(uint);
+    }
 }
