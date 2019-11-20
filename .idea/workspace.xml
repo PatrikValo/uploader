@@ -2,10 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/client/src/ts/ReadStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/readStream.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/fileStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/fileStream.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/DownloadButton.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/DownloadButton.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/PasswordToggle.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/PasswordToggle.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/UploadArea.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadArea.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Download.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Download.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/cipher.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/cipher.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/ts/metadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/metadata.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/uploadFile.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -18,8 +23,8 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Vue Single File Component" />
-        <option value="TypeScript File" />
         <option value="tsconfig.json" />
+        <option value="TypeScript File" />
       </list>
     </option>
   </component>
@@ -41,7 +46,7 @@
     <property name="javascript.nodejs.core.library.configured.version" value="8.10.0" />
     <property name="js.linters.configure.manually.selectedtslint" value="true" />
     <property name="last.edited.regexp" value="Sample Text" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/tests" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/components" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -59,11 +64,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src/components" />
       <recent name="$PROJECT_DIR$/tests" />
       <recent name="$PROJECT_DIR$/tests/client" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/tests/server" />
-      <recent name="$PROJECT_DIR$/client/src/assets" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/tests/client" />
@@ -183,7 +188,9 @@
       <workItem from="1574111571485" duration="1770000" />
       <workItem from="1574176215362" duration="2388000" />
       <workItem from="1574192205246" duration="10957000" />
-      <workItem from="1574245213714" duration="347000" />
+      <workItem from="1574245213714" duration="8678000" />
+      <workItem from="1574261010292" duration="12825000" />
+      <workItem from="1574278772094" duration="10015000" />
     </task>
     <servers />
   </component>

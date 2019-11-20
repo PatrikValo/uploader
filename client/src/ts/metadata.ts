@@ -1,18 +1,33 @@
+import Password from "./password";
+import Utils from "./utils";
+
 interface IFile {
     name: string;
     size: number;
 }
 
+interface IMetadata {
+    name: string;
+    size: number;
+    password: { salt: Uint8Array } | null;
+}
+
 export default class Metadata {
     public readonly name: string;
     public readonly size: number;
+    public password: { salt: Uint8Array } | null;
 
-    public constructor(file: IFile | Uint8Array) {
+    public constructor(file: IFile | Uint8Array, password?: Password) {
+        this.password = password ? { salt: password.salt } : null;
+
         // Uint8Array
         if (file instanceof Uint8Array) {
             const obj = this.createJSONObject(file);
             this.name = obj.name;
             this.size = obj.size;
+            this.password = obj.password
+                ? { salt: new Uint8Array(obj.password.salt) }
+                : null;
             return;
         }
 
@@ -21,20 +36,24 @@ export default class Metadata {
         this.size = file.size;
     }
 
+    public hasPassword(): boolean {
+        return !!this.password;
+    }
+
     public toUint8Array(): Uint8Array {
-        const encoder: TextEncoder = new TextEncoder();
-        return encoder.encode(
-            JSON.stringify({
-                name: this.name,
-                size: this.size
-            })
-        );
+        const str = JSON.stringify({
+            name: this.name,
+            password: this.password
+                ? { salt: Array.from(this.password.salt) }
+                : null,
+            size: this.size
+        });
+        return Utils.stringToUint8Array(str);
     }
 
     // noinspection JSMethodCanBeStatic
-    private createJSONObject(arr: Uint8Array): IFile {
-        const decoder: TextDecoder = new TextDecoder();
-        const json = decoder.decode(arr);
+    private createJSONObject(arr: Uint8Array): IMetadata {
+        const json = Utils.Uint8ArrayToString(arr);
         return JSON.parse(json);
     }
 }

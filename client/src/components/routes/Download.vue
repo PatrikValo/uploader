@@ -7,12 +7,15 @@
                     :name="metadata.name"
                     :size="metadata.size"
                 ></file-info>
-                <download-button @download="download"></download-button>
-                <redirect-button
-                    title="+"
-                    to="/"
-                    v-if="!downloading"
-                ></redirect-button>
+                <password-confirm
+                    v-if="showInput"
+                    @confirm="verified"
+                ></password-confirm>
+                <download-button
+                    v-if="!showInput"
+                    :downloading="downloading"
+                    @download="download"
+                ></download-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
                 <img
@@ -29,26 +32,26 @@
 import Component from "vue-class-component";
 import DownloadMetadata from "../../ts/downloadMetadata";
 import DownloadFile from "../../ts/downloadFile";
-import SizeIndicator from "../SizeIndicator.vue";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
 import DownloadButton from "../DownloadButton.vue";
-import RedirectButton from "../RedirectButton.vue";
 import Metadata from "../../ts/metadata";
+import Password from "../../ts/password";
+import PasswordConfirm from "../PasswordConfirm.vue";
 
 @Component({
     components: {
-        RedirectButton,
+        PasswordConfirm,
         DownloadButton,
         FileInfo,
-        MainTitle,
-        SizeIndicator
+        MainTitle
     }
 })
 export default class Download extends Vue {
     public downloading: boolean = false;
     public metadata: Metadata;
+    public showInput: boolean;
     private id: string = "";
     private key: string = "";
     private iv: Uint8Array | null = null;
@@ -56,6 +59,7 @@ export default class Download extends Vue {
     public constructor() {
         super();
         this.metadata = new Metadata({ name: "", size: 0 });
+        this.showInput = false;
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -72,10 +76,12 @@ export default class Download extends Vue {
         const downloadMetadata = new DownloadMetadata(this.id, this.key);
 
         try {
-            ({
-                iv: this.iv,
-                metadata: this.metadata
-            } = await downloadMetadata.download());
+            const result = await downloadMetadata.download();
+            this.iv = result.iv;
+            this.metadata = result.metadata;
+
+            // show password input or not
+            this.showInput = this.metadata.hasPassword();
         } catch (e) {
             await this.$router.push("/error");
         }
@@ -101,6 +107,13 @@ export default class Download extends Vue {
         }
 
         this.downloading = false;
+    }
+
+    public async verified(password: string): Promise<void> {
+        if (this.key && this.metadata && this.metadata.password) {
+            const pw = new Password(password, this.metadata.password.salt);
+            this.showInput = !(await pw.equalToBase64(this.key));
+        }
     }
 }
 </script>

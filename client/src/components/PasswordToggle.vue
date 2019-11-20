@@ -11,6 +11,7 @@
             id="password"
             placeholder="Heslo"
             type="password"
+            maxlength="25"
             @input="change"
         />
     </div>

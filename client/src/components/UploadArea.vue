@@ -1,7 +1,7 @@
 <template>
     <div>
         <b-alert v-if="emptyPassword" show variant="warning" fade
-            >Heslo nesmie byť prázdné</b-alert
+            >Heslo nemôže byť prázdne</b-alert
         >
         <file-info :name="file.name" :size="file.size"></file-info>
         <password-toggle
@@ -19,7 +19,6 @@
 </template>
 
 <script lang="ts">
-import Config from "../ts/config";
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
 import SizeIndicator from "./SizeIndicator.vue";
@@ -32,6 +31,7 @@ import FileInfo from "./FileInfo.vue";
 import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
 import Limiter from "../ts/limiter";
+import Password from "../ts/password";
 
 @Component({
     components: {
@@ -75,7 +75,7 @@ export default class UploadArea extends Vue {
         this.uploader = new UploadFile(
             this.$props.file,
             Utils.server.websocketUrl("/api/upload"),
-            this.hasPassword ? this.password : undefined
+            this.hasPassword ? new Password(this.password) : undefined
         );
 
         this.startUploading = true;
@@ -120,6 +120,12 @@ export default class UploadArea extends Vue {
             closeButton(false);
             return false;
         }
+
+        if (this.password.length > 25) {
+            closeButton(false);
+            return false;
+        }
+
         closeButton(true);
         return true;
     }

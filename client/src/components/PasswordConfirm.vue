@@ -5,6 +5,7 @@
             placeholder="Heslo"
             type="password"
             v-model="password"
+            maxlength="25"
         />
         <b-button variant="warning" title="Potvrdiť" @click="confirm"
             >Potvrdiť</b-button
@@ -29,6 +30,11 @@ export default class PasswordConfirm extends Vue {
     }
 
     public confirm(): void {
+        if (this.password.length > 25) {
+            this.password = "";
+            return;
+        }
+
         this.$emit("confirm", this.password);
         this.password = "";
     }

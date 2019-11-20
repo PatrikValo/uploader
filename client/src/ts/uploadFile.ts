@@ -1,6 +1,7 @@
 import Cipher from "./cipher";
 import FileStream from "./fileStream";
 import Metadata from "./metadata";
+import Password from "./password";
 
 export default class UploadFile {
     private readonly fileStream: FileStream;
@@ -10,10 +11,10 @@ export default class UploadFile {
     private stop: boolean = false;
     private id: string = "";
 
-    public constructor(file: File, url: string, password?: string) {
+    public constructor(file: File, url: string, password?: Password) {
         this.fileStream = new FileStream(file);
-        this.cipher = new Cipher();
-        this.metadata = new Metadata(file);
+        this.cipher = new Cipher(password);
+        this.metadata = new Metadata(file, password);
         this.url = url;
     }
 
