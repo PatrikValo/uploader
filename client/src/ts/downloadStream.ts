@@ -1,4 +1,4 @@
-import { IReadStreamReturnValue, ReadStream } from "./ReadStream";
+import { IReadStreamReturnValue, ReadStream } from "./readStream";
 
 export default class DownloadStream extends ReadStream {
     private readonly url: string;

@@ -1,5 +1,5 @@
 import config from "./config";
-import { IReadStreamReturnValue, ReadStream } from "./ReadStream";
+import { IReadStreamReturnValue, ReadStream } from "./readStream";
 
 export default class FileStream extends ReadStream {
     private file: File;

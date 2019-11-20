@@ -2,19 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/ReadStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/readStream.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/fileStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/fileStream.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/ts/metadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/metadata.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/files/16bytesHeader" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/16bytesHeader" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/files/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/files/noFileInformation" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/noFileInformation" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/files/tooShortIv" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/tooShortIv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/files/tooShortMetadata" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/files/tooShortMetadata" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/storage.test.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/server/storage.test.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -191,6 +183,7 @@
       <workItem from="1574111571485" duration="1770000" />
       <workItem from="1574176215362" duration="2388000" />
       <workItem from="1574192205246" duration="10957000" />
+      <workItem from="1574245213714" duration="347000" />
     </task>
     <servers />
   </component>
