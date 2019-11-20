@@ -66,14 +66,14 @@ export default class UploadArea extends Vue {
     }
 
     public async upload(event: (v: boolean) => any): Promise<void> {
-        if (this.emptyPassword) {
-            return event(false);
+        if (!this.validatePassword(event)) {
+            return;
         }
-        event(true);
 
         this.uploader = new UploadFile(
             this.$props.file,
-            Utils.server.websocketUrl("/api/upload")
+            Utils.server.websocketUrl("/api/upload"),
+            this.hasPassword ? this.password : undefined
         );
 
         this.startUploading = true;
@@ -116,6 +116,15 @@ export default class UploadArea extends Vue {
     private limit(): boolean {
         const file: File = this.$props.file;
         return file.size <= Config.client.fileSizeLimit;
+    }
+
+    private validatePassword(closeButton: (v: boolean) => any): boolean {
+        if (this.emptyPassword) {
+            closeButton(false);
+            return false;
+        }
+        closeButton(true);
+        return true;
     }
 }
 </script>
