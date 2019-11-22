@@ -1,9 +1,9 @@
-import config from "./config";
+import Config from "./config";
 export default class Limiter {
     private readonly size: number;
 
     public constructor(size?: number) {
-        this.size = size || config.client.fileSizeLimit;
+        this.size = size || Config.client.fileSizeLimit;
     }
 
     public validateFileSize(file: File): boolean {
