@@ -8,6 +8,7 @@ function basicUrl(host: string, port?: string, path?: string): string {
     }
 
     if (path) {
+        path = path.charAt(0) === "/" ? path : "/" + path;
         url += path;
     }
 
@@ -46,7 +47,29 @@ export default class Utils {
     }
 
     public static buildPath(base: string, id: string, key: string): string {
-        return `/${base}/${id}#${key}`;
+        if (base) {
+            base = "/" + base;
+        }
+
+        if (id) {
+            id = "/" + id;
+        }
+
+        let path = `${base}${id}`;
+
+        if (key) {
+            if (key.charAt(0) === "#") {
+                path += key;
+            } else {
+                path += "#" + key;
+            }
+        }
+
+        if (path.charAt(0) === "/") {
+            return path;
+        }
+
+        return "/" + path;
     }
 
     public static base64toUint8Array(str: string): Uint8Array {
