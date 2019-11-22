@@ -5,6 +5,8 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/UploadArea.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/UploadArea.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/limiter.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/limiter.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -87,7 +89,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Jest.FileStream tests">
+  <component name="RunManager" selected="Jest.Limiter test">
     <configuration name="FileStream tests" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
@@ -113,6 +115,19 @@
         <test-name value="FileStream tests" />
         <test-name value="Read function" />
         <test-name value="it return correct empty chunks" />
+      </test-names>
+      <method v="2" />
+    </configuration>
+    <configuration name="Limiter test" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+      <node-interpreter value="project" />
+      <node-options value="" />
+      <jest-package value="$PROJECT_DIR$/node_modules/jest" />
+      <working-dir value="$PROJECT_DIR$" />
+      <envs />
+      <scope-kind value="SUITE" />
+      <test-file value="$PROJECT_DIR$/tests/client/limiter.test.ts" />
+      <test-names>
+        <test-name value="Limiter test" />
       </test-names>
       <method v="2" />
     </configuration>
@@ -142,23 +157,13 @@
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="test:client" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
-      <package-json value="$PROJECT_DIR$/package.json" />
-      <command value="run" />
-      <scripts>
-        <script value="test:client" />
-      </scripts>
-      <node-interpreter value="project" />
-      <envs />
-      <method v="2" />
-    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Jest.Limiter test" />
         <item itemvalue="Jest.FileStream tests" />
         <item itemvalue="Jest.FileStream tests.Read function.it return correct empty chunks" />
         <item itemvalue="Jest.Utils tests" />
         <item itemvalue="Jest.Storage" />
-        <item itemvalue="npm.test:client" />
       </list>
     </recent_temporary>
   </component>
@@ -234,7 +239,7 @@
       <workItem from="1574278772094" duration="12272000" />
       <workItem from="1574324901608" duration="997000" />
       <workItem from="1574406402834" duration="5937000" />
-      <workItem from="1574454880920" duration="6958000" />
+      <workItem from="1574454880920" duration="7993000" />
     </task>
     <servers />
   </component>

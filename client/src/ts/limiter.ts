@@ -3,10 +3,10 @@ export default class Limiter {
     private readonly size: number;
 
     public constructor(size?: number) {
-        this.size = size || Config.client.fileSizeLimit;
+        this.size = size === undefined ? Config.client.fileSizeLimit : size;
     }
 
-    public validateFileSize(file: File): boolean {
-        return file.size <= this.size;
+    public validateFileSize(size: number): boolean {
+        return size <= this.size;
     }
 }

@@ -62,7 +62,8 @@ export default class UploadArea extends Vue {
     public mounted() {
         // control of size limit
         const limiter = new Limiter();
-        if (!limiter.validateFileSize(this.$props.file)) {
+        const file: File = this.$props.file;
+        if (!limiter.validateFileSize(file.size)) {
             this.$emit("limit");
         }
     }
