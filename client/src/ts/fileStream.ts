@@ -1,11 +1,11 @@
-import config from "./config";
+import Config from "./config";
 import { IReadStreamReturnValue, ReadStream } from "./readStream";
 
 export default class FileStream extends ReadStream {
     private file: File;
     private readonly size: number;
     private index: number = 0;
-    private chunkSize: number = config.client.chunkSize - 16;
+    private chunkSize: number = Config.client.chunkSize - 16;
 
     public constructor(file: File) {
         super();
