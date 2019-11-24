@@ -44,7 +44,7 @@ export default class Metadata {
         const str = JSON.stringify({
             name: this.name,
             password: this.password
-                ? { salt: Array.from(this.password.salt) }
+                ? { salt: [].slice.call(this.password.salt) }
                 : null,
             size: this.size
         });
