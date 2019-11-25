@@ -41,14 +41,18 @@ export default class Metadata {
     }
 
     public toUint8Array(): Uint8Array {
-        const str = JSON.stringify({
+        const str = this.toJSON();
+        return Utils.stringToUint8Array(str);
+    }
+
+    public toJSON(): string {
+        return JSON.stringify({
             name: this.name,
             password: this.password
                 ? { salt: [].slice.call(this.password.salt) }
                 : null,
             size: this.size
         });
-        return Utils.stringToUint8Array(str);
     }
 
     // noinspection JSMethodCanBeStatic
