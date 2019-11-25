@@ -1,7 +1,6 @@
 import WS from "jest-websocket-mock";
 import Config from "../../client/src/ts/config";
 import Metadata from "../../client/src/ts/metadata";
-import Password from "../../client/src/ts/password";
 import UploadFile from "../../client/src/ts/uploadFile";
 import Utils from "../../client/src/ts/utils";
 
