@@ -41,6 +41,8 @@ export default class DownloadStream extends ReadStream {
                     }
                     return resolve(chunk);
                 }
+
+                reject(new Error("Empty response"));
             };
 
             xhr.onabort = reject;

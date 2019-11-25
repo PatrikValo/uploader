@@ -5,10 +5,11 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/metadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/metadata.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadStream.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/client/uploadFile.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/uploadFile.test.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -59,7 +60,7 @@
     <property name="nodejs.jest.jest_package" value="$PROJECT_DIR$/node_modules/jest" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="$PROJECT_DIR$/node_modules/prettier" />
-    <property name="settings.editor.selected.configurable" value="settings.javascript.linters.tslint" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.appearance" />
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
@@ -90,83 +91,90 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Jest.UploadFile tests">
-    <configuration name="UploadFile tests" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Jest.DownloadStream tests.It should return first chunk and after requesting second chunk throw Exception">
+    <configuration name="DownloadStream tests" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
       <scope-kind value="SUITE" />
-      <test-file value="$PROJECT_DIR$/tests/client/uploadFile.test.ts" />
+      <test-file value="$PROJECT_DIR$/tests/client/downloadStream.test.ts" />
       <test-names>
-        <test-name value="UploadFile tests" />
+        <test-name value="DownloadStream tests" />
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="UploadFile tests.It should send correct IV to server and throw Exception after closed connection" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+    <configuration name="DownloadStream tests.It should return first chunk and after requesting second chunk throw Exception" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
       <scope-kind value="TEST" />
-      <test-file value="$PROJECT_DIR$/tests/client/uploadFile.test.ts" />
+      <test-file value="$PROJECT_DIR$/tests/client/downloadStream.test.ts" />
       <test-names>
-        <test-name value="UploadFile tests" />
-        <test-name value="It should send correct IV to server and throw Exception after closed connection" />
+        <test-name value="DownloadStream tests" />
+        <test-name value="It should return first chunk and after requesting second chunk throw Exception" />
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="UploadFile tests.It should send correct all data to server and throw Exception after closed connection" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+    <configuration name="DownloadStream tests.It should throw Exception after bad status from server" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
       <scope-kind value="TEST" />
-      <test-file value="$PROJECT_DIR$/tests/client/uploadFile.test.ts" />
+      <test-file value="$PROJECT_DIR$/tests/client/downloadStream.test.ts" />
       <test-names>
-        <test-name value="UploadFile tests" />
-        <test-name value="It should send correct all data to server and throw Exception after closed connection" />
+        <test-name value="DownloadStream tests" />
+        <test-name value="It should throw Exception after bad status from server" />
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="UploadFile tests.It should throw Exception because progress function throws Error" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+    <configuration name="DownloadStream tests.It should throw Exception after bad status" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
       <scope-kind value="TEST" />
-      <test-file value="$PROJECT_DIR$/tests/client/uploadFile.test.ts" />
+      <test-file value="$PROJECT_DIR$/tests/client/downloadStream.test.ts" />
       <test-names>
-        <test-name value="UploadFile tests" />
-        <test-name value="It should throw Exception because progress function throws Error" />
+        <test-name value="DownloadStream tests" />
+        <test-name value="It should throw Exception after bad status" />
       </test-names>
       <method v="2" />
     </configuration>
-    <configuration name="UploadFile tests.It should throw Exception because server send incorrect nextElement" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+    <configuration name="DownloadStream tests.It should throw Exception after empty response" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
       <scope-kind value="TEST" />
-      <test-file value="$PROJECT_DIR$/tests/client/uploadFile.test.ts" />
+      <test-file value="$PROJECT_DIR$/tests/client/downloadStream.test.ts" />
       <test-names>
-        <test-name value="UploadFile tests" />
-        <test-name value="It should throw Exception because server send incorrect nextElement" />
+        <test-name value="DownloadStream tests" />
+        <test-name value="It should throw Exception after empty response" />
       </test-names>
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Jest.DownloadStream tests.It should throw Exception after bad status from server" />
+      <item itemvalue="Jest.DownloadStream tests.It should throw Exception after empty response" />
+      <item itemvalue="Jest.DownloadStream tests.It should throw Exception after bad status" />
+      <item itemvalue="Jest.DownloadStream tests" />
+      <item itemvalue="Jest.DownloadStream tests.It should return first chunk and after requesting second chunk throw Exception" />
+    </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Jest.UploadFile tests" />
-        <item itemvalue="Jest.UploadFile tests.It should throw Exception because progress function throws Error" />
-        <item itemvalue="Jest.UploadFile tests.It should send correct all data to server and throw Exception after closed connection" />
-        <item itemvalue="Jest.UploadFile tests.It should send correct IV to server and throw Exception after closed connection" />
-        <item itemvalue="Jest.UploadFile tests.It should throw Exception because server send incorrect nextElement" />
+        <item itemvalue="Jest.DownloadStream tests.It should return first chunk and after requesting second chunk throw Exception" />
+        <item itemvalue="Jest.DownloadStream tests" />
+        <item itemvalue="Jest.DownloadStream tests.It should throw Exception after bad status" />
+        <item itemvalue="Jest.DownloadStream tests.It should throw Exception after empty response" />
+        <item itemvalue="Jest.DownloadStream tests.It should throw Exception after bad status from server" />
       </list>
     </recent_temporary>
   </component>
@@ -245,7 +253,10 @@
       <workItem from="1574454880920" duration="9055000" />
       <workItem from="1574530763108" duration="1347000" />
       <workItem from="1574546270238" duration="5314000" />
-      <workItem from="1574610575697" duration="9067000" />
+      <workItem from="1574610575697" duration="10202000" />
+      <workItem from="1574666749841" duration="207000" />
+      <workItem from="1574697970947" duration="587000" />
+      <workItem from="1574703544533" duration="7096000" />
     </task>
     <servers />
   </component>
@@ -266,9 +277,11 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
+    <SUITE FILE_PATH="coverage/uploader$DownloadStream_tests.info" NAME="DownloadStream tests Coverage Results" MODIFIED="1574711510621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$UploadFile_tests_It_should_return_empty_key_and_ID_after_stop_uploading.info" NAME="UploadFile tests.It should return empty key and ID after stop uploading Coverage Results" MODIFIED="1574616178425" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/uploader$UploadFile_tests.info" NAME="UploadFile tests Coverage Results" MODIFIED="1574617671763" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$UploadFile_tests.info" NAME="All tests Coverage Results" MODIFIED="1574620403393" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$Limiter_test.info" NAME="Limiter test Coverage Results" MODIFIED="1574464008091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$All_tests.info" NAME="All tests Coverage Results" MODIFIED="1574710604787" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$Utils_tests.info" NAME="Utils tests Coverage Results" MODIFIED="1574457768446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$FileStream_tests.info" NAME="FileStream tests Coverage Results" MODIFIED="1574462565582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
