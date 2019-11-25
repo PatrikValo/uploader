@@ -60,7 +60,7 @@ jest.mock("../../client/src/ts/cipher", () => {
 describe("UploadFile tests", () => {
     const firstChunk = [125];
     for (let i = 0; i < Config.client.chunkSize - 18; i++) {
-        firstChunk.push(i);
+        firstChunk.push(8);
     }
     firstChunk.push(125);
 

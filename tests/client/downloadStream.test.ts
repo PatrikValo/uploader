@@ -4,11 +4,11 @@ import DownloadStream from "../../client/src/ts/downloadStream";
 import Utils from "../../client/src/ts/utils";
 
 describe("DownloadStream tests", () => {
-    const firstChunk = [2048];
+    const firstChunk = [12];
     for (let i = 0; i < Config.client.chunkSize - 2; i++) {
-        firstChunk.push(i);
+        firstChunk.push(200);
     }
-    firstChunk.push(2048);
+    firstChunk.push(12);
 
     const secondChunk = [1, 2, 3, 4, 5, 6, 7, 8];
     const url = Utils.server.classicUrl("/api/download/25-id");

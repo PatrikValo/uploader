@@ -6,7 +6,7 @@ describe("FileStream tests", () => {
         test("it return correct not empty chunks", async () => {
             const firstChunk = [25];
             for (let i = 0; i < Config.client.chunkSize - 18; i++) {
-                firstChunk.push(i);
+                firstChunk.push(56);
             }
             firstChunk.push(25);
 
