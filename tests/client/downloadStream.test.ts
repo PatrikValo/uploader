@@ -11,9 +11,6 @@ describe("DownloadStream tests", () => {
     firstChunk.push(2048);
 
     const secondChunk = [1, 2, 3, 4, 5, 6, 7, 8];
-    const concat = new Uint8Array(firstChunk.concat(secondChunk));
-    const blob = new Blob([], { type: "application/javascript" });
-    const file = new File([blob, concat], "test.js");
     const url = Utils.server.classicUrl("/api/download/25-id");
 
     beforeEach(() => mock.setup());
