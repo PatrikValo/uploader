@@ -27,7 +27,7 @@ export default class DownloadFile {
         this.stream = new DownloadStream(url);
     }
 
-    public async download() {
+    public async download(progress?: (u: number) => any) {
         return await this.downloadStream();
     }
 
@@ -65,7 +65,7 @@ export default class DownloadFile {
         this.termAbortEvent();
     }
 
-    private async downloadBlob() {
+    private async downloadBlob(progress: (u: number) => any) {
         let blob = new Blob([], { type: "application/octet-stream" });
         try {
             let chunk = await this.stream.read();
@@ -75,6 +75,7 @@ export default class DownloadFile {
                 blob = new Blob([blob, decrypted], {
                     type: "application/octet-stream"
                 });
+                progress(decrypted.length);
                 chunk = await this.stream.read();
             }
         } catch (e) {

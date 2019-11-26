@@ -91,12 +91,11 @@ export default class UploadFile {
         }
 
         const chunk = await this.fileStream.read();
-        const uploaded = chunk && chunk.value ? chunk.value.length : 0;
+        const uploaded = chunk.value.length;
         progress(uploaded); // users function
 
         if (!chunk.done) {
-            const value = new Uint8Array(chunk.value);
-            return await this.cipher.encryptChunk(value);
+            return await this.cipher.encryptChunk(chunk.value);
         }
 
         return "null";
