@@ -5,6 +5,7 @@ const download = require("./routes/download");
 const metadata = require("./routes/metadata");
 const ws = require("./routes/ws");
 const upload = require("./routes/upload");
+const path = require("path");
 
 const app = express();
 expressWs(app);
@@ -21,6 +22,15 @@ app.get("/api/download/:id/:chunk", download);
 app.post("/api/upload", upload);
 
 app.ws("/api/upload", ws);
+
+if (config.configuration === "production") {
+    // merge server side and client side to one app
+    app.use("/dist", express.static(path.join(__dirname, "../client/dist/")));
+
+    app.get("*", (req, res) => {
+        res.status(200).sendFile(path.join(__dirname, "../index.html"));
+    });
+}
 
 app.use((req, res, next) => {
     res.status(404).send("Not Found");

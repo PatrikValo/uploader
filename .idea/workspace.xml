@@ -4,12 +4,9 @@
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/client/dist/build.js" beforeDir="false" afterPath="$PROJECT_DIR$/client/dist/build.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/PasswordConfirm.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/metadata.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/metadata.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/config.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/config.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/client/downloadStream.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/downloadStream.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/client/fileStream.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/fileStream.test.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/client/uploadFile.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/uploadFile.test.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -23,9 +20,9 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Vue Single File Component" />
         <option value="tsconfig.json" />
         <option value="TypeScript File" />
+        <option value="Vue Single File Component" />
       </list>
     </option>
   </component>
@@ -251,7 +248,11 @@
       <workItem from="1574610575697" duration="10202000" />
       <workItem from="1574666749841" duration="207000" />
       <workItem from="1574697970947" duration="587000" />
-      <workItem from="1574703544533" duration="13271000" />
+      <workItem from="1574703544533" duration="13784000" />
+      <workItem from="1574771748002" duration="5443000" />
+      <workItem from="1574778604301" duration="1068000" />
+      <workItem from="1574789571817" duration="177000" />
+      <workItem from="1574794521222" duration="6178000" />
     </task>
     <servers />
   </component>
@@ -278,7 +279,7 @@
     <SUITE FILE_PATH="coverage/uploader$Limiter_test.info" NAME="Limiter test Coverage Results" MODIFIED="1574464008091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$All_tests.info" NAME="All tests Coverage Results" MODIFIED="1574710604787" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$Utils_tests.info" NAME="Utils tests Coverage Results" MODIFIED="1574457768446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/uploader$All_Tests.info" NAME="All Tests Coverage Results" MODIFIED="1574717834052" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$All_Tests.info" NAME="All Tests Coverage Results" MODIFIED="1574718391543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$FileStream_tests.info" NAME="FileStream tests Coverage Results" MODIFIED="1574462565582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>
 </project>

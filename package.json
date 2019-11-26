@@ -9,9 +9,10 @@
   "scripts": {
     "dev": "nodemon server/index.js",
     "start": "node server/index.js",
+    "test": "jest ./tests",
     "test:server": "jest ./tests/server",
     "test:client": "jest ./tests/client",
-    "build:prod": "webpack --watch",
+    "build": "webpack -p",
     "build:dev": "webpack-dev-server --inline --history-api-fallback --progress --config webpack.config.js --host 0.0.0.0"
   },
   "repository": {
