@@ -5,6 +5,7 @@
             :disabled="downloading"
             @click="download"
             :title="name"
+            ><b-spinner v-if="downloading" small type="grow"></b-spinner
             >{{ name }}</b-button
         >
         <redirect-button v-if="!downloading" title="+" to="/"></redirect-button>

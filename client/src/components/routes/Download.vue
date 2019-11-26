@@ -1,5 +1,6 @@
 <template>
     <b-container class="h-100">
+        <loading-page v-if="!mount"></loading-page>
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
@@ -8,11 +9,11 @@
                     :size="metadata.size"
                 ></file-info>
                 <password-confirm
-                    v-if="showInput"
+                    v-if="showInput && mount"
                     @confirm="verified"
                 ></password-confirm>
                 <download-button
-                    v-if="!showInput"
+                    v-if="!showInput && mount"
                     :downloading="downloading"
                     @download="download"
                 ></download-button>
@@ -39,9 +40,11 @@ import DownloadButton from "../DownloadButton.vue";
 import Metadata from "../../ts/metadata";
 import Password from "../../ts/password";
 import PasswordConfirm from "../PasswordConfirm.vue";
+import LoadingPage from "../LoadingPage.vue";
 
 @Component({
     components: {
+        LoadingPage,
         PasswordConfirm,
         DownloadButton,
         FileInfo,
@@ -52,6 +55,7 @@ export default class Download extends Vue {
     public downloading: boolean = false;
     public metadata: Metadata;
     public showInput: boolean;
+    public mount: boolean = false;
     private id: string = "";
     private key: string = "";
     private iv: Uint8Array | null = null;
@@ -82,6 +86,7 @@ export default class Download extends Vue {
 
             // show password input or not
             this.showInput = this.metadata.hasPassword();
+            this.mount = true;
         } catch (e) {
             await this.$router.push("/error");
         }

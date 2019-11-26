@@ -30,7 +30,7 @@ export default class PasswordConfirm extends Vue {
     }
 
     public confirm(): void {
-        if (this.password.length > 25) {
+        if (this.password && this.password.length > 25) {
             this.password = "";
             return;
         }
