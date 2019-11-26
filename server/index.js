@@ -23,7 +23,7 @@ app.post("/api/upload", upload);
 
 app.ws("/api/upload", ws);
 
-if (config.configuration === "production") {
+if (config.environment === "production") {
     // merge server side and client side to one app
     app.use("/dist", express.static(path.join(__dirname, "../client/dist/")));
 
