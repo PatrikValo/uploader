@@ -69,12 +69,20 @@ module.exports = {
     performance: {
         hints: false
     },
-    devtool: "#eval-source-map"
+    devtool: "#eval-source-map",
+    plugins: [
+        new webpack.DefinePlugin({
+            environment: {
+                NODE_ENV: JSON.stringify(process.env.NODE_ENV),
+                PORT: JSON.stringify(process.env.PORT),
+                HOST: JSON.stringify(process.env.HOST)
+            }
+        })
+    ]
 };
 
 if (process.env.NODE_ENV === "production") {
     module.exports.devtool = "#source-map";
-    // http://vue-loader.vuejs.org/en/workflow/production.html
     module.exports.plugins = (module.exports.plugins || []).concat([
         new webpack.DefinePlugin({
             "process.env": {
