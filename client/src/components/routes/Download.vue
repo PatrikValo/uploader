@@ -8,6 +8,11 @@
                     :name="metadata.name"
                     :size="metadata.size"
                 ></file-info>
+                <progress-bar
+                    v-if="downloading && blob"
+                    :uploaded="uploaded"
+                    :total="metadata.size"
+                ></progress-bar>
                 <password-confirm
                     v-if="showInput && mount"
                     @confirm="verified"
@@ -41,9 +46,12 @@ import Metadata from "../../ts/metadata";
 import Password from "../../ts/password";
 import PasswordConfirm from "../PasswordConfirm.vue";
 import LoadingPage from "../LoadingPage.vue";
+import { DownloadCompatibility } from "../../ts/compatibility";
+import ProgressBar from "../ProgressBar.vue";
 
 @Component({
     components: {
+        ProgressBar,
         LoadingPage,
         PasswordConfirm,
         DownloadButton,
@@ -56,6 +64,8 @@ export default class Download extends Vue {
     public metadata: Metadata;
     public showInput: boolean;
     public mount: boolean = false;
+    public blob: boolean = false;
+    public uploaded: number = 0;
     private id: string = "";
     private key: string = "";
     private iv: Uint8Array | null = null;
@@ -68,6 +78,12 @@ export default class Download extends Vue {
 
     // noinspection JSUnusedGlobalSymbols
     async mounted() {
+        if (!DownloadCompatibility.isCompatible()) {
+            return await this.$router.push("/compatibility");
+        }
+
+        this.blob = DownloadCompatibility.blob();
+
         this.id = this.$route.params.id;
 
         if (this.$route.hash.length <= 1) {
@@ -88,7 +104,7 @@ export default class Download extends Vue {
             this.showInput = this.metadata.hasPassword();
             this.mount = true;
         } catch (e) {
-            await this.$router.push("/error");
+            return await this.$router.push("/error");
         }
     }
 
@@ -104,14 +120,19 @@ export default class Download extends Vue {
             this.iv
         );
 
+        const progress = (u: number) => {
+            this.uploaded += u;
+        };
+
         try {
             this.downloading = true;
-            await download.download();
+            await download.download(this.blob, progress);
         } catch (e) {
             console.log("Nastala chyba!", e);
         }
 
         this.downloading = false;
+        this.uploaded = 0;
     }
 
     public async verified(password: string): Promise<void> {

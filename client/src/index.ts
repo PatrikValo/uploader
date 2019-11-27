@@ -9,6 +9,7 @@ import {
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App.vue";
+import CompatibilityComponent from "./components/routes/Compatibility.vue";
 import CopyComponent from "./components/routes/Copy.vue";
 import DownloadComponent from "./components/routes/Download.vue";
 import NotFoundComponent from "./components/routes/NotFound.vue";
@@ -29,6 +30,7 @@ const routes = [
     { path: "/", component: UploadComponent },
     { path: "/copy/:id", component: CopyComponent },
     { path: "/error", component: NotFoundComponent },
+    { path: "/compatibility", component: CompatibilityComponent },
     { path: "*", redirect: "/" }
 ];
 

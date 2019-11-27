@@ -27,8 +27,12 @@ export default class DownloadFile {
         this.stream = new DownloadStream(url);
     }
 
-    public async download(progress?: (u: number) => any) {
-        return await this.downloadStream();
+    public async download(blob: boolean, progress: (u: number) => any) {
+        if (!blob) {
+            return await this.downloadStream();
+        }
+
+        return await this.downloadBlob(progress);
     }
 
     private async downloadStream() {
@@ -81,6 +85,7 @@ export default class DownloadFile {
         } catch (e) {
             throw e;
         }
+
         saveAs(blob, this.metadata.name);
     }
 

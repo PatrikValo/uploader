@@ -48,7 +48,7 @@ export default class ProgressBar extends Vue {
 </script>
 <style scoped>
 .progress-bar-area {
-    padding: 15px 10px 15px 10px;
+    padding: 15px 10px 0 10px;
 }
 
 .percentage {

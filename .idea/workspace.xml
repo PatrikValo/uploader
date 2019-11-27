@@ -2,8 +2,15 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/client/src/components/routes/Compatibility.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/ProgressBar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/ProgressBar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Download.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Download.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Upload.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/index.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/downloadFile.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -41,7 +48,7 @@
     <property name="javascript.nodejs.core.library.configured.version" value="8.10.0" />
     <property name="js.linters.configure.manually.selectedtslint" value="true" />
     <property name="last.edited.regexp" value="Sample Text" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/tests/client" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/components/routes" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -59,18 +66,18 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/src/components/routes" />
       <recent name="$PROJECT_DIR$/tests/client" />
       <recent name="$PROJECT_DIR$" />
       <recent name="$PROJECT_DIR$/client/dist" />
       <recent name="$PROJECT_DIR$/client/src/components" />
-      <recent name="$PROJECT_DIR$/tests" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/client/src" />
+      <recent name="$PROJECT_DIR$/client/src/ts" />
+      <recent name="$PROJECT_DIR$/client/src/components/routes" />
       <recent name="$PROJECT_DIR$/tests/client" />
       <recent name="$PROJECT_DIR$/tests" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/tests/server" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -251,7 +258,9 @@
       <workItem from="1574789571817" duration="177000" />
       <workItem from="1574794521222" duration="6253000" />
       <workItem from="1574804147578" duration="3494000" />
-      <workItem from="1574849032153" duration="1242000" />
+      <workItem from="1574849032153" duration="2819000" />
+      <workItem from="1574874491396" duration="6572000" />
+      <workItem from="1574885749852" duration="4329000" />
     </task>
     <servers />
   </component>

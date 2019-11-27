@@ -47,6 +47,7 @@ import MainTitle from "../MainTitle.vue";
 import UploadArea from "../UploadArea.vue";
 import Vue from "vue";
 import Utils from "../../ts/utils";
+import { UploadCompatibility } from "../../ts/compatibility";
 
 @Component({
     components: { UploadArea, MainTitle }
@@ -59,6 +60,13 @@ export default class Upload extends Vue {
         super();
         this.file = null;
         this.alert = "";
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    mounted() {
+        if (!UploadCompatibility.isCompatible()) {
+            this.$router.push("/compatibility");
+        }
     }
 
     public changedInput(e: any): void {
