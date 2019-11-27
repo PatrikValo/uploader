@@ -1,26 +1,54 @@
 import * as Bowser from "bowser";
+import Prom from "promise-polyfill";
+import {
+    TextDecoder as Decoder,
+    TextEncoder as Encoder
+} from "text-encoding-shim";
 
 class BaseCompatibility {
     public static isCompatible(): boolean {
-        return BaseCompatibility.compatible;
-    }
+        try {
+            if (!TextEncoder || !TextDecoder) {
+                (TextEncoder as any) = Encoder;
+                (TextDecoder as any) = Decoder;
+            }
+        } catch (e) {
+            (TextEncoder as any) = Encoder;
+            (TextDecoder as any) = Decoder;
+        }
 
-    private static compatible: boolean =
-        !!window &&
-        !!window.navigator &&
-        !!window.navigator.userAgent &&
-        !!window.File &&
-        !!window.Blob &&
-        !!TextEncoder &&
-        !!TextDecoder &&
-        !!window.crypto &&
-        !!window.crypto.subtle &&
-        !!Promise;
+        try {
+            if (!!Promise) {
+                (Promise as any) = Prom;
+            }
+        } catch (e) {
+            (Promise as any) = Prom;
+        }
+
+        try {
+            return (
+                !!window &&
+                !!window.navigator &&
+                !!window.navigator.userAgent &&
+                !!window.File &&
+                !!window.Blob &&
+                !!window.crypto &&
+                !!window.crypto.subtle &&
+                !!Uint8Array
+            );
+        } catch (e) {
+            return false;
+        }
+    }
 }
 
 export class DownloadCompatibility {
     public static isCompatible(): boolean {
-        return DownloadCompatibility.compatible;
+        try {
+            return BaseCompatibility.isCompatible() && !!XMLHttpRequest;
+        } catch (e) {
+            return false;
+        }
     }
 
     public static blob(): boolean {
@@ -31,19 +59,19 @@ export class DownloadCompatibility {
 
         return safari || !window.navigator.serviceWorker;
     }
-
-    private static compatible =
-        BaseCompatibility.isCompatible() && !!XMLHttpRequest;
 }
 
 export class UploadCompatibility {
     public static isCompatible(): boolean {
-        return UploadCompatibility.compatible;
+        try {
+            return (
+                BaseCompatibility.isCompatible() &&
+                !!window.FileReader &&
+                !!window.FileList &&
+                !!WebSocket
+            );
+        } catch (e) {
+            return false;
+        }
     }
-
-    private static compatible =
-        BaseCompatibility.isCompatible() &&
-        !!window.FileReader &&
-        !!window.FileList &&
-        !!WebSocket;
 }

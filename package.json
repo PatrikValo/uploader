@@ -31,7 +31,9 @@
     "express-ws": "^4.0.0",
     "file-saver": "^2.0.2",
     "path": "^0.12.7",
+    "promise-polyfill": "^8.1.3",
     "streamsaver": "^2.0.3",
+    "text-encoding-shim": "^1.0.4",
     "uuid": "^3.3.3",
     "vue": "^2.5.2",
     "vue-class-component": "^6.0.0",
@@ -42,6 +44,7 @@
   "devDependencies": {
     "@types/file-saver": "^2.0.1",
     "@types/jest": "^24.0.23",
+    "@types/promise-polyfill": "^6.0.3",
     "css-loader": "^0.28.11",
     "file-loader": "^4.2.0",
     "jest": "^24.9.0",
