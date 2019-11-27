@@ -12,7 +12,7 @@
     "test": "jest ./tests",
     "test:server": "jest ./tests/server",
     "test:client": "jest ./tests/client",
-    "build:prod": "webpack",
+    "build:prod": "NODE_ENV=production HOST='aploader.herokuapp.com' webpack",
     "build:dev": "webpack-dev-server --inline --history-api-fallback --progress --config webpack.config.js --host 0.0.0.0"
   },
   "repository": {
