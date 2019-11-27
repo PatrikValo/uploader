@@ -1,13 +1,17 @@
+import { environment } from "../environment";
+
+const production = environment.NODE_ENV === "production";
+
 class Server {
-    public readonly host: string = "localhost";
-    public readonly port: string = "9998";
-    public readonly protocol: string = "http";
+    public readonly host: string = environment.HOST || "localhost";
+    public readonly port: string = production ? "" : "9998";
+    public readonly protocol: string = production ? "https" : "http";
 }
 
 class Client {
-    public readonly host: string = "localhost";
-    public readonly port: string = "8080";
-    public readonly protocol: string = "http";
+    public readonly host: string = environment.HOST || "localhost";
+    public readonly port: string = production ? "" : "8080";
+    public readonly protocol: string = production ? "https" : "http";
     public readonly fileSizeLimit: number = 1024 * 1024 * 1024;
     public readonly chunkSize: number = 64 * 1024;
 }
