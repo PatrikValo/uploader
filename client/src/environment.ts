@@ -1,7 +1,6 @@
 // Webpack DefinePlugin
 declare const environment: {
     NODE_ENV: string;
-    PORT: string;
     HOST: string;
 };
 
