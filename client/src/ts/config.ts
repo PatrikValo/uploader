@@ -1,13 +1,13 @@
 class Server {
-    public readonly host: string = "aploader.herokuapp.com";
-    public readonly port: string = "443";
-    public readonly protocol: string = "https";
+    public readonly host: string = "localhost";
+    public readonly port: string = "9998";
+    public readonly protocol: string = "http";
 }
 
 class Client {
-    public readonly host: string = "aploader.herokuapp.com";
-    public readonly port: string = "443";
-    public readonly protocol: string = "https";
+    public readonly host: string = "localhost";
+    public readonly port: string = "8080";
+    public readonly protocol: string = "http";
     public readonly fileSizeLimit: number = 1024 * 1024 * 1024;
     public readonly chunkSize: number = 64 * 1024;
 }
