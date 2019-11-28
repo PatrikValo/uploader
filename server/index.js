@@ -6,12 +6,10 @@ const metadata = require("./routes/metadata");
 const ws = require("./routes/ws");
 const upload = require("./routes/upload");
 const path = require("path");
-const sslRedirect = require("heroku-ssl-redirect");
 
 const app = express();
 expressWs(app);
 
-app.use(sslRedirect());
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     next();
