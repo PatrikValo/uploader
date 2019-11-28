@@ -46318,7 +46318,8 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 
 
 var createWriteStream = __WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.createWriteStream;
-__WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.WritableStream = __WEBPACK_IMPORTED_MODULE_2_web_streams_polyfill_ponyfill__["a" /* WritableStream */]; // firefox
+__WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.TransformStream = __WEBPACK_IMPORTED_MODULE_2_web_streams_polyfill_ponyfill__["a" /* TransformStream */];
+__WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.WritableStream = __WEBPACK_IMPORTED_MODULE_2_web_streams_polyfill_ponyfill__["b" /* WritableStream */]; // firefox
 if (__WEBPACK_IMPORTED_MODULE_3__environment__["a" /* environment */].NODE_ENV === "production") {
     __WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.mitm = __WEBPACK_IMPORTED_MODULE_6__utils__["a" /* default */].server.classicUrl("/dist/mitm.html");
 }
@@ -46780,8 +46781,8 @@ var DownloadFile = /** @class */ (function () {
 /* unused harmony export ByteLengthQueuingStrategy */
 /* unused harmony export CountQueuingStrategy */
 /* unused harmony export ReadableStream */
-/* unused harmony export TransformStream */
-/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return WritableStream; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return TransformStream; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return WritableStream; });
 /**
  * web-streams-polyfill v2.0.6
  */
