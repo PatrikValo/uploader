@@ -13,8 +13,8 @@ class BaseCompatibility {
                 (TextDecoder as any) = Decoder;
             }
         } catch (e) {
-            (TextEncoder as any) = Encoder;
-            (TextDecoder as any) = Decoder;
+            (window as any).TextEncoder = Encoder;
+            (window as any).TextDecoder = Decoder;
         }
 
         try {
