@@ -15091,7 +15091,9 @@ var Cipher = /** @class */ (function () {
             var key, encrypted;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this.keyPromise];
+                    case 0:
+                        console.log(chunk);
+                        return [4 /*yield*/, this.keyPromise];
                     case 1:
                         key = _a.sent();
                         return [4 /*yield*/, Cipher.crypto.encrypt({
@@ -46036,6 +46038,7 @@ var Download = /** @class */ (function (_super) {
         _this.mount = false;
         _this.blob = false;
         _this.uploaded = 0;
+        _this.alert = "";
         _this.id = "";
         _this.key = "";
         _this.iv = null;
@@ -46109,6 +46112,7 @@ var Download = /** @class */ (function (_super) {
                         return [3 /*break*/, 4];
                     case 3:
                         e_2 = _a.sent();
+                        this.alert = "Nastala chyba";
                         console.log("Nastala chyba!", e_2);
                         return [3 /*break*/, 4];
                     case 4:
@@ -51220,7 +51224,12 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     attrs: {
       "title": "Stiahnuť súbor"
     }
-  }), _vm._v(" "), _c('file-info', {
+  }), _vm._v(" "), (_vm.alert) ? _c('b-alert', {
+    attrs: {
+      "show": "",
+      "variant": "warning"
+    }
+  }, [_vm._v(_vm._s(_vm.alert))]) : _vm._e(), _vm._v(" "), _c('file-info', {
     attrs: {
       "name": _vm.metadata.name,
       "size": _vm.metadata.size
