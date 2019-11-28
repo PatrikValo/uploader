@@ -21031,6 +21031,7 @@ var Client = /** @class */ (function () {
         this.protocol = production ? "https" : "http";
         this.fileSizeLimit = 1024 * 1024 * 1024;
         this.chunkSize = 64 * 1024;
+        this.blobFileSizeLimit = 1024 * 1024 * 250;
     }
     return Client;
 }());
@@ -38254,8 +38255,8 @@ var BaseCompatibility = /** @class */ (function () {
             }
         }
         catch (e) {
-            TextEncoder = __WEBPACK_IMPORTED_MODULE_2_text_encoding_shim__["TextEncoder"];
-            TextDecoder = __WEBPACK_IMPORTED_MODULE_2_text_encoding_shim__["TextDecoder"];
+            window.TextEncoder = __WEBPACK_IMPORTED_MODULE_2_text_encoding_shim__["TextEncoder"];
+            window.TextDecoder = __WEBPACK_IMPORTED_MODULE_2_text_encoding_shim__["TextDecoder"];
         }
         try {
             if (!!Promise) {
