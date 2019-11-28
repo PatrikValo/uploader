@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/compatibility.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/compatibility.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/client/src/ts/config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/ts/config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/client/src/components/routes/Download.vue" beforeDir="false" afterPath="$PROJECT_DIR$/client/src/components/routes/Download.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +41,7 @@
     <property name="javascript.nodejs.core.library.configured.version" value="8.10.0" />
     <property name="js.linters.configure.manually.selectedtslint" value="true" />
     <property name="last.edited.regexp" value="Sample Text" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/src/components/routes" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/client/dist" />
     <property name="node.js.detected.package.eslint" value="true" />
     <property name="node.js.detected.package.standard" value="true" />
     <property name="node.js.detected.package.tslint" value="true" />
@@ -59,19 +58,19 @@
     <property name="ts.external.directory.path" value="$PROJECT_DIR$/node_modules/typescript/lib" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="$PROJECT_DIR$/client/src/components/routes" />
-      <recent name="$PROJECT_DIR$/tests/client" />
-      <recent name="$PROJECT_DIR$" />
-      <recent name="$PROJECT_DIR$/client/dist" />
-      <recent name="$PROJECT_DIR$/client/src/components" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/client/src" />
       <recent name="$PROJECT_DIR$/client/src/ts" />
       <recent name="$PROJECT_DIR$/client/src/components/routes" />
       <recent name="$PROJECT_DIR$/tests/client" />
       <recent name="$PROJECT_DIR$/tests" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/client/dist" />
+      <recent name="$PROJECT_DIR$/client/src/components/routes" />
+      <recent name="$PROJECT_DIR$/tests/client" />
+      <recent name="$PROJECT_DIR$" />
+      <recent name="$PROJECT_DIR$/client/src/components" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -257,7 +256,9 @@
       <workItem from="1574885749852" duration="5435000" />
       <workItem from="1574892677418" duration="2756000" />
       <workItem from="1574895456598" duration="658000" />
-      <workItem from="1574929252456" duration="3188000" />
+      <workItem from="1574929252456" duration="3835000" />
+      <workItem from="1574937496973" duration="737000" />
+      <workItem from="1574939855270" duration="1629000" />
     </task>
     <servers />
   </component>

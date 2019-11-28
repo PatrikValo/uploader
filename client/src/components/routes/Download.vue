@@ -4,6 +4,9 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
+                <b-alert v-if="alert" show variant="warning">{{
+                    alert
+                }}</b-alert>
                 <file-info
                     :name="metadata.name"
                     :size="metadata.size"
@@ -14,11 +17,11 @@
                     :total="metadata.size"
                 ></progress-bar>
                 <password-confirm
-                    v-if="showInput && mount"
+                    v-if="showInput && mount && !alert"
                     @confirm="verified"
                 ></password-confirm>
                 <download-button
-                    v-if="!showInput && mount"
+                    v-if="!showInput && mount && !alert"
                     :downloading="downloading"
                     @download="download"
                 ></download-button>
@@ -48,6 +51,7 @@ import PasswordConfirm from "../PasswordConfirm.vue";
 import LoadingPage from "../LoadingPage.vue";
 import { DownloadCompatibility } from "../../ts/compatibility";
 import ProgressBar from "../ProgressBar.vue";
+import Config from "../../ts/config";
 
 @Component({
     components: {
@@ -66,6 +70,7 @@ export default class Download extends Vue {
     public mount: boolean = false;
     public blob: boolean = false;
     public uploaded: number = 0;
+    public alert: string = "";
     private id: string = "";
     private key: string = "";
     private iv: Uint8Array | null = null;
@@ -102,6 +107,11 @@ export default class Download extends Vue {
 
             // show password input or not
             this.showInput = this.metadata.hasPassword();
+            this.alert =
+                this.blob &&
+                Config.client.blobFileSizeLimit < this.metadata.size
+                    ? "Na Vašom prehliadači je možnosť stiahnuť max. 250MB"
+                    : "";
             this.mount = true;
         } catch (e) {
             return await this.$router.push("/error");
@@ -128,6 +138,7 @@ export default class Download extends Vue {
             this.downloading = true;
             await download.download(this.blob, progress);
         } catch (e) {
+            this.alert = "Pri sťahovaní nastala chyba";
             console.log("Nastala chyba!", e);
         }
 
