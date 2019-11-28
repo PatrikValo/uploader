@@ -1,12 +1,11 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import { WritableStream } from "web-streams-polyfill/ponyfill";
+import { environment } from "../environment";
 import Cipher from "./cipher";
 import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
 import Utils from "./utils";
 const { createWriteStream } = streamSaver;
-streamSaver.WritableStream = WritableStream; // firefox
 
 export default class DownloadFile {
     private readonly id: string;
@@ -25,6 +24,11 @@ export default class DownloadFile {
         this.cipher = new Cipher(key, iv);
         const url = Utils.server.classicUrl("/api/download/" + this.id);
         this.stream = new DownloadStream(url);
+        streamSaver.TransformStream = TransformStream;
+        streamSaver.WritableStream = WritableStream;
+        if (environment.NODE_ENV === "production") {
+            streamSaver.mitm = Utils.server.classicUrl("/dist/mitm.html");
+        }
     }
 
     public async download(blob: boolean, progress: (u: number) => any) {

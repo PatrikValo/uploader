@@ -4,6 +4,10 @@ import {
     TextDecoder as Decoder,
     TextEncoder as Encoder
 } from "text-encoding-shim";
+import {
+    TransformStream as TrS,
+    WritableStream as WrS
+} from "web-streams-polyfill/ponyfill";
 
 class BaseCompatibility {
     public static isCompatible(): boolean {
@@ -22,7 +26,7 @@ class BaseCompatibility {
                 (Promise as any) = Prom;
             }
         } catch (e) {
-            (Promise as any) = Prom;
+            (window as any).Promise = Prom;
         }
 
         try {
@@ -44,8 +48,28 @@ class BaseCompatibility {
 
 export class DownloadCompatibility {
     public static isCompatible(): boolean {
+        if (!BaseCompatibility.isCompatible()) {
+            return false;
+        }
+
         try {
-            return BaseCompatibility.isCompatible() && !!XMLHttpRequest;
+            if (!WritableStream) {
+                (WritableStream as any) = WrS;
+            }
+        } catch (e) {
+            (window as any).WritableStream = WrS;
+        }
+
+        try {
+            if (!TransformStream) {
+                (TransformStream as any) = TrS;
+            }
+        } catch (e) {
+            (window as any).TransformStream = TrS;
+        }
+
+        try {
+            return !!XMLHttpRequest;
         } catch (e) {
             return false;
         }
@@ -57,7 +81,7 @@ export class DownloadCompatibility {
             safari: ">=0"
         });
 
-        return safari || !window.navigator.serviceWorker;
+        return safari || !(isSecureContext && window.navigator.serviceWorker);
     }
 }
 
