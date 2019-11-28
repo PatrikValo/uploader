@@ -46081,7 +46081,11 @@ var Download = /** @class */ (function (_super) {
                             this.blob &&
                                 __WEBPACK_IMPORTED_MODULE_13__ts_config__["a" /* default */].client.blobFileSizeLimit < this.metadata.size
                                 ? "Na Vašom prehliadači je možnosť stiahnuť max. 250MB"
-                                : "";
+                                : !!WritableStream +
+                                    "" +
+                                    !!ReadableStream +
+                                    "" +
+                                    !!TransformStream;
                         this.mount = true;
                         return [3 /*break*/, 9];
                     case 7:
