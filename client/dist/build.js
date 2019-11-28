@@ -38329,7 +38329,7 @@ var DownloadCompatibility = /** @class */ (function () {
         var safari = browser.satisfies({
             safari: ">=0"
         });
-        return safari || !(isSecureContext && window.navigator.serviceWorker);
+        return (safari || (!!isSecureContext && !!window.navigator.serviceWorker));
     };
     return DownloadCompatibility;
 }());
