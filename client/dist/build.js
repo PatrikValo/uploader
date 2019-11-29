@@ -46096,14 +46096,7 @@ var Download = /** @class */ (function (_super) {
                         result = _a.sent();
                         this.iv = result.iv;
                         this.metadata = result.metadata;
-                        // show password input or not
-                        this.showInput = this.metadata.hasPassword();
-                        this.alert =
-                            this.blob &&
-                                __WEBPACK_IMPORTED_MODULE_13__ts_config__["a" /* default */].client.blobFileSizeLimit < this.metadata.size
-                                ? "Na Vašom prehliadači je možnosť stiahnuť max. 250MB"
-                                : "";
-                        this.mount = true;
+                        this.createView();
                         return [3 /*break*/, 9];
                     case 7:
                         e_1 = _a.sent();
@@ -46149,7 +46142,7 @@ var Download = /** @class */ (function (_super) {
             });
         });
     };
-    Download.prototype.verified = function (password) {
+    Download.prototype.verify = function (password) {
         return __awaiter(this, void 0, void 0, function () {
             var pw, _a;
             return __generator(this, function (_b) {
@@ -46167,6 +46160,37 @@ var Download = /** @class */ (function (_super) {
             });
         });
     };
+    Download.prototype.createView = function () {
+        var blobLimit = __WEBPACK_IMPORTED_MODULE_13__ts_config__["a" /* default */].client.blobFileSizeLimit;
+        var msg = "Na Vašom prehliadači je možnosť stiahnuť max. 250MB";
+        // show password input or not
+        this.showInput = this.metadata.hasPassword();
+        // blob limit
+        this.alert = this.blob && blobLimit < this.metadata.size ? msg : "";
+        // view is created
+        this.mount = true;
+    };
+    Object.defineProperty(Download.prototype, "showProgressBar", {
+        get: function () {
+            return this.downloading && this.blob;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Download.prototype, "showPasswordInput", {
+        get: function () {
+            return this.showInput && this.mount && !this.alert;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(Download.prototype, "showDownloadButton", {
+        get: function () {
+            return !this.showInput && this.mount && !this.alert;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Download = __decorate([
         __WEBPACK_IMPORTED_MODULE_0_vue_class_component___default()({
             components: {
@@ -51264,16 +51288,16 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "name": _vm.metadata.name,
       "size": _vm.metadata.size
     }
-  }), _vm._v(" "), (_vm.downloading && _vm.blob) ? _c('progress-bar', {
+  }), _vm._v(" "), (_vm.showProgressBar) ? _c('progress-bar', {
     attrs: {
       "uploaded": _vm.uploaded,
       "total": _vm.metadata.size
     }
-  }) : _vm._e(), _vm._v(" "), (_vm.showInput && _vm.mount && !_vm.alert) ? _c('password-confirm', {
+  }) : _vm._e(), _vm._v(" "), (_vm.showPasswordInput) ? _c('password-confirm', {
     on: {
-      "confirm": _vm.verified
+      "confirm": _vm.verify
     }
-  }) : _vm._e(), _vm._v(" "), (!_vm.showInput && _vm.mount && !_vm.alert) ? _c('download-button', {
+  }) : _vm._e(), _vm._v(" "), (_vm.showDownloadButton) ? _c('download-button', {
     attrs: {
       "downloading": _vm.downloading
     },
