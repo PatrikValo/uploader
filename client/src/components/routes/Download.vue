@@ -12,16 +12,16 @@
                     :size="metadata.size"
                 ></file-info>
                 <progress-bar
-                    v-if="downloading && blob"
+                    v-if="showProgressBar"
                     :uploaded="uploaded"
                     :total="metadata.size"
                 ></progress-bar>
                 <password-confirm
-                    v-if="showInput && mount && !alert"
-                    @confirm="verified"
+                    v-if="showPasswordInput"
+                    @confirm="verify"
                 ></password-confirm>
                 <download-button
-                    v-if="!showInput && mount && !alert"
+                    v-if="showDownloadButton"
                     :downloading="downloading"
                     @download="download"
                 ></download-button>
@@ -105,14 +105,7 @@ export default class Download extends Vue {
             this.iv = result.iv;
             this.metadata = result.metadata;
 
-            // show password input or not
-            this.showInput = this.metadata.hasPassword();
-            this.alert =
-                this.blob &&
-                Config.client.blobFileSizeLimit < this.metadata.size
-                    ? "Na Vašom prehliadači je možnosť stiahnuť max. 250MB"
-                    : "";
-            this.mount = true;
+            this.createView();
         } catch (e) {
             return await this.$router.push("/error");
         }
@@ -146,11 +139,35 @@ export default class Download extends Vue {
         this.uploaded = 0;
     }
 
-    public async verified(password: string): Promise<void> {
+    public async verify(password: string): Promise<void> {
         if (this.key && this.metadata && this.metadata.password) {
             const pw = new Password(password, this.metadata.password.salt);
             this.showInput = !(await pw.equalToBase64(this.key));
         }
+    }
+
+    public createView() {
+        const blobLimit = Config.client.blobFileSizeLimit;
+        const msg = "Na Vašom prehliadači je možnosť stiahnuť max. 250MB";
+
+        // show password input or not
+        this.showInput = this.metadata.hasPassword();
+        // blob limit
+        this.alert = this.blob && blobLimit < this.metadata.size ? msg : "";
+        // view is created
+        this.mount = true;
+    }
+
+    public get showProgressBar(): boolean {
+        return this.downloading && this.blob;
+    }
+
+    public get showPasswordInput(): boolean {
+        return this.showInput && this.mount && !this.alert;
+    }
+
+    public get showDownloadButton(): boolean {
+        return !this.showInput && this.mount && !this.alert;
     }
 }
 </script>
