@@ -1,5 +1,12 @@
+import {
+    TextDecoder as Decoder,
+    TextEncoder as Encoder
+} from "text-encoding-shim";
 import Config from "../../client/src/ts/config";
 import Utils from "../../client/src/ts/utils";
+
+(window as any).TextEncoder = Encoder;
+(window as any).TextDecoder = Decoder;
 
 describe("Utils tests", () => {
     describe("Server part", () => {
@@ -172,6 +179,30 @@ describe("Utils tests", () => {
 
         test("empty Uint8ArrayToBase64", () => {
             const result = Utils.Uint8ArrayToBase64(new Uint8Array(0));
+            expect(result).toBe("");
+        });
+    });
+
+    describe("TextAndUint8Array", () => {
+        const correctUint = new Uint8Array([97, 49, 98, 50, 81, 51]);
+        const correctStr = "a1b2Q3";
+        test("classic stringToUint8Array", () => {
+            const result = Utils.stringToUint8Array(correctStr);
+            expect(result).toStrictEqual(correctUint);
+        });
+
+        test("empty stringToUint8Array", () => {
+            const result = Utils.stringToUint8Array("");
+            expect(result).toStrictEqual(new Uint8Array(0));
+        });
+
+        test("classic Uint8ArrayToString", () => {
+            const result = Utils.Uint8ArrayToString(correctUint);
+            expect(result).toBe(correctStr);
+        });
+
+        test("empty Uint8ArrayToString", () => {
+            const result = Utils.Uint8ArrayToString(new Uint8Array(0));
             expect(result).toBe("");
         });
     });

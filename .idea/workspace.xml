@@ -3,6 +3,11 @@
   <component name="ChangeListManager">
     <list default="true" id="b3604bcc-11a4-4bd1-8722-90d0fa1f51da" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/server/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/server/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/client/downloadMetadata.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/downloadMetadata.test.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/client/utils.test.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/client/utils.test.ts" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -84,8 +89,8 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Jest.All Tests">
-    <configuration name="All Tests" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="Jest.All tests">
+    <configuration name="All tests" type="JavaScriptTestRunnerJest" temporary="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
@@ -94,16 +99,17 @@
       <scope-kind value="ALL" />
       <method v="2" />
     </configuration>
-    <configuration name="DownloadMetadata test" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
+    <configuration name="DownloadMetadata test.It should return correct metadata" type="JavaScriptTestRunnerJest" temporary="true" nameIsGenerated="true">
       <node-interpreter value="project" />
       <node-options value="" />
       <jest-package value="$PROJECT_DIR$/node_modules/jest" />
       <working-dir value="$PROJECT_DIR$" />
       <envs />
-      <scope-kind value="SUITE" />
+      <scope-kind value="TEST" />
       <test-file value="$PROJECT_DIR$/tests/client/downloadMetadata.test.ts" />
       <test-names>
         <test-name value="DownloadMetadata test" />
+        <test-name value="It should return correct metadata" />
       </test-names>
       <method v="2" />
     </configuration>
@@ -150,19 +156,19 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Jest.All Tests" />
+      <item itemvalue="Jest.All tests" />
+      <item itemvalue="Jest.DownloadMetadata test.It should return correct metadata" />
+      <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because key is not correct" />
       <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because bad status" />
       <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because empty response" />
-      <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because key is not correct" />
-      <item itemvalue="Jest.DownloadMetadata test" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Jest.All Tests" />
-        <item itemvalue="Jest.DownloadMetadata test" />
-        <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because key is not correct" />
+        <item itemvalue="Jest.All tests" />
         <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because empty response" />
         <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because bad status" />
+        <item itemvalue="Jest.DownloadMetadata test.It should throw Exception because key is not correct" />
+        <item itemvalue="Jest.DownloadMetadata test.It should return correct metadata" />
       </list>
     </recent_temporary>
   </component>
@@ -259,7 +265,8 @@
       <workItem from="1574937496973" duration="737000" />
       <workItem from="1574939855270" duration="2557000" />
       <workItem from="1574967756347" duration="6876000" />
-      <workItem from="1574975841836" duration="2355000" />
+      <workItem from="1574975841836" duration="3069000" />
+      <workItem from="1575059315688" duration="9734000" />
     </task>
     <servers />
   </component>
@@ -282,10 +289,11 @@
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/uploader$DownloadStream_tests.info" NAME="DownloadStream tests Coverage Results" MODIFIED="1574711510621" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$UploadFile_tests_It_should_return_empty_key_and_ID_after_stop_uploading.info" NAME="UploadFile tests.It should return empty key and ID after stop uploading Coverage Results" MODIFIED="1574616178425" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$DownloadMetadata_test_It_should_throw_Exception_because_empty_response.info" NAME="DownloadMetadata test.It should throw Exception because empty response Coverage Results" MODIFIED="1575069613992" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$UploadFile_tests.info" NAME="All tests Coverage Results" MODIFIED="1574620403393" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$Limiter_test.info" NAME="Limiter test Coverage Results" MODIFIED="1574464008091" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/uploader$All_tests.info" NAME="All tests Coverage Results" MODIFIED="1574710604787" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
-    <SUITE FILE_PATH="coverage/uploader$Utils_tests.info" NAME="Utils tests Coverage Results" MODIFIED="1574457768446" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$All_tests.info" NAME="All tests Coverage Results" MODIFIED="1575069686958" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
+    <SUITE FILE_PATH="coverage/uploader$Utils_tests.info" NAME="Utils tests Coverage Results" MODIFIED="1575065827986" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$All_Tests.info" NAME="All Tests Coverage Results" MODIFIED="1574718391543" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
     <SUITE FILE_PATH="coverage/uploader$FileStream_tests.info" NAME="FileStream tests Coverage Results" MODIFIED="1574462565582" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="JestJavaScriptTestRunnerCoverage" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" />
   </component>

@@ -75,6 +75,10 @@
     "globals": {
       "ts-jest": {
         "tsConfig": "<rootDir>/tests/client/tsconfig.json"
+      },
+      "environment": {
+        "NODE_ENV": "development",
+        "HOST": ""
       }
     }
   }

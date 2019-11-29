@@ -1,40 +1,28 @@
+import {
+    TextDecoder as Decoder,
+    TextEncoder as Encoder
+} from "text-encoding-shim";
 import mock from "xhr-mock";
 import Config from "../../client/src/ts/config";
 import DownloadMetadata from "../../client/src/ts/downloadMetadata";
 import Metadata from "../../client/src/ts/metadata";
 import Utils from "../../client/src/ts/utils";
 
-// FILE
-const chunk = [125];
-for (let i = 0; i < Config.client.chunkSize - 18; i++) {
-    chunk.push(i);
-}
-chunk.push(125);
+(window as any).TextEncoder = Encoder;
+(window as any).TextDecoder = Decoder;
 
-const data = new Uint8Array(chunk);
-const blob = new Blob([data], { type: "application/javascript" });
-const file = new File([blob], "test.js");
-
-// IV
-const iv = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-
-// METADATA
-const metadata = new Metadata(file);
-
-// CIPHER MOCK
-let checkMetadataUint: jest.Mock;
 jest.mock("../../client/src/ts/cipher", () => {
     return class {
+        private readonly key: string;
+        public constructor(key: string) {
+            this.key = key;
+        }
         public async decryptMetadata(m: Uint8Array): Promise<Metadata> {
-            // check if this method is calling with expected input
-            const result = checkMetadataUint(m);
-            if (result) {
-                // simulate bad key error
-                throw result;
+            if (this.key === "NotCorrect") {
+                throw new Error("Key is not correct");
             }
             const decryptMetadata = await this.decryptChunk(m);
-            // instead of creating metadata from Uint8Array (due to TextDecoder), return correct metadata
-            return metadata;
+            return new Metadata(decryptMetadata);
         }
 
         public async decryptChunk(ch: Uint8Array): Promise<Uint8Array> {
@@ -46,10 +34,25 @@ jest.mock("../../client/src/ts/cipher", () => {
 });
 
 describe("DownloadMetadata test", () => {
-    beforeEach(() => {
-        mock.setup();
-        checkMetadataUint = jest.fn().mockReturnValue(null);
-    });
+    // FILE
+    const chunk = [125];
+    for (let i = 0; i < Config.client.chunkSize - 18; i++) {
+        chunk.push(i);
+    }
+    chunk.push(125);
+
+    const data = new Uint8Array(chunk);
+    const blob = new Blob([data], { type: "application/javascript" });
+    const file = new File([blob], "test.js");
+
+    // IV
+    const iv = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
+
+    // METADATA
+    const metadata = new Metadata(file);
+    const metadataArray = [].slice.call(metadata.toUint8Array());
+
+    beforeEach(() => mock.setup());
     afterEach(() => mock.teardown());
 
     test("It should return correct metadata", async () => {
@@ -63,7 +66,7 @@ describe("DownloadMetadata test", () => {
                     type: "Buffer"
                 },
                 metadata: {
-                    data: [0, 1, 25, 255],
+                    data: metadataArray,
                     type: "Buffer"
                 }
             };
@@ -75,16 +78,11 @@ describe("DownloadMetadata test", () => {
             iv: new Uint8Array(iv),
             metadata
         });
-
-        expect(checkMetadataUint.mock.calls[0][0]).toEqual(
-            new Uint8Array([0, 1, 25, 255])
-        );
     });
 
     test("It should throw Exception because key is not correct", async () => {
-        const download = new DownloadMetadata("1234-56789-d", "aXr+daReE==");
+        const download = new DownloadMetadata("1234-56789-d", "NotCorrect");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-d");
-        checkMetadataUint = jest.fn().mockReturnValue(new Error("key"));
 
         mock.get(url, (req, res) => {
             const obj = {
@@ -93,7 +91,7 @@ describe("DownloadMetadata test", () => {
                     type: "Buffer"
                 },
                 metadata: {
-                    data: [0, 1, 15],
+                    data: metadataArray,
                     type: "Buffer"
                 }
             };
@@ -103,10 +101,6 @@ describe("DownloadMetadata test", () => {
         const resultPromise = download.download();
         await expect(resultPromise).rejects.toEqual(
             new Error("Key is not correct")
-        );
-
-        expect(checkMetadataUint.mock.calls[0][0]).toEqual(
-            new Uint8Array([0, 1, 15])
         );
     });
 
@@ -120,7 +114,6 @@ describe("DownloadMetadata test", () => {
 
         const resultPromise = download.download();
         await expect(resultPromise).rejects.toEqual(new Error("500"));
-        expect(checkMetadataUint).not.toBeCalled();
     });
 
     test("It should throw Exception because empty response", async () => {
@@ -135,6 +128,5 @@ describe("DownloadMetadata test", () => {
         await expect(resultPromise).rejects.toEqual(
             new Error("Response is empty")
         );
-        expect(checkMetadataUint).not.toBeCalled();
     });
 });
