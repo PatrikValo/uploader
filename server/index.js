@@ -10,14 +10,6 @@ const path = require("path");
 const app = express();
 expressWs(app);
 
-if (config.environment === "production") {
-    app.use(function(req, res) {
-        if (!req.secure) {
-            res.redirect("https://" + req.headers.host + req.url);
-        }
-    });
-}
-
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     next();
