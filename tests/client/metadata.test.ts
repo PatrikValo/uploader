@@ -3,7 +3,6 @@ import {
     TextEncoder as Encoder
 } from "text-encoding-shim";
 import Metadata from "../../client/src/ts/metadata";
-import Password from "../../client/src/ts/password";
 
 (window as any).TextEncoder = Encoder;
 (window as any).TextDecoder = Decoder;

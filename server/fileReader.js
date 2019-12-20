@@ -2,7 +2,11 @@ const Storage = require("./storage");
 const config = require("./config");
 
 const lengthMetadata = async function(fd, storage) {
-    const length = await storage.read(fd, config.ivSize, config.ivSize + 1);
+    const length = await storage.read(
+        fd,
+        config.ivSize + config.flagsSize + config.saltSize,
+        config.ivSize + config.flagsSize + config.saltSize + 1
+    );
     return length.readUInt16BE();
 };
 
@@ -22,14 +26,36 @@ module.exports = class FileReader {
         return iv;
     }
 
+    async flags() {
+        const fd = this.storage.open(this.id);
+        const flags = await this.storage.read(
+            fd,
+            config.ivSize,
+            config.ivSize + config.flagsSize - 1
+        );
+        this.storage.close(fd);
+        return flags;
+    }
+
+    async salt() {
+        const fd = this.storage.open(this.id);
+        const salt = await this.storage.read(
+            fd,
+            config.ivSize + config.flagsSize,
+            config.ivSize + config.flagsSize + config.saltSize - 1
+        );
+        this.storage.close(fd);
+        return salt;
+    }
+
     async metadata() {
         const fd = this.storage.open(this.id);
         const length = await lengthMetadata(fd, this.storage);
 
         const metadata = await this.storage.read(
             fd,
-            config.ivSize + 2,
-            config.ivSize + 1 + length
+            config.ivSize + config.flagsSize + config.saltSize + 2,
+            config.ivSize + config.flagsSize + config.saltSize + 2 + length - 1
         );
         this.storage.close(fd);
         return metadata;
@@ -38,7 +64,8 @@ module.exports = class FileReader {
     async chunk(chunkNumber) {
         const fd = this.storage.open(this.id);
         const length = await lengthMetadata(fd, this.storage);
-        const start = config.ivSize + 2 + length;
+        const start =
+            config.ivSize + config.flagsSize + config.saltSize + 2 + length;
 
         const chunk = await this.storage.readChunk(fd, chunkNumber, start);
 

@@ -1,7 +1,7 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
 import { environment } from "../environment";
-import Cipher from "./cipher";
+import { Cipher } from "./cipher";
 import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
 import Utils from "./utils";
@@ -13,33 +13,29 @@ export default class DownloadFile {
     private readonly cipher: Cipher;
     private readonly stream: DownloadStream;
 
-    public constructor(
-        id: string,
-        metadata: Metadata,
-        key: string,
-        iv: Uint8Array
-    ) {
+    public constructor(id: string, metadata: Metadata, cipher: Cipher) {
         this.id = id;
         this.metadata = metadata;
-        this.cipher = new Cipher(key, iv);
+        this.cipher = cipher;
         const url = Utils.server.classicUrl("/api/download/" + this.id);
         this.stream = new DownloadStream(url);
-        streamSaver.TransformStream = TransformStream;
-        streamSaver.WritableStream = WritableStream;
-        if (environment.NODE_ENV === "production") {
-            streamSaver.mitm = Utils.server.classicUrl("/dist/mitm.html");
-        }
     }
 
     public async download(blob: boolean, progress: (u: number) => any) {
         if (!blob) {
-            return await this.downloadStream();
+            return await this.downloadStream(progress);
         }
 
         return await this.downloadBlob(progress);
     }
 
-    private async downloadStream() {
+    private async downloadStream(progress: (u: number) => any) {
+        streamSaver.TransformStream = TransformStream;
+        streamSaver.WritableStream = WritableStream;
+        if (environment.NODE_ENV === "production") {
+            streamSaver.mitm = Utils.server.classicUrl("/dist/mitm.html");
+        }
+
         const writeStream: WritableStream = createWriteStream(
             this.metadata.name,
             {
@@ -58,6 +54,7 @@ export default class DownloadFile {
             while (!chunk.done) {
                 const decrypted = await this.cipher.decryptChunk(chunk.value);
                 await writer.write(decrypted);
+                progress(decrypted.length);
                 chunk = await this.stream.read();
             }
         } catch (e) {
@@ -93,10 +90,6 @@ export default class DownloadFile {
         saveAs(blob, this.metadata.name);
     }
 
-    /**
-     * Set function, which abort writer when window in browser is closed
-     * @param writer
-     */
     private initAbortEvent(writer: WritableStreamDefaultWriter<any>): void {
         window.onunload = async () => {
             await writer.abort("Close window");
@@ -104,9 +97,6 @@ export default class DownloadFile {
     }
 
     // noinspection JSMethodCanBeStatic
-    /**
-     * Unset function for abort writer when window is closed
-     */
     private termAbortEvent(): void {
         window.onunload = null;
     }

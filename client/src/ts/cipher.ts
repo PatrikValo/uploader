@@ -1,76 +1,29 @@
 import Metadata from "./metadata";
-import Password from "./password";
 import Utils from "./utils";
 
-export default class Cipher {
-    public static async importKey(key: string): Promise<CryptoKey> {
-        const uint = Utils.base64toUint8Array(key);
-        return await Cipher.crypto.importKey("raw", uint, "AES-GCM", true, [
-            "encrypt",
-            "decrypt"
-        ]);
-    }
+export abstract class Cipher {
+    protected crypto: Crypto = window.crypto;
+    protected abstract keyPromise: Promise<CryptoKey>;
+    protected abstract iv: Uint8Array;
+    protected abstract salt: Uint8Array;
 
-    public static async exportKey(key: CryptoKey): Promise<string> {
-        const buffer = await Cipher.crypto.exportKey("raw", key);
-        return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
-    }
-
-    public static async generateKey(): Promise<CryptoKey> {
-        return await Cipher.crypto.generateKey(
-            {
-                length: 128,
-                name: "AES-GCM"
-            },
-            true,
-            ["encrypt", "decrypt"]
-        );
-    }
-
-    public static async importPassword(
-        pw: string,
-        salt: Uint8Array
-    ): Promise<CryptoKey> {
-        const uint = Utils.stringToUint8Array(pw);
-        const keyMaterial = await Cipher.crypto.importKey(
-            "raw",
-            uint,
-            "PBKDF2",
-            false,
-            ["deriveKey"]
-        );
-
-        return await Cipher.crypto.deriveKey(
-            {
-                hash: "SHA-256",
-                iterations: 10000,
-                name: "PBKDF2",
-                salt
-            },
-            keyMaterial,
-            { name: "AES-GCM", length: 128 },
-            true,
-            ["encrypt", "decrypt"]
-        );
-    }
-
-    private static readonly crypto: SubtleCrypto = window.crypto.subtle;
-
-    private readonly keyPromise: Promise<CryptoKey>;
-    private readonly iv: Uint8Array;
-
-    public constructor(key?: CryptoKey | string | Password, iv?: Uint8Array) {
-        this.keyPromise = this.initKeyPromise(key);
-        this.iv = iv || window.crypto.getRandomValues(new Uint8Array(16));
+    public randomValues(size: number): Uint8Array {
+        const buff = new Uint8Array(size);
+        return this.crypto.getRandomValues(buff);
     }
 
     public initializationVector(): Uint8Array {
         return this.iv;
     }
 
+    public getSalt(): Uint8Array {
+        return this.salt;
+    }
+
     public async exportedKey(): Promise<string> {
         const key: CryptoKey = await this.keyPromise;
-        return Cipher.exportKey(key);
+        const buffer = await this.crypto.subtle.exportKey("raw", key);
+        return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
     }
 
     public async encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
@@ -85,7 +38,7 @@ export default class Cipher {
 
     public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const key: CryptoKey = await this.keyPromise;
-        const encrypted: ArrayBuffer = await Cipher.crypto.encrypt(
+        const encrypted: ArrayBuffer = await this.crypto.subtle.encrypt(
             {
                 iv: this.iv,
                 name: "AES-GCM"
@@ -98,7 +51,7 @@ export default class Cipher {
 
     public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const key: CryptoKey = await this.keyPromise;
-        const decrypted: ArrayBuffer = await Cipher.crypto.decrypt(
+        const decrypted: ArrayBuffer = await this.crypto.subtle.decrypt(
             {
                 iv: this.iv,
                 name: "AES-GCM"
@@ -108,12 +61,23 @@ export default class Cipher {
         );
         return new Uint8Array(decrypted);
     }
+}
 
-    private async initKeyPromise(
-        key?: CryptoKey | string | Password
-    ): Promise<CryptoKey> {
+export class ClassicCipher extends Cipher {
+    protected readonly keyPromise: Promise<CryptoKey>;
+    protected readonly iv: Uint8Array;
+    protected readonly salt: Uint8Array;
+
+    public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
+        super();
+        this.keyPromise = this.initKeyPromise(key);
+        this.iv = iv || this.randomValues(16);
+        this.salt = new Uint8Array(16);
+    }
+
+    private async initKeyPromise(key?: CryptoKey | string): Promise<CryptoKey> {
         if (!key) {
-            return await Cipher.generateKey();
+            return await this.generateKey();
         }
 
         if (key instanceof CryptoKey) {
@@ -122,10 +86,66 @@ export default class Cipher {
             });
         }
 
-        if (key instanceof Password) {
-            return Cipher.importPassword(key.pw, key.salt);
-        }
+        return await this.importKey(key);
+    }
 
-        return await Cipher.importKey(key);
+    private async importKey(key: string): Promise<CryptoKey> {
+        const uint = Utils.base64toUint8Array(key);
+        return await this.crypto.subtle.importKey(
+            "raw",
+            uint,
+            "AES-GCM",
+            true,
+            ["encrypt", "decrypt"]
+        );
+    }
+
+    private async generateKey(): Promise<CryptoKey> {
+        return await this.crypto.subtle.generateKey(
+            {
+                length: 128,
+                name: "AES-GCM"
+            },
+            true,
+            ["encrypt", "decrypt"]
+        );
+    }
+}
+
+export class PasswordCipher extends Cipher {
+    protected readonly keyPromise: Promise<CryptoKey>;
+    protected readonly iv: Uint8Array;
+    protected readonly salt: Uint8Array;
+
+    public constructor(password: string, salt?: Uint8Array, iv?: Uint8Array) {
+        super();
+        this.keyPromise = this.deriveKey(password);
+        this.iv = iv || this.randomValues(16);
+        this.salt = salt || this.randomValues(16);
+    }
+
+    private async deriveKey(pw: string): Promise<CryptoKey> {
+        const buff = Utils.stringToUint8Array(pw);
+
+        const keyMaterial = await this.crypto.subtle.importKey(
+            "raw",
+            buff,
+            "PBKDF2",
+            false,
+            ["deriveKey"]
+        );
+
+        return await this.crypto.subtle.deriveKey(
+            {
+                hash: "SHA-256",
+                iterations: 10000,
+                name: "PBKDF2",
+                salt: this.salt
+            },
+            keyMaterial,
+            { name: "AES-GCM", length: 128 },
+            true,
+            ["encrypt", "decrypt"]
+        );
     }
 }

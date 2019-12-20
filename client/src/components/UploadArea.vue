@@ -23,7 +23,6 @@ import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
 import SizeIndicator from "./SizeIndicator.vue";
 import UploadFile from "../ts/uploadFile";
-import Utils from "../ts/utils";
 import Vue from "vue";
 import FileName from "./FileName.vue";
 import FileIcon from "./FileIcon.vue";
@@ -31,7 +30,6 @@ import FileInfo from "./FileInfo.vue";
 import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
 import Limiter from "../ts/limiter";
-import Password from "../ts/password";
 
 @Component({
     components: {
@@ -75,8 +73,7 @@ export default class UploadArea extends Vue {
 
         this.uploader = new UploadFile(
             this.$props.file,
-            Utils.server.websocketUrl("/api/upload"),
-            this.hasPassword ? new Password(this.password) : undefined
+            this.hasPassword ? this.password : undefined
         );
 
         this.startUploading = true;

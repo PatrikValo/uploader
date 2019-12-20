@@ -1,21 +1,25 @@
-import Cipher from "./cipher";
+import { Cipher, ClassicCipher, PasswordCipher } from "./cipher";
 import FileStream from "./fileStream";
 import Metadata from "./metadata";
-import Password from "./password";
+import Utils from "./utils";
 
 export default class UploadFile {
-    private readonly fileStream: FileStream;
     private readonly cipher: Cipher;
+    private readonly fileStream: FileStream;
     private readonly metadata: Metadata;
+    private readonly password: boolean;
     private readonly url: string;
     private stop: boolean = false;
     private id: string = "";
 
-    public constructor(file: File, url: string, password?: Password) {
+    public constructor(file: File, password?: string) {
+        this.cipher = password
+            ? new PasswordCipher(password)
+            : new ClassicCipher();
         this.fileStream = new FileStream(file);
-        this.cipher = new Cipher(password);
-        this.metadata = new Metadata(file, password);
-        this.url = url;
+        this.metadata = new Metadata(file);
+        this.password = !!password;
+        this.url = Utils.server.websocketUrl("/api/upload");
     }
 
     public async upload(
@@ -34,7 +38,7 @@ export default class UploadFile {
                 try {
                     const answer = await this.message(msg, progress);
 
-                    if (!answer) {
+                    if (answer === null) {
                         return socket.close();
                     }
 
@@ -49,7 +53,13 @@ export default class UploadFile {
                 if (this.stop) {
                     return resolve({ id: "", key: "" });
                 }
-                const key = await this.cipher.exportedKey();
+
+                let key: string = "";
+
+                if (!this.password) {
+                    key = await this.cipher.exportedKey();
+                }
+
                 return this.id
                     ? resolve({ id: this.id, key })
                     : reject(new Error("Websocket problem"));
@@ -81,6 +91,16 @@ export default class UploadFile {
 
             if (nextEl === "metadata") {
                 return await this.cipher.encryptMetadata(this.metadata);
+            }
+
+            if (nextEl === "flags") {
+                const flags = new Uint8Array(8);
+                flags[0] = this.password ? 1 : 0;
+                return flags;
+            }
+
+            if (nextEl === "salt") {
+                return this.cipher.getSalt();
             }
 
             return null;

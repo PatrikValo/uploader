@@ -81,7 +81,15 @@ export class DownloadCompatibility {
             safari: ">=0"
         });
 
-        return safari || !(isSecureContext && window.navigator.serviceWorker);
+        return (
+            safari ||
+            !(
+                isSecureContext &&
+                window.navigator.serviceWorker &&
+                ReadableStream &&
+                Response
+            )
+        );
     }
 }
 

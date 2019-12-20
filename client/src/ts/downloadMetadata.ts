@@ -1,17 +1,23 @@
-import Cipher from "./cipher";
 import Metadata from "./metadata";
 import Utils from "./utils";
 
+interface IReturnValue {
+    iv: Uint8Array;
+    metadata: Uint8Array;
+    password: {
+        flag: boolean;
+        salt: Uint8Array | null;
+    };
+}
+
 export default class DownloadMetadata {
     private readonly id: string;
-    private readonly key: string;
 
-    public constructor(id: string, key: string) {
+    public constructor(id: string) {
         this.id = id;
-        this.key = key;
     }
 
-    public download(): Promise<{ iv: Uint8Array; metadata: Metadata }> {
+    public download(): Promise<IReturnValue> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = async () => {
@@ -20,15 +26,22 @@ export default class DownloadMetadata {
                 }
 
                 if (xhr.response) {
-                    try {
-                        const iv = new Uint8Array(xhr.response.iv.data);
-                        const mtd = new Uint8Array(xhr.response.metadata.data);
-                        const metadata = await this.decrypt(iv, mtd);
-                        return resolve({ iv, metadata });
-                    } catch (e) {
-                        // key is not correct because creation of metadata instance failed
-                        return reject(new Error("Key is not correct"));
-                    }
+                    const iv = new Uint8Array(xhr.response.iv.data);
+                    const metadata = new Uint8Array(xhr.response.metadata.data);
+                    const flags = new Uint8Array(xhr.response.flags.data);
+                    const salt = new Uint8Array(xhr.response.salt.data);
+                    const password =
+                        flags[0] === 1
+                            ? {
+                                  flag: true,
+                                  salt
+                              }
+                            : {
+                                  flag: false,
+                                  salt: null
+                              };
+
+                    return resolve({ iv, metadata, password });
                 }
 
                 return reject(new Error("Response is empty"));
@@ -40,10 +53,5 @@ export default class DownloadMetadata {
             xhr.responseType = "json";
             xhr.send();
         });
-    }
-
-    private decrypt(iv: Uint8Array, metadata: Uint8Array): Promise<Metadata> {
-        const cipher = new Cipher(this.key, iv);
-        return cipher.decryptMetadata(metadata);
     }
 }
