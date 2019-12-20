@@ -1,5 +1,5 @@
 <template>
-    <b-container class="h-100">
+    <b-container class="h-100" @dragover.prevent="" @drop.prevent="onDrop">
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Nahrať súbor"></main-title>
@@ -99,6 +99,13 @@ export default class Upload extends Vue {
 
     public clearAlert(): void {
         this.alert = "";
+    }
+
+    public onDrop(e: DragEvent) {
+        this.clearAlert();
+        if (e.dataTransfer && e.dataTransfer.files.length === 1) {
+            this.file = e.dataTransfer.files[0];
+        }
     }
 }
 </script>

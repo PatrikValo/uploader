@@ -1,4 +1,3 @@
-import Metadata from "./metadata";
 import Utils from "./utils";
 
 interface IReturnValue {
@@ -26,6 +25,17 @@ export default class DownloadMetadata {
                 }
 
                 if (xhr.response) {
+                    if (
+                        !xhr.response.iv ||
+                        !xhr.response.metadata ||
+                        !xhr.response.flags ||
+                        !xhr.response.salt
+                    ) {
+                        return reject(
+                            new Error("Required parameter is not available")
+                        );
+                    }
+
                     const iv = new Uint8Array(xhr.response.iv.data);
                     const metadata = new Uint8Array(xhr.response.metadata.data);
                     const flags = new Uint8Array(xhr.response.flags.data);

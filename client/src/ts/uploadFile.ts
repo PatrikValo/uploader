@@ -94,7 +94,7 @@ export default class UploadFile {
             }
 
             if (nextEl === "flags") {
-                const flags = new Uint8Array(8);
+                const flags = new Uint8Array(1);
                 flags[0] = this.password ? 1 : 0;
                 return flags;
             }

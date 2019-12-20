@@ -11,28 +11,6 @@ import Utils from "../../client/src/ts/utils";
 (window as any).TextEncoder = Encoder;
 (window as any).TextDecoder = Decoder;
 
-jest.mock("../../client/src/ts/cipher", () => {
-    return class {
-        private readonly key: string;
-        public constructor(key: string) {
-            this.key = key;
-        }
-        public async decryptMetadata(m: Uint8Array): Promise<Metadata> {
-            if (this.key === "NotCorrect") {
-                throw new Error("Key is not correct");
-            }
-            const decryptMetadata = await this.decryptChunk(m);
-            return new Metadata(decryptMetadata);
-        }
-
-        public async decryptChunk(ch: Uint8Array): Promise<Uint8Array> {
-            return new Promise(resolve => {
-                resolve(ch);
-            });
-        }
-    };
-});
-
 describe("DownloadMetadata test", () => {
     // FILE
     const chunk = [125];
@@ -55,12 +33,18 @@ describe("DownloadMetadata test", () => {
     beforeEach(() => mock.setup());
     afterEach(() => mock.teardown());
 
-    test("It should return correct metadata", async () => {
-        const download = new DownloadMetadata("1234-56789-ad", "aXr+daReE==");
+    test("It should return correct metadata with password", async () => {
+        const download = new DownloadMetadata("1234-56789-ad");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
+        const flags = [1];
+        const salt = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
         mock.get(url, (req, res) => {
             const obj = {
+                flags: {
+                    data: flags,
+                    type: "Buffer"
+                },
                 iv: {
                     data: iv,
                     type: "Buffer"
@@ -68,20 +52,69 @@ describe("DownloadMetadata test", () => {
                 metadata: {
                     data: metadataArray,
                     type: "Buffer"
+                },
+                salt: {
+                    data: salt,
+                    type: "Buffer"
                 }
             };
+
             return res.status(200).body(JSON.stringify(obj));
         });
 
         const resultPromise = download.download();
         await expect(resultPromise).resolves.toEqual({
             iv: new Uint8Array(iv),
-            metadata
+            metadata: new Uint8Array(metadataArray),
+            password: {
+                flag: true,
+                salt: new Uint8Array(salt)
+            }
         });
     });
 
-    test("It should throw Exception because key is not correct", async () => {
-        const download = new DownloadMetadata("1234-56789-d", "NotCorrect");
+    test("It should return correct metadata without password", async () => {
+        const download = new DownloadMetadata("1234-56789-adc");
+        const url = Utils.server.classicUrl("/api/metadata/1234-56789-adc");
+        const flags = [0];
+        const salt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+        mock.get(url, (req, res) => {
+            const obj = {
+                flags: {
+                    data: flags,
+                    type: "Buffer"
+                },
+                iv: {
+                    data: iv,
+                    type: "Buffer"
+                },
+                metadata: {
+                    data: metadataArray,
+                    type: "Buffer"
+                },
+                salt: {
+                    data: salt,
+                    type: "Buffer"
+                }
+            };
+
+            return res.status(200).body(JSON.stringify(obj));
+        });
+
+        const resultPromise = download.download();
+        await expect(resultPromise).resolves.toEqual({
+            iv: new Uint8Array(iv),
+            metadata: new Uint8Array(metadataArray),
+            password: {
+                flag: false,
+                salt: null
+            }
+        });
+    });
+
+    test("It should throw Exception because flag and salt is not defined", async () => {
+        const download = new DownloadMetadata("1234-56789-d");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-d");
 
         mock.get(url, (req, res) => {
@@ -100,12 +133,12 @@ describe("DownloadMetadata test", () => {
 
         const resultPromise = download.download();
         await expect(resultPromise).rejects.toEqual(
-            new Error("Key is not correct")
+            new Error("Required parameter is not available")
         );
     });
 
     test("It should throw Exception because bad status", async () => {
-        const download = new DownloadMetadata("1234-56789-ad", "aXr+daReE==");
+        const download = new DownloadMetadata("1234-56789-ad");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
 
         mock.get(url, (req, res) => {
@@ -117,7 +150,7 @@ describe("DownloadMetadata test", () => {
     });
 
     test("It should throw Exception because empty response", async () => {
-        const download = new DownloadMetadata("1234-56789-ad", "aXr+daReE==");
+        const download = new DownloadMetadata("1234-56789-ad");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
 
         mock.get(url, (req, res) => {

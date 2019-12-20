@@ -4,7 +4,6 @@ const config = require("./config");
 const download = require("./routes/download");
 const metadata = require("./routes/metadata");
 const ws = require("./routes/ws");
-const upload = require("./routes/upload");
 const path = require("path");
 
 const app = express();
@@ -18,8 +17,6 @@ app.use((req, res, next) => {
 app.get("/api/metadata/:id", metadata);
 
 app.get("/api/download/:id/:chunk", download);
-
-app.post("/api/upload", upload);
 
 app.ws("/api/upload", ws);
 

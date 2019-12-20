@@ -8,7 +8,10 @@
                     <b-alert v-if="alert" show variant="warning">{{
                         alert
                     }}</b-alert>
-                    <password-confirm @confirm="verify"></password-confirm>
+                    <password-confirm
+                        @confirm="verify"
+                        @focus="alert = ''"
+                    ></password-confirm>
                 </div>
                 <download-area
                     v-if="showDownloadArea"

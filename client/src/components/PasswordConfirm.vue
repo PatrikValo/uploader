@@ -6,6 +6,7 @@
             type="password"
             v-model="password"
             maxlength="25"
+            @focus="focus"
         />
         <b-button variant="warning" title="Potvrdiť" @click="confirm"
             >Potvrdiť</b-button
@@ -37,6 +38,10 @@ export default class PasswordConfirm extends Vue {
 
         this.$emit("confirm", this.password);
         this.password = "";
+    }
+
+    public focus() {
+        this.$emit("focus");
     }
 }
 </script>

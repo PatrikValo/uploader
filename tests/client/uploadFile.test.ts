@@ -4,55 +4,139 @@ import Metadata from "../../client/src/ts/metadata";
 import UploadFile from "../../client/src/ts/uploadFile";
 import Utils from "../../client/src/ts/utils";
 
+async function exportedKey(): Promise<string> {
+    return new Promise(resolve => {
+        resolve("key");
+    });
+}
+
+function initializationVector(): Uint8Array {
+    return new Uint8Array([
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+    ]);
+}
+
+async function encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
+    const metadataArray: Uint8Array = metadata.toUint8Array();
+    return await encryptChunk(metadataArray);
+}
+
+async function decryptMetadata(metadata: Uint8Array): Promise<Metadata> {
+    const decryptedMetadata = await decryptChunk(metadata);
+    return new Metadata(decryptedMetadata);
+}
+
+async function encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+    return new Promise(resolve => {
+        resolve(chunk);
+    });
+}
+
+async function decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+    return new Promise(resolve => {
+        resolve(chunk);
+    });
+}
+
 jest.mock("../../client/src/ts/cipher", () => {
-    return class {
-        public async exportedKey(): Promise<string> {
-            return new Promise(resolve => {
-                resolve("key");
-            });
-        }
+    return {
+        ClassicCipher: class {
+            public getSalt(): Uint8Array {
+                return new Uint8Array(16);
+            }
 
-        public initializationVector(): Uint8Array {
-            return new Uint8Array([
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16
-            ]);
-        }
+            public async exportedKey(): Promise<string> {
+                return exportedKey();
+            }
 
-        public async encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
-            const metadataArray: Uint8Array = metadata.toUint8Array();
-            return await this.encryptChunk(metadataArray);
-        }
+            public initializationVector(): Uint8Array {
+                return initializationVector();
+            }
 
-        public async decryptMetadata(metadata: Uint8Array): Promise<Metadata> {
-            const decryptMetadata = await this.decryptChunk(metadata);
-            return new Metadata(decryptMetadata);
-        }
+            public async encryptMetadata(
+                metadata: Metadata
+            ): Promise<Uint8Array> {
+                return encryptMetadata(metadata);
+            }
 
-        public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-            return new Promise(resolve => {
-                resolve(chunk);
-            });
-        }
+            public async decryptMetadata(
+                metadata: Uint8Array
+            ): Promise<Metadata> {
+                return decryptMetadata(metadata);
+            }
 
-        public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-            return new Promise(resolve => {
-                resolve(chunk);
-            });
+            public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+                return encryptChunk(chunk);
+            }
+
+            public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+                return decryptChunk(chunk);
+            }
+        },
+        PasswordCipher: class {
+            public getSalt(): Uint8Array {
+                return new Uint8Array([
+                    0,
+                    15,
+                    1,
+                    14,
+                    2,
+                    13,
+                    3,
+                    12,
+                    4,
+                    11,
+                    5,
+                    10,
+                    6,
+                    9,
+                    7,
+                    8
+                ]);
+            }
+
+            public async exportedKey(): Promise<string> {
+                return exportedKey();
+            }
+
+            public initializationVector(): Uint8Array {
+                return initializationVector();
+            }
+
+            public async encryptMetadata(
+                metadata: Metadata
+            ): Promise<Uint8Array> {
+                return encryptMetadata(metadata);
+            }
+
+            public async decryptMetadata(
+                metadata: Uint8Array
+            ): Promise<Metadata> {
+                return decryptMetadata(metadata);
+            }
+
+            public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+                return encryptChunk(chunk);
+            }
+
+            public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
+                return decryptChunk(chunk);
+            }
         }
     };
 });
@@ -69,17 +153,17 @@ describe("UploadFile tests", () => {
     const blob = new Blob([], { type: "application/javascript" });
     const file = new File([blob, concat], "test.js");
 
+    afterEach(() => {
+        WS.clean();
+    });
+
     test("It should send correct IV to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("iv")
-        );
-        const server = new WS(Utils.server.websocketUrl("iv"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
         const resultPromise = uploadFile.upload(mockProgress);
-
         await serverPromise;
 
         server.send(JSON.stringify({ nextElement: "iv" }));
@@ -113,6 +197,109 @@ describe("UploadFile tests", () => {
         expect(mockProgress).not.toBeCalled();
     });
 
+    test("It should send correct Flags without password to server and throw Exception after closed connection", async () => {
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+        const serverPromise = server.connected;
+        const mockProgress = jest.fn();
+        const resultPromise = uploadFile.upload(mockProgress);
+        await serverPromise;
+
+        server.send(JSON.stringify({ nextElement: "flags" }));
+        await expect(server).toReceiveMessage(new Uint8Array(1));
+
+        server.close();
+
+        await expect(resultPromise).rejects.toEqual(
+            new Error("Websocket problem")
+        );
+
+        expect(mockProgress).not.toBeCalled();
+    });
+
+    test("It should send correct Flags with password to server and throw Exception after closed connection", async () => {
+        const uploadFile = new UploadFile(file, "aaa");
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+        const serverPromise = server.connected;
+        const mockProgress = jest.fn();
+        const resultPromise = uploadFile.upload(mockProgress);
+        await serverPromise;
+
+        server.send(JSON.stringify({ nextElement: "flags" }));
+        await expect(server).toReceiveMessage(new Uint8Array([1]));
+
+        server.close();
+
+        await expect(resultPromise).rejects.toEqual(
+            new Error("Websocket problem")
+        );
+
+        expect(mockProgress).not.toBeCalled();
+    });
+
+    test("It should send correct Salt without password to server and throw Exception after closed connection", async () => {
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+        const serverPromise = server.connected;
+        const mockProgress = jest.fn();
+        const resultPromise = uploadFile.upload(mockProgress);
+        await serverPromise;
+
+        server.send(JSON.stringify({ nextElement: "salt" }));
+        await expect(server).toReceiveMessage(new Uint8Array(16));
+
+        server.close();
+
+        await expect(resultPromise).rejects.toEqual(
+            new Error("Websocket problem")
+        );
+
+        expect(mockProgress).not.toBeCalled();
+    });
+
+    test("It should send correct Salt with password to server and throw Exception after closed connection", async () => {
+        const uploadFile = new UploadFile(file, "ahoj");
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+        const serverPromise = server.connected;
+        const mockProgress = jest.fn();
+        const resultPromise = uploadFile.upload(mockProgress);
+        await serverPromise;
+
+        server.send(JSON.stringify({ nextElement: "salt" }));
+        await expect(server).toReceiveMessage(
+            new Uint8Array([
+                0,
+                15,
+                1,
+                14,
+                2,
+                13,
+                3,
+                12,
+                4,
+                11,
+                5,
+                10,
+                6,
+                9,
+                7,
+                8
+            ])
+        );
+
+        server.close();
+
+        await expect(resultPromise).rejects.toEqual(
+            new Error("Websocket problem")
+        );
+
+        expect(mockProgress).not.toBeCalled();
+    });
+
     test("It should send correct Metadata to server and throw Exception after closed connection", async () => {
         const metadataUint = new Uint8Array([1, 2, 125]);
 
@@ -122,11 +309,8 @@ describe("UploadFile tests", () => {
 
         (window as any).TextEncoder = jest.fn().mockImplementation(encoder);
 
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("metadata")
-        );
-        const server = new WS(Utils.server.websocketUrl("metadata"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -147,11 +331,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should send correct all data to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("data")
-        );
-        const server = new WS(Utils.server.websocketUrl("data"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -180,11 +361,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should throw Exception because server send bad status", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("badStatus")
-        );
-        const server = new WS(Utils.server.websocketUrl("badStatus"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -200,12 +378,9 @@ describe("UploadFile tests", () => {
         expect(mockProgress).not.toBeCalled();
     });
 
-    test("It should return correct key and ID", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("correctResult")
-        );
-        const server = new WS(Utils.server.websocketUrl("correctResult"));
+    test("It should return correct key and ID without password", async () => {
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -222,12 +397,28 @@ describe("UploadFile tests", () => {
         expect(mockProgress).not.toBeCalled();
     });
 
+    test("It should return correct ID with password", async () => {
+        const uploadFile = new UploadFile(file, "aa");
+        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+        const serverPromise = server.connected;
+        const mockProgress = jest.fn();
+        const resultPromise = uploadFile.upload(mockProgress);
+
+        await serverPromise;
+
+        server.send(JSON.stringify({ id: "25-id-25" }));
+
+        await expect(resultPromise).resolves.toEqual({
+            id: "25-id-25",
+            key: ""
+        });
+        expect(mockProgress).not.toBeCalled();
+    });
+
     test("It should return empty key and ID after stop uploading", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("stop")
-        );
-        const server = new WS(Utils.server.websocketUrl("stop"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -247,11 +438,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should throw Exception because server send incorrect message", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("incorrect")
-        );
-        const server = new WS(Utils.server.websocketUrl("incorrect"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("api/upload"));
 
         const mockProgress = jest.fn();
         const serverPromise = server.connected;
@@ -268,11 +456,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should throw Exception because server send incorrect nextElement", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("nextElement")
-        );
-        const server = new WS(Utils.server.websocketUrl("nextElement"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -289,11 +474,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should throw Exception because websocket.onerror", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("onerror")
-        );
-        const server = new WS(Utils.server.websocketUrl("onerror"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn();
@@ -308,11 +490,8 @@ describe("UploadFile tests", () => {
     });
 
     test("It should throw Exception because progress function throws Error", async () => {
-        const uploadFile = new UploadFile(
-            file,
-            Utils.server.websocketUrl("onerror")
-        );
-        const server = new WS(Utils.server.websocketUrl("onerror"));
+        const uploadFile = new UploadFile(file);
+        const server = new WS(Utils.server.websocketUrl("api/upload"));
 
         const serverPromise = server.connected;
         const mockProgress = jest.fn().mockImplementation((u: number) => {
