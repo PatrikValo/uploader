@@ -1,3 +1,4 @@
+import Config from "./config";
 import Metadata from "./metadata";
 import Utils from "./utils";
 
@@ -10,6 +11,29 @@ export abstract class Cipher {
     public randomValues(size: number): Uint8Array {
         const buff = new Uint8Array(size);
         return this.crypto.getRandomValues(buff);
+    }
+
+    public serverRandomValues(size: number): Promise<Uint8Array> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onloadend = async () => {
+                if (xhr.status !== 200) {
+                    return reject(new Error(String(xhr.status)));
+                }
+
+                if (xhr.response) {
+                    return resolve(xhr.response as Uint8Array);
+                }
+
+                return reject(new Error("Response is empty"));
+            };
+            xhr.onabort = reject;
+            xhr.onerror = reject;
+            const url = Utils.server.classicUrl("/api/random/" + size);
+            xhr.open("get", url);
+            xhr.responseType = "arraybuffer";
+            xhr.send();
+        });
     }
 
     public initializationVector(): Uint8Array {
@@ -71,8 +95,8 @@ export class ClassicCipher extends Cipher {
     public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
         super();
         this.keyPromise = this.initKeyPromise(key);
-        this.iv = iv || this.randomValues(16);
-        this.salt = new Uint8Array(16);
+        this.iv = iv || this.randomValues(Config.cipher.ivLength);
+        this.salt = new Uint8Array(Config.cipher.saltLength);
     }
 
     private async initKeyPromise(key?: CryptoKey | string): Promise<CryptoKey> {
@@ -103,7 +127,7 @@ export class ClassicCipher extends Cipher {
     private async generateKey(): Promise<CryptoKey> {
         return await this.crypto.subtle.generateKey(
             {
-                length: 128,
+                length: Config.cipher.keyLength,
                 name: "AES-GCM"
             },
             true,
@@ -120,8 +144,8 @@ export class PasswordCipher extends Cipher {
     public constructor(password: string, salt?: Uint8Array, iv?: Uint8Array) {
         super();
         this.keyPromise = this.deriveKey(password);
-        this.iv = iv || this.randomValues(16);
-        this.salt = salt || this.randomValues(16);
+        this.iv = iv || this.randomValues(Config.cipher.ivLength);
+        this.salt = salt || this.randomValues(Config.cipher.saltLength);
     }
 
     private async deriveKey(pw: string): Promise<CryptoKey> {
@@ -138,12 +162,12 @@ export class PasswordCipher extends Cipher {
         return await this.crypto.subtle.deriveKey(
             {
                 hash: "SHA-256",
-                iterations: 10000,
+                iterations: Config.cipher.deriveIterations,
                 name: "PBKDF2",
                 salt: this.salt
             },
             keyMaterial,
-            { name: "AES-GCM", length: 128 },
+            { name: "AES-GCM", length: Config.cipher.keyLength },
             true,
             ["encrypt", "decrypt"]
         );

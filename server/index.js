@@ -3,6 +3,7 @@ const expressWs = require("express-ws");
 const config = require("./config");
 const download = require("./routes/download");
 const metadata = require("./routes/metadata");
+const random = require("./routes/random");
 const ws = require("./routes/ws");
 const path = require("path");
 
@@ -13,6 +14,8 @@ app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     next();
 });
+
+app.get("/api/random/:size", random);
 
 app.get("/api/metadata/:id", metadata);
 

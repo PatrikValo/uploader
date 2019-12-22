@@ -1,4 +1,5 @@
 import { Cipher, ClassicCipher, PasswordCipher } from "./cipher";
+import Config from "./config";
 import FileStream from "./fileStream";
 import Metadata from "./metadata";
 import Utils from "./utils";
@@ -94,7 +95,7 @@ export default class UploadFile {
             }
 
             if (nextEl === "flags") {
-                const flags = new Uint8Array(1);
+                const flags = new Uint8Array(Config.client.flagsSize);
                 flags[0] = this.password ? 1 : 0;
                 return flags;
             }
