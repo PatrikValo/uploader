@@ -1,5 +1,5 @@
 <template>
-    <b-container class="h-100" @dragover.prevent="" @drop.prevent="onDrop">
+    <b-container class="h-100">
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Nahrať súbor"></main-title>
@@ -67,6 +67,12 @@ export default class Upload extends Vue {
         if (!UploadCompatibility.isCompatible()) {
             this.$router.push("/compatibility");
         }
+
+        document.body.ondragover = function(e) {
+            e.preventDefault();
+        };
+
+        document.body.ondrop = this.onDrop;
     }
 
     public changedInput(e: any): void {
@@ -102,6 +108,7 @@ export default class Upload extends Vue {
     }
 
     public onDrop(e: DragEvent) {
+        e.preventDefault();
         this.clearAlert();
         if (e.dataTransfer && e.dataTransfer.files.length === 1) {
             this.file = e.dataTransfer.files[0];
