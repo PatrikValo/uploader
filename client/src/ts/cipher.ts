@@ -3,12 +3,13 @@ import Metadata from "./metadata";
 import Utils from "./utils";
 
 export abstract class Cipher {
-    protected crypto: Crypto = window.crypto;
-    protected abstract keyPromise: Promise<CryptoKey>;
-    protected abstract iv: Uint8Array;
-    protected abstract salt: Uint8Array;
+    protected readonly crypto: Crypto = window.crypto;
+    protected abstract readonly keyPromise: Promise<CryptoKey>;
+    protected abstract readonly iv: Uint8Array;
 
-    public randomValues(size: number): Uint8Array {
+    public abstract getSalt(): Promise<Uint8Array>;
+
+    public clientRandomValues(size: number): Uint8Array {
         const buff = new Uint8Array(size);
         return this.crypto.getRandomValues(buff);
     }
@@ -22,7 +23,7 @@ export abstract class Cipher {
                 }
 
                 if (xhr.response) {
-                    return resolve(xhr.response as Uint8Array);
+                    return resolve(new Uint8Array(xhr.response));
                 }
 
                 return reject(new Error("Response is empty"));
@@ -36,12 +37,35 @@ export abstract class Cipher {
         });
     }
 
+    public randomValues(size: number): Promise<Uint8Array> {
+        return new Promise(async resolve => {
+            const clientRandom = this.clientRandomValues(size);
+
+            try {
+                const serverRandom = await this.serverRandomValues(size);
+
+                const concat = new Uint8Array(2 * size);
+                concat.set(clientRandom);
+                concat.set(serverRandom, size);
+
+                const result = await this.digest(concat);
+                return resolve(result);
+            } catch (e) {
+                return resolve(clientRandom);
+            }
+        });
+    }
+
     public initializationVector(): Uint8Array {
         return this.iv;
     }
 
-    public getSalt(): Uint8Array {
-        return this.salt;
+    public async digest(array: Uint8Array): Promise<Uint8Array> {
+        const short: ArrayBuffer = await this.crypto.subtle.digest(
+            "SHA-256",
+            array
+        );
+        return new Uint8Array(short);
     }
 
     public async exportedKey(): Promise<string> {
@@ -90,13 +114,17 @@ export abstract class Cipher {
 export class ClassicCipher extends Cipher {
     protected readonly keyPromise: Promise<CryptoKey>;
     protected readonly iv: Uint8Array;
-    protected readonly salt: Uint8Array;
 
     public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
         super();
         this.keyPromise = this.initKeyPromise(key);
-        this.iv = iv || this.randomValues(Config.cipher.ivLength);
-        this.salt = new Uint8Array(Config.cipher.saltLength);
+        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
+    }
+
+    public getSalt(): Promise<Uint8Array> {
+        return new Promise(resolve => {
+            return resolve(new Uint8Array(Config.cipher.saltLength));
+        });
     }
 
     private async initKeyPromise(key?: CryptoKey | string): Promise<CryptoKey> {
@@ -125,11 +153,12 @@ export class ClassicCipher extends Cipher {
     }
 
     private async generateKey(): Promise<CryptoKey> {
-        return await this.crypto.subtle.generateKey(
-            {
-                length: Config.cipher.keyLength,
-                name: "AES-GCM"
-            },
+        const random = await this.randomValues(Config.cipher.saltLength);
+
+        return await this.crypto.subtle.importKey(
+            "raw",
+            random,
+            "AES-GCM",
             true,
             ["encrypt", "decrypt"]
         );
@@ -139,13 +168,19 @@ export class ClassicCipher extends Cipher {
 export class PasswordCipher extends Cipher {
     protected readonly keyPromise: Promise<CryptoKey>;
     protected readonly iv: Uint8Array;
-    protected readonly salt: Uint8Array;
+    protected readonly salt: Promise<Uint8Array>;
 
     public constructor(password: string, salt?: Uint8Array, iv?: Uint8Array) {
         super();
         this.keyPromise = this.deriveKey(password);
-        this.iv = iv || this.randomValues(Config.cipher.ivLength);
-        this.salt = salt || this.randomValues(Config.cipher.saltLength);
+        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
+        this.salt = new Promise(resolve => {
+            return resolve(salt || this.randomValues(Config.cipher.saltLength));
+        });
+    }
+
+    public getSalt(): Promise<Uint8Array> {
+        return this.salt;
     }
 
     private async deriveKey(pw: string): Promise<CryptoKey> {
@@ -159,12 +194,14 @@ export class PasswordCipher extends Cipher {
             ["deriveKey"]
         );
 
+        const salt = await this.salt;
+
         return await this.crypto.subtle.deriveKey(
             {
                 hash: "SHA-256",
                 iterations: Config.cipher.deriveIterations,
                 name: "PBKDF2",
-                salt: this.salt
+                salt
             },
             keyMaterial,
             { name: "AES-GCM", length: Config.cipher.keyLength },

@@ -101,7 +101,7 @@ export default class UploadFile {
             }
 
             if (nextEl === "salt") {
-                return this.cipher.getSalt();
+                return await this.cipher.getSalt();
             }
 
             return null;
