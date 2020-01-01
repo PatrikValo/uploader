@@ -1,8 +1,9 @@
-const FileReader = require("../fileReader");
+import express from "express";
+import FileReader from "../fileReader";
 
-module.exports = async (req, res) => {
+export default async (req: express.Request, res: express.Response) => {
     try {
-        let fileReader = new FileReader(req.params.id);
+        const fileReader = new FileReader(req.params.id);
 
         const iv = await fileReader.initializationVector();
         const flags = await fileReader.flags();
@@ -10,15 +11,14 @@ module.exports = async (req, res) => {
         const metadata = await fileReader.metadata();
 
         const result = {
-            iv: iv,
-            flags: flags,
-            salt: salt,
-            metadata: metadata
+            flags,
+            iv,
+            metadata,
+            salt
         };
 
         return res.status(200).send(JSON.stringify(result));
     } catch (e) {
-        console.log(e);
         return res.status(404).send();
     }
 };

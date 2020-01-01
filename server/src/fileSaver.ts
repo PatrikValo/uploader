@@ -1,52 +1,57 @@
-const Storage = require("./storage");
-const config = require("./config");
+import fs from "fs";
+import Config from "./config";
+import Storage from "./storage";
 
-module.exports = class FileSaver {
-    constructor(id, path) {
+export default class FileSaver {
+    public readonly id: string;
+    public readonly storage: Storage;
+    public readonly stream: fs.WriteStream;
+
+    public constructor(id: string, path?: string) {
         this.id = id;
         this.storage = new Storage(path);
         this.stream = this.storage.writableStream(id);
     }
 
-    async saveInitializationVector(iv) {
-        if (iv.length !== config.ivSize) {
+    public async saveInitializationVector(iv: Buffer): Promise<void> {
+        if (iv.length !== Config.ivSize) {
             throw new Error("Length of IV is not correct");
         }
 
         await this.saveChunk(iv);
     }
 
-    async saveMetadata(metadata) {
+    public async saveMetadata(metadata: Buffer): Promise<void> {
         const len = metadata.length;
-        if (metadata.length > config.chunkSize) {
+        if (metadata.length > Config.chunkSize) {
             throw new Error("Length of metadata is too long");
         }
 
-        let buffer = Buffer.alloc(2);
+        const buffer = Buffer.alloc(2);
         buffer.writeUInt16BE(len, 0);
 
         await this.saveChunk(buffer);
         await this.saveChunk(metadata);
     }
 
-    async saveFlags(flags) {
-        if (flags.length !== config.flagsSize) {
+    public async saveFlags(flags: Buffer): Promise<void> {
+        if (flags.length !== Config.flagsSize) {
             throw new Error("Length of flags is not correct");
         }
 
         await this.saveChunk(flags);
     }
 
-    async saveSalt(salt) {
-        if (salt.length !== config.saltSize) {
+    public async saveSalt(salt: Buffer): Promise<void> {
+        if (salt.length !== Config.saltSize) {
             throw new Error("Length of salt is not correct");
         }
 
         await this.saveChunk(salt);
     }
 
-    saveChunk(chunk) {
-        return new Promise((resolve, _reject) => {
+    public saveChunk(chunk: Buffer): Promise<void> {
+        return new Promise(resolve => {
             if (!this.stream.write(chunk)) {
                 this.stream.once("drain", resolve);
             } else {
@@ -55,12 +60,12 @@ module.exports = class FileSaver {
         });
     }
 
-    async clear() {
+    public async clear(): Promise<void> {
         this.end();
         await this.storage.remove(this.id);
     }
 
-    end() {
+    public end(): void {
         this.stream.end();
     }
-};
+}

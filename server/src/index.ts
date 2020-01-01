@@ -1,14 +1,13 @@
-const express = require("express");
-const expressWs = require("express-ws");
-const config = require("./config");
-const download = require("./routes/download");
-const metadata = require("./routes/metadata");
-const random = require("./routes/random");
-const ws = require("./routes/ws");
-const path = require("path");
+import express from "express";
+import expressWs from "express-ws";
+import path from "path";
+import Config from "./config";
+import download from "./routes/download";
+import metadata from "./routes/metadata";
+import random from "./routes/random";
+import ws from "./routes/ws";
 
-const app = express();
-expressWs(app);
+const app = expressWs(express()).app;
 
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -23,7 +22,7 @@ app.get("/api/download/:id/:chunk", download);
 
 app.ws("/api/upload", ws);
 
-if (config.environment === "production") {
+if (Config.environment === "production") {
     // merge server side and client side to one app
     app.use("/dist", express.static(path.join(__dirname, "../client/dist/")));
 
@@ -37,6 +36,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.listen(config.port, () =>
-    console.log(`Listening for port ${config.port}...`)
+app.listen(Config.port, () =>
+    // tslint:disable-next-line:no-console
+    console.log(`Listening for port ${Config.port}...`)
 );

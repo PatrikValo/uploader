@@ -2,13 +2,14 @@
   "name": "uploader",
   "version": "1.0.0",
   "description": "",
-  "main": "server/index.js",
+  "main": "server/dist/index.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
-    "dev": "nodemon server/index.js",
-    "start": "node server/index.js",
+    "dev": "nodemon server/dist/index.js",
+    "start": "node server/dist/index.js",
+    "build": "cd server; tsc",
     "test": "jest ./tests",
     "test:server": "jest ./tests/server",
     "test:client": "jest ./tests/client",
@@ -42,9 +43,13 @@
     "web-streams-polyfill": "^2.0.6"
   },
   "devDependencies": {
+    "@types/express": "^4.17.2",
+    "@types/express-ws": "^3.0.0",
     "@types/file-saver": "^2.0.1",
     "@types/jest": "^24.0.23",
+    "@types/node": "^13.1.2",
     "@types/promise-polyfill": "^6.0.3",
+    "@types/uuid": "^3.4.6",
     "css-loader": "^0.28.11",
     "file-loader": "^4.2.0",
     "jest": "^24.9.0",

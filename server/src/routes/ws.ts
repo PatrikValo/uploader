@@ -1,7 +1,10 @@
-const FileSaver = require("../fileSaver");
-const uuid = require("uuid/v1");
+import express from "express";
+import uuid from "uuid/v1";
+import Ws from "ws";
+import FileSaver from "../fileSaver";
 
-module.exports = (ws, _req) => {
+// noinspection JSUnusedLocalSymbols
+export default (ws: Ws, req: express.Request, next: express.NextFunction) => {
     const FILE_ID = uuid();
     const fileSaver = new FileSaver(FILE_ID);
 
@@ -23,32 +26,32 @@ module.exports = (ws, _req) => {
                     return ws.send(JSON.stringify({ id: FILE_ID }));
                 }
 
-                await fileSaver.saveChunk(event.data);
+                await fileSaver.saveChunk(event.data as Buffer);
                 return ws.send(JSON.stringify({ status: 200 }));
             }
 
             if (!iv) {
                 iv = true;
-                await fileSaver.saveInitializationVector(event.data);
+                await fileSaver.saveInitializationVector(event.data as Buffer);
                 return ws.send(JSON.stringify({ nextElement: "flags" }));
             }
 
             if (!flag) {
                 flag = true;
-                await fileSaver.saveFlags(event.data);
+                await fileSaver.saveFlags(event.data as Buffer);
 
                 return ws.send(JSON.stringify({ nextElement: "salt" }));
             }
 
             if (!salt) {
                 salt = true;
-                await fileSaver.saveSalt(event.data);
+                await fileSaver.saveSalt(event.data as Buffer);
                 return ws.send(JSON.stringify({ nextElement: "metadata" }));
             }
 
             if (!metadata) {
                 metadata = true;
-                await fileSaver.saveMetadata(event.data);
+                await fileSaver.saveMetadata(event.data as Buffer);
                 return ws.send(JSON.stringify({ status: 200 }));
             }
         } catch (e) {
@@ -56,12 +59,12 @@ module.exports = (ws, _req) => {
         }
     };
 
-    ws.onerror = async _event => {
+    ws.onerror = async () => {
         await fileSaver.clear();
     };
 
     // delete file from storage
-    ws.onclose = async _event => {
+    ws.onclose = async () => {
         if (!id) {
             await fileSaver.clear();
         }
