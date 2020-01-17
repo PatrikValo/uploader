@@ -79,7 +79,7 @@
     "preset": "ts-jest",
     "globals": {
       "ts-jest": {
-        "tsConfig": "<rootDir>/tests/client/tsconfig.json"
+        "tsConfig": "<rootDir>/tests/tsconfig.json"
       },
       "environment": {
         "NODE_ENV": "development",

@@ -10,7 +10,7 @@
         "skipLibCheck": true,
         "esModuleInterop": true,
         "experimentalDecorators": true,
-        "types": ["jest"],
+        "types": ["jest", "node"],
         "noImplicitAny": true,
         "jsx": "react",
         "allowJs": true,
@@ -20,5 +20,9 @@
             "es2015.promise",
             "scripthost"
         ]
-    }
+    },
+    "include": [
+        "./client/*",
+        "./server/*"
+    ]
 }

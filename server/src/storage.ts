@@ -3,7 +3,7 @@ import pathObj from "path";
 import Config from "./config";
 
 export default class Storage {
-    public readonly path: string;
+    private readonly path: string;
 
     public constructor(path?: string) {
         this.path = path || Config.spacePath;
@@ -64,8 +64,8 @@ export default class Storage {
 
                 const start = startData + chunkNumber * chunkSize;
 
-                if (start > fileSize) {
-                    return resolve(null);
+                if (start >= fileSize) {
+                    return resolve(Buffer.from([]));
                 }
 
                 const end =
@@ -92,20 +92,6 @@ export default class Storage {
                 }
                 return resolve(true);
             });
-        });
-    }
-
-    public readableStream(
-        id: string,
-        start?: number,
-        end?: number
-    ): fs.ReadStream {
-        const path = pathObj.join(this.path, id);
-
-        return fs.createReadStream(path, {
-            end: end || Infinity,
-            highWaterMark: Config.chunkSize,
-            start: start || 0
         });
     }
 

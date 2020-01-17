@@ -23,7 +23,7 @@ app.get("/api/download/:id/:chunk", download);
 app.ws("/api/upload", ws);
 
 if (Config.environment === "production") {
-    // merge server side and client side to one app
+    // merge server side and client side you
     app.use(
         "/dist",
         express.static(path.join(__dirname, "../../client/dist/"))

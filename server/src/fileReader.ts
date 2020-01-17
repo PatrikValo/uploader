@@ -1,4 +1,3 @@
-import fs from "fs";
 import Config from "./config";
 import Storage from "./storage";
 
