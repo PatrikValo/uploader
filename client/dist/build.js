@@ -51422,7 +51422,6 @@ var DownloadStream = /** @class */ (function (_super) {
             }); };
             xhr.onabort = reject;
             xhr.onerror = reject;
-            // TODO replace by custom header X-Chunk-...
             xhr.open("get", _this.url + "/" + numberOfChunk);
             xhr.responseType = "arraybuffer";
             xhr.send();

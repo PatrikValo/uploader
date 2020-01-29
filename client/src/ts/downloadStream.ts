@@ -47,7 +47,6 @@ export default class DownloadStream extends ReadStream {
 
             xhr.onabort = reject;
             xhr.onerror = reject;
-            // TODO replace by custom header X-Chunk-...
             xhr.open("get", this.url + "/" + numberOfChunk);
             xhr.responseType = "arraybuffer";
             xhr.send();
