@@ -1,6 +1,6 @@
 import fs from "fs";
 import Config from "./config";
-import Storage from "./storage";
+import { Storage } from "./storage";
 
 export default class FileSaver {
     public readonly id: string;
@@ -17,7 +17,6 @@ export default class FileSaver {
         if (iv.length !== Config.ivSize) {
             throw new Error("Length of IV is not correct");
         }
-
         await this.saveChunk(iv);
     }
 
@@ -53,19 +52,26 @@ export default class FileSaver {
     public saveChunk(chunk: Buffer): Promise<void> {
         return new Promise(resolve => {
             if (!this.stream.write(chunk)) {
-                this.stream.once("drain", resolve);
+                this.stream.once("drain", () => {
+                    return resolve();
+                });
             } else {
-                resolve();
+                return resolve();
             }
         });
     }
 
     public async clear(): Promise<void> {
-        this.end();
+        await this.end();
         await this.storage.remove(this.id);
     }
 
-    public end(): void {
-        this.stream.end();
+    public end(): Promise<void> {
+        return new Promise(resolve => {
+            this.stream.on("finish", () => {
+                return resolve();
+            });
+            this.stream.end();
+        });
     }
 }

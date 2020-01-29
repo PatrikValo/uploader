@@ -9,11 +9,16 @@ export default async (req: express.Request, res: express.Response) => {
     const id = req.params.id;
     const chunkNumber = +req.params.chunk;
 
+    let fileReader: FileReader | null = null;
     try {
-        const fileReader = new FileReader(id);
+        fileReader = new FileReader(id);
         const chunk = await fileReader.chunk(chunkNumber);
         return res.status(200).send(chunk);
     } catch (e) {
         return res.status(404).send();
+    } finally {
+        if (fileReader) {
+            await fileReader.close();
+        }
     }
 };

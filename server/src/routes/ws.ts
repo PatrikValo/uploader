@@ -21,7 +21,7 @@ export default (ws: Ws, req: express.Request, next: express.NextFunction) => {
         try {
             if (iv && metadata && flag && salt) {
                 if (event.data === "null") {
-                    fileSaver.end();
+                    await fileSaver.end();
                     id = true;
                     return ws.send(JSON.stringify({ id: FILE_ID }));
                 }

@@ -1,9 +1,8 @@
 import Config from "./config";
-import Storage from "./storage";
+import { FileHandle, Storage } from "./storage";
 
-async function lengthMetadata(fd: number, storage: Storage): Promise<number> {
-    const length = await storage.read(
-        fd,
+async function lengthMetadata(file: FileHandle): Promise<number> {
+    const length = await file.read(
         Config.ivSize + Config.flagsSize + Config.saltSize,
         Config.ivSize + Config.flagsSize + Config.saltSize + 1
     );
@@ -11,68 +10,57 @@ async function lengthMetadata(fd: number, storage: Storage): Promise<number> {
 }
 
 export default class FileReader {
-    public readonly id: string;
-    public readonly storage: Storage;
+    private readonly filePromise: Promise<FileHandle>;
 
     public constructor(id: string, path?: string) {
-        this.id = id;
-        this.storage = new Storage(path);
-        if (!this.storage.exist(id)) {
+        const storage = new Storage(path);
+        if (!storage.exist(id)) {
             throw new Error("No such file or directory");
         }
+
+        this.filePromise = storage.open(id);
     }
 
     public async initializationVector(): Promise<Buffer> {
-        const fd = this.storage.open(this.id);
-        const iv = await this.storage.read(fd, 0, Config.ivSize - 1);
-        this.storage.close(fd);
-        return iv;
+        const file = await this.filePromise;
+        return file.read(0, Config.ivSize - 1);
     }
 
     public async flags(): Promise<Buffer> {
-        const fd = this.storage.open(this.id);
-        const flags = await this.storage.read(
-            fd,
-            Config.ivSize,
-            Config.ivSize + Config.flagsSize - 1
-        );
-        this.storage.close(fd);
-        return flags;
+        const file = await this.filePromise;
+        const start = Config.ivSize;
+        const end = Config.ivSize + Config.flagsSize - 1;
+        return file.read(start, end);
     }
 
     public async salt(): Promise<Buffer> {
-        const fd = this.storage.open(this.id);
-        const salt = await this.storage.read(
-            fd,
-            Config.ivSize + Config.flagsSize,
-            Config.ivSize + Config.flagsSize + Config.saltSize - 1
-        );
-        this.storage.close(fd);
-        return salt;
+        const file = await this.filePromise;
+        const start = Config.ivSize + Config.flagsSize;
+        const end = Config.ivSize + Config.flagsSize + Config.saltSize - 1;
+        return file.read(start, end);
     }
 
     public async metadata(): Promise<Buffer> {
-        const fd = this.storage.open(this.id);
-        const length = await lengthMetadata(fd, this.storage);
+        const file = await this.filePromise;
+        const length = await lengthMetadata(file);
+        const start = Config.ivSize + Config.flagsSize + Config.saltSize + 2;
+        const end =
+            Config.ivSize + Config.flagsSize + Config.saltSize + 2 + length - 1;
 
-        const metadata = await this.storage.read(
-            fd,
-            Config.ivSize + Config.flagsSize + Config.saltSize + 2,
-            Config.ivSize + Config.flagsSize + Config.saltSize + 2 + length - 1
-        );
-        this.storage.close(fd);
-        return metadata;
+        return file.read(start, end);
     }
 
     public async chunk(chunkNumber: number): Promise<Buffer> {
-        const fd = this.storage.open(this.id);
-        const length = await lengthMetadata(fd, this.storage);
+        const file = await this.filePromise;
+        const length = await lengthMetadata(file);
         const start =
             Config.ivSize + Config.flagsSize + Config.saltSize + 2 + length;
 
-        const chunk = await this.storage.readChunk(fd, chunkNumber, start);
+        return file.readChunk(chunkNumber, start);
+    }
 
-        this.storage.close(fd);
-        return chunk;
+    public async close(): Promise<void> {
+        const file = await this.filePromise;
+        return file.close();
     }
 }
