@@ -6,5 +6,4 @@ declare module "streamsaver" {
     );
     declare let WritableStream: object;
     declare let TransformStream: object;
-    declare let mitm: string;
 }

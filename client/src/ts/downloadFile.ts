@@ -1,6 +1,5 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import { environment } from "../environment";
 import { Cipher } from "./cipher";
 import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
@@ -32,9 +31,6 @@ export default class DownloadFile {
     private async downloadStream(progress: (u: number) => any) {
         streamSaver.TransformStream = TransformStream;
         streamSaver.WritableStream = WritableStream;
-        if (environment.NODE_ENV === "production") {
-            streamSaver.mitm = Utils.server.classicUrl("/dist/mitm.html");
-        }
 
         const writeStream: WritableStream = createWriteStream(
             this.metadata.name,

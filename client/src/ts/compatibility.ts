@@ -1,5 +1,4 @@
 import * as Bowser from "bowser";
-import Prom from "promise-polyfill";
 import {
     TextDecoder as Decoder,
     TextEncoder as Encoder
@@ -22,14 +21,6 @@ class BaseCompatibility {
         }
 
         try {
-            if (!!Promise) {
-                (Promise as any) = Prom;
-            }
-        } catch (e) {
-            (window as any).Promise = Prom;
-        }
-
-        try {
             return (
                 !!window &&
                 !!window.navigator &&
@@ -38,7 +29,8 @@ class BaseCompatibility {
                 !!window.Blob &&
                 !!window.crypto &&
                 !!window.crypto.subtle &&
-                !!Uint8Array
+                !!Uint8Array &&
+                !!Promise
             );
         } catch (e) {
             return false;

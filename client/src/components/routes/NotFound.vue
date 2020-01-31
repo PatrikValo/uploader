@@ -11,7 +11,7 @@
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
                 <img
                     id="image"
-                    src="../../assets/image.svg"
+                    src="../../assets/empty-box.svg"
                     alt="Paper planes"
                 />
             </b-col>
