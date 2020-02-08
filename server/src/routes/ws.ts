@@ -5,7 +5,7 @@ import FileSaver from "../fileSaver";
 
 // noinspection JSUnusedLocalSymbols
 export default (ws: Ws, req: express.Request, next: express.NextFunction) => {
-    const FILE_ID = uuid();
+    const FILE_ID = uuid().replace(/-/g, "");
     const fileSaver = new FileSaver(FILE_ID);
 
     let iv = false;

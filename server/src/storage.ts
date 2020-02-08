@@ -84,7 +84,7 @@ export class FileHandle {
     }
 
     public close(): Promise<void> {
-        return new Promise((resolve, reject) => {
+        return new Promise(resolve => {
             if (this.fd) {
                 fs.close(this.fd, () => {
                     this.fd = null;
