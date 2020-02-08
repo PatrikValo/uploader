@@ -7,7 +7,6 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "nodemon server/dist/index.js",
     "start": "node server/dist/index.js",
     "build": "cd server; tsc",
     "test": "jest ./tests",
@@ -55,7 +54,6 @@
     "jest-websocket-mock": "^2.0.0",
     "mock-socket": "^9.0.2",
     "node-sass": "^4.13.0",
-    "nodemon": "^1.19.4",
     "prettier": "^1.18.2",
     "sass-loader": "^5.0.1",
     "style-loader": "^1.0.0",

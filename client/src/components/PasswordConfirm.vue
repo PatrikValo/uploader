@@ -7,6 +7,7 @@
             v-model="password"
             maxlength="25"
             @focus="focus"
+            @keyup.enter="confirm"
         />
         <b-button variant="warning" title="Potvrdiť" @click="confirm"
             >Potvrdiť</b-button
