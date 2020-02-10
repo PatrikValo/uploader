@@ -13,18 +13,6 @@ function createFile(name: string): Promise<boolean> {
     });
 }
 
-function getContent(name: string): Promise<Buffer> {
-    return new Promise((resolve, reject) => {
-        fs.readFile(pathObj.join(path, name), (err, data) => {
-            if (err) {
-                return reject(err);
-            }
-
-            return resolve(data);
-        });
-    });
-}
-
 describe("Storage tests", () => {
     describe("Storage test", () => {
         describe("Constructor", () => {
@@ -94,6 +82,23 @@ describe("Storage tests", () => {
     });
 
     describe("FileHandle test", () => {
+        describe("Size", () => {
+            const storage = new Storage(path);
+            test("It should return correct size", async () => {
+                const file = await storage.open("createWritable.txt");
+                const result = file.size();
+                await expect(result).resolves.toEqual(54);
+                await file.close();
+            });
+
+            test("It should throw exception because file is already closed", async () => {
+                const file = await storage.open("createWritable.txt");
+                await file.close();
+                const result = file.size();
+                await expect(result).rejects.not.toBeNull();
+            });
+        });
+
         describe("Read", () => {
             const storage = new Storage(path);
             const buff = Buffer.from(
@@ -104,11 +109,18 @@ describe("Storage tests", () => {
                 const file = await storage.open("createWritable.txt");
                 expect.assertions(buff.length);
                 for (let i = 0; i < buff.length; i++) {
-                    const result = file.read(i, i);
+                    const result = file.read(i, i + 1);
                     await expect(result).resolves.toStrictEqual(
                         buff.slice(i, i + 1)
                     );
                 }
+                await file.close();
+            });
+
+            test("It should read correctly whole file", async () => {
+                const file = await storage.open("createWritable.txt");
+                const result = file.read(0, buff.length);
+                await expect(result).resolves.toStrictEqual(buff);
                 await file.close();
             });
 
@@ -123,7 +135,7 @@ describe("Storage tests", () => {
 
             test("It should read throw error because read more than file size", async () => {
                 const file = await storage.open("createWritable.txt");
-                const result = file.read(0, buff.length);
+                const result = file.read(0, buff.length + 1);
                 await expect(result).rejects.toEqual(
                     new Error("File doesn't have correct size")
                 );

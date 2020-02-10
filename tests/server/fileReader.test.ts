@@ -24,12 +24,12 @@ describe("FileReader tests", () => {
 
     describe("Reading file", () => {
         const iv: number[] = [];
-        for (let i = 0; i < Config.ivSize; i++) {
+        for (let i = 0; i < 32; i++) {
             iv.push(i);
         }
         const flags: number[] = [1];
         const salt: number[] = [];
-        for (let i = 65; i < Config.saltSize + 65; i++) {
+        for (let i = 65; i < 32 + 65; i++) {
             salt.push(i);
         }
         const metadata: number[] = [200, 100, 33, 24, 15, 98];
@@ -45,14 +45,14 @@ describe("FileReader tests", () => {
         describe("IV", () => {
             test("It should return correct IV", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.initializationVector();
+                const result = file.metadata(0, 32);
                 await expect(result).resolves.toStrictEqual(Buffer.from(iv));
                 await file.close();
             });
 
             test("It should throw error because file is too short", async () => {
                 const file = new FileReader("exist", path);
-                const result = file.initializationVector();
+                const result = file.metadata(0, 32);
                 await expect(result).rejects.not.toBeNull();
                 await file.close();
             });
@@ -61,14 +61,14 @@ describe("FileReader tests", () => {
         describe("Flags", () => {
             test("It should return correct flags", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.flags();
+                const result = file.metadata(32, 32 + 1);
                 await expect(result).resolves.toStrictEqual(Buffer.from(flags));
                 await file.close();
             });
 
             test("It should throw error because file is too short", async () => {
                 const file = new FileReader("exist", path);
-                const result = file.flags();
+                const result = file.metadata(32, 32 + 1);
                 await expect(result).rejects.not.toBeNull();
                 await file.close();
             });
@@ -77,14 +77,30 @@ describe("FileReader tests", () => {
         describe("Salt", () => {
             test("It should return correct salt", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.salt();
+                const result = file.metadata(33, 33 + 32);
                 await expect(result).resolves.toStrictEqual(Buffer.from(salt));
                 await file.close();
             });
 
             test("It should throw error because file is too short", async () => {
                 const file = new FileReader("exist", path);
-                const result = file.salt();
+                const result = file.metadata(33, 33 + 32);
+                await expect(result).rejects.not.toBeNull();
+                await file.close();
+            });
+        });
+
+        describe("Length", () => {
+            test("It should return correct length of metadata", async () => {
+                const file = new FileReader("correctFile", path);
+                const result = file.metadata(65, 67);
+                await expect(result).resolves.toStrictEqual(sizeMet);
+                await file.close();
+            });
+
+            test("It should throw error because file is too short", async () => {
+                const file = new FileReader("exist", path);
+                const result = file.metadata(65, 67);
                 await expect(result).rejects.not.toBeNull();
                 await file.close();
             });
@@ -93,7 +109,7 @@ describe("FileReader tests", () => {
         describe("Metadata", () => {
             test("It should return correct metadata", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.metadata();
+                const result = file.metadata(67, 67 + metadata.length);
                 await expect(result).resolves.toStrictEqual(
                     Buffer.from(metadata)
                 );
@@ -102,7 +118,7 @@ describe("FileReader tests", () => {
 
             test("It should throw error because file is too short", async () => {
                 const file = new FileReader("exist", path);
-                const result = file.metadata();
+                const result = file.metadata(67, 67 + metadata.length);
                 await expect(result).rejects.not.toBeNull();
                 await file.close();
             });
@@ -111,7 +127,7 @@ describe("FileReader tests", () => {
         describe("Chunk", () => {
             test("It should return correct first chunk", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.chunk(0);
+                const result = file.chunk(0, 67 + metadata.length);
                 await expect(result).resolves.toStrictEqual(
                     Buffer.from(firstChunk)
                 );
@@ -120,7 +136,7 @@ describe("FileReader tests", () => {
 
             test("It should return correct second chunk", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.chunk(1);
+                const result = file.chunk(1, 67 + metadata.length);
                 await expect(result).resolves.toStrictEqual(
                     Buffer.from(secondChunk)
                 );
@@ -129,15 +145,15 @@ describe("FileReader tests", () => {
 
             test("It should return correct empty chunk", async () => {
                 const file = new FileReader("correctFile", path);
-                const result = file.chunk(2);
+                const result = file.chunk(2, 67 + metadata.length);
                 await expect(result).resolves.toStrictEqual(Buffer.from([]));
                 await file.close();
             });
 
-            test("It should throw error because file is too short", async () => {
+            test("It should return correct empty chunk", async () => {
                 const file = new FileReader("exist", path);
-                const result = file.chunk(0);
-                await expect(result).rejects.not.toBeNull();
+                const result = file.chunk(0, 67 + metadata.length);
+                await expect(result).resolves.toStrictEqual(Buffer.from([]));
                 await file.close();
             });
         });
@@ -147,7 +163,7 @@ describe("FileReader tests", () => {
         test("It should close file correctly", async () => {
             const fileReader = new FileReader("exist", path);
             await fileReader.close();
-            const result = fileReader.salt();
+            const result = fileReader.metadata(0, 1);
             await expect(result).rejects.toEqual(
                 new Error("File is already closed")
             );

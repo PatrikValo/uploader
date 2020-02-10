@@ -11,6 +11,10 @@ export class FileHandle {
 
     public size(): Promise<number> {
         return new Promise((resolve, reject) => {
+            if (!this.fd) {
+                return reject(new Error("File is already closed"));
+            }
+
             fs.fstat(this.fd, async (err, stats) => {
                 if (err) {
                     return reject(err);
