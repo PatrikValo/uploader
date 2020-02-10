@@ -21,7 +21,6 @@ class Client {
     public readonly protocol: string = production ? "https" : "http";
     public readonly fileSizeLimit: number = 1024 * 1024 * 1024;
     public readonly chunkSize: number = 64 * 1024;
-    public readonly flagsSize: number = 1;
     public readonly blobFileSizeLimit: number = 1024 * 1024 * 250;
 }
 

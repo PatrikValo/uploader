@@ -18,6 +18,7 @@
                     :id="id"
                     :metadata="metadata"
                     :cipher="cipher"
+                    :start-from="startFrom"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
@@ -67,6 +68,7 @@ export default class Download extends Vue {
     private iv: Uint8Array | null = null;
     private rawMetadata: Uint8Array | null = null;
     private salt: Uint8Array | null = null;
+    private startFrom: number | null = null;
 
     public constructor() {
         super();
@@ -86,6 +88,7 @@ export default class Download extends Vue {
             this.iv = result.iv;
             this.rawMetadata = result.metadata;
             this.salt = result.password.salt;
+            this.startFrom = result.startFrom;
 
             // file with password
             if (result.password.flag) {

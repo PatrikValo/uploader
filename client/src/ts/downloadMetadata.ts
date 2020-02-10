@@ -1,3 +1,4 @@
+import Config from "./config";
 import Utils from "./utils";
 
 interface IReturnValue {
@@ -7,6 +8,18 @@ interface IReturnValue {
         flag: boolean;
         salt: Uint8Array | null;
     };
+    startFrom: number;
+}
+
+function lengthOfMetadata(uint: Uint8Array): number {
+    if (uint.length !== 2) {
+        throw new Error("Incorrect size");
+    }
+    const fst = uint[0].toString(16);
+    let snd = uint[1].toString(16);
+    snd = snd.length === 1 ? "0" + snd : snd;
+
+    return parseInt(fst + snd, 16);
 }
 
 export default class DownloadMetadata {
@@ -16,7 +29,31 @@ export default class DownloadMetadata {
         this.id = id;
     }
 
-    public download(): Promise<IReturnValue> {
+    public async download(): Promise<IReturnValue> {
+        const iv: Uint8Array = await this.getIv();
+        const flag: Uint8Array = await this.getFlag();
+        const len: number = await this.getLength();
+        const metadata: Uint8Array = await this.getMetadata(len);
+        const c = Config.cipher;
+        const startFrom = c.ivLength + 1 + c.saltLength + 2 + len;
+        if (flag[0] === 0) {
+            return {
+                iv,
+                metadata,
+                password: { flag: false, salt: null },
+                startFrom
+            };
+        }
+        const salt = await this.getSalt();
+        return {
+            iv,
+            metadata,
+            password: { flag: true, salt },
+            startFrom
+        };
+    }
+
+    private range(start: number, end: number): Promise<Uint8Array> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onloadend = async () => {
@@ -25,33 +62,7 @@ export default class DownloadMetadata {
                 }
 
                 if (xhr.response) {
-                    if (
-                        !xhr.response.iv ||
-                        !xhr.response.metadata ||
-                        !xhr.response.flags ||
-                        !xhr.response.salt
-                    ) {
-                        return reject(
-                            new Error("Required parameter is not available")
-                        );
-                    }
-
-                    const iv = new Uint8Array(xhr.response.iv.data);
-                    const metadata = new Uint8Array(xhr.response.metadata.data);
-                    const flags = new Uint8Array(xhr.response.flags.data);
-                    const salt = new Uint8Array(xhr.response.salt.data);
-                    const password =
-                        flags[0] === 1
-                            ? {
-                                  flag: true,
-                                  salt
-                              }
-                            : {
-                                  flag: false,
-                                  salt: null
-                              };
-
-                    return resolve({ iv, metadata, password });
+                    return resolve(new Uint8Array(xhr.response));
                 }
 
                 return reject(new Error("Response is empty"));
@@ -59,9 +70,39 @@ export default class DownloadMetadata {
             xhr.onabort = reject;
             xhr.onerror = reject;
             const url = Utils.server.classicUrl("/api/metadata/" + this.id);
-            xhr.open("get", url);
-            xhr.responseType = "json";
+            xhr.open("get", url, true);
+            xhr.setRequestHeader("Range", `bytes=${start}-${end}`);
+            xhr.responseType = "arraybuffer";
             xhr.send();
         });
+    }
+
+    private getIv(): Promise<Uint8Array> {
+        return this.range(0, Config.cipher.saltLength);
+    }
+
+    private getFlag(): Promise<Uint8Array> {
+        const start = Config.cipher.saltLength;
+        const end = start + 1;
+        return this.range(start, end);
+    }
+
+    private getSalt(): Promise<Uint8Array> {
+        const start = Config.cipher.ivLength + 1;
+        const end = start + Config.cipher.saltLength;
+        return this.range(start, end);
+    }
+
+    private async getLength(): Promise<number> {
+        const start = Config.cipher.ivLength + 1 + Config.cipher.saltLength;
+        const end = start + 2;
+        const uint = await this.range(start, end);
+        return lengthOfMetadata(uint);
+    }
+
+    private getMetadata(length: number): Promise<Uint8Array> {
+        const start = Config.cipher.ivLength + 1 + Config.cipher.saltLength + 2;
+        const end = start + length;
+        return this.range(start, end);
     }
 }

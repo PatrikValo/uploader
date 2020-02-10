@@ -9,6 +9,18 @@ export class FileHandle {
         this.fd = fd;
     }
 
+    public size(): Promise<number> {
+        return new Promise((resolve, reject) => {
+            fs.fstat(this.fd, async (err, stats) => {
+                if (err) {
+                    return reject(err);
+                }
+
+                return resolve(stats.size);
+            });
+        });
+    }
+
     public read(start: number, end: number): Promise<Buffer> {
         return new Promise((resolve, reject) => {
             if (!this.fd) {
@@ -19,7 +31,7 @@ export class FileHandle {
                 return reject(new Error("Negative parameter"));
             }
 
-            const length: number = end + 1 - start;
+            const length: number = end - start;
             const buffer: Buffer = Buffer.alloc(length);
 
             fs.read(
@@ -55,31 +67,24 @@ export class FileHandle {
                 return reject(new Error("Negative parameter"));
             }
 
-            fs.fstat(this.fd, async (err, stats) => {
-                if (err) {
-                    return reject(err);
-                }
+            const fileSize = await this.size();
 
-                const fileSize = stats.size;
-                const chunkSize = Config.chunkSize;
+            const chunkSize = Config.chunkSize;
 
-                const start = startData + chunkNumber * chunkSize;
+            const start = startData + chunkNumber * chunkSize;
 
-                if (start >= fileSize) {
-                    return resolve(Buffer.from([]));
-                }
+            if (start >= fileSize) {
+                return resolve(Buffer.from([]));
+            }
 
-                const end =
-                    start + chunkSize - 1 > fileSize
-                        ? fileSize - 1
-                        : start + chunkSize - 1;
-                try {
-                    const chunk = await this.read(start, end);
-                    return resolve(chunk);
-                } catch (e) {
-                    return reject(e);
-                }
-            });
+            const end =
+                start + chunkSize > fileSize ? fileSize : start + chunkSize;
+            try {
+                const chunk = await this.read(start, end);
+                return resolve(chunk);
+            } catch (e) {
+                return reject(e);
+            }
         });
     }
 

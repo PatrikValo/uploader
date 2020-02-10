@@ -9,11 +9,13 @@ const { createWriteStream } = streamSaver;
 class DownloadStream extends ReadStream {
     private readonly url: string;
     private chunkNumber: number;
+    private startFrom: number;
 
-    public constructor(url: string) {
+    public constructor(url: string, startFrom: number) {
         super();
         this.url = url;
         this.chunkNumber = 0;
+        this.startFrom = startFrom;
     }
 
     public read(): Promise<IReadStreamReturnValue> {
@@ -53,7 +55,9 @@ class DownloadStream extends ReadStream {
 
             xhr.onabort = reject;
             xhr.onerror = reject;
-            xhr.open("get", this.url + "/" + numberOfChunk);
+            xhr.open("get", this.url);
+            xhr.setRequestHeader("X-Chunk-Number", numberOfChunk.toString());
+            xhr.setRequestHeader("X-Start-From", this.startFrom.toString());
             xhr.responseType = "arraybuffer";
             xhr.send();
         });
@@ -66,12 +70,17 @@ export default class DownloadFile {
     private readonly cipher: Cipher;
     private readonly stream: DownloadStream;
 
-    public constructor(id: string, metadata: Metadata, cipher: Cipher) {
+    public constructor(
+        id: string,
+        metadata: Metadata,
+        cipher: Cipher,
+        startFrom: number
+    ) {
         this.id = id;
         this.metadata = metadata;
         this.cipher = cipher;
         const url = Utils.server.classicUrl("/api/download/" + this.id);
-        this.stream = new DownloadStream(url);
+        this.stream = new DownloadStream(url, startFrom);
     }
 
     public async download(blob: boolean, progress: (u: number) => any) {

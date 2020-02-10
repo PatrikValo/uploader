@@ -1,24 +1,24 @@
 import express from "express";
+import { Ranges, Result } from "range-parser";
 import FileReader from "../fileReader";
 
 export default async (req: express.Request, res: express.Response) => {
     let fileReader: FileReader | null = null;
     try {
         fileReader = new FileReader(req.params.id);
+        const range: Ranges | Result = req.range(await fileReader.size());
 
-        const iv = await fileReader.initializationVector();
-        const flags = await fileReader.flags();
-        const salt = await fileReader.salt();
-        const metadata = await fileReader.metadata();
+        if (range !== -1 && range !== -2) {
+            if (range.length === 1) {
+                const start = range[0].start;
+                const end = range[0].end;
+                const result = await fileReader.metadata(start, end);
 
-        const result = {
-            flags,
-            iv,
-            metadata,
-            salt
-        };
+                return res.status(200).send(result);
+            }
+        }
 
-        return res.status(200).send(JSON.stringify(result));
+        return res.status(400).send();
     } catch (e) {
         return res.status(404).send();
     } finally {

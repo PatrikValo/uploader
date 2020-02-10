@@ -1,8 +1,32 @@
 import { Cipher, ClassicCipher, PasswordCipher } from "./cipher";
-import Config from "./config";
 import FileStream from "./fileStream";
 import Metadata from "./metadata";
 import Utils from "./utils";
+
+function lengthOfMetadata(n: number): Uint8Array {
+    const hex = n.toString(16);
+    const len = hex.length;
+
+    if (len > 4) {
+        throw new Error("Metadata is too long");
+    }
+
+    if (len <= 2) {
+        return new Uint8Array([0, n]);
+    }
+
+    if (len === 3) {
+        return new Uint8Array([
+            parseInt(hex[0], 16),
+            parseInt(hex.slice(1, 3), 16)
+        ]);
+    }
+
+    return new Uint8Array([
+        parseInt(hex.slice(0, 2), 16),
+        parseInt(hex.slice(2, 4), 16)
+    ]);
+}
 
 export default class UploadFile {
     private readonly cipher: Cipher;
@@ -12,6 +36,10 @@ export default class UploadFile {
     private readonly url: string;
     private stop: boolean = false;
     private id: string = "";
+    private sendIv = false;
+    private sendFlag = false;
+    private sendSalt = false;
+    private sendMetadata = false;
 
     public constructor(file: File, password?: string) {
         this.cipher = password
@@ -78,32 +106,8 @@ export default class UploadFile {
         msg: any,
         progress: (u: number) => any
     ): Promise<null | Uint8Array | string> {
-        if (msg.hasOwnProperty("id")) {
+        if (msg.id) {
             this.id = msg.id;
-            return null;
-        }
-
-        if (msg.hasOwnProperty("nextElement")) {
-            const nextEl = msg.nextElement;
-
-            if (nextEl === "iv") {
-                return this.cipher.initializationVector();
-            }
-
-            if (nextEl === "metadata") {
-                return await this.cipher.encryptMetadata(this.metadata);
-            }
-
-            if (nextEl === "flags") {
-                const flags = new Uint8Array(Config.client.flagsSize);
-                flags[0] = this.password ? 1 : 0;
-                return flags;
-            }
-
-            if (nextEl === "salt") {
-                return await this.cipher.getSalt();
-            }
-
             return null;
         }
 
@@ -111,6 +115,56 @@ export default class UploadFile {
             return null;
         }
 
+        if (!this.sendIv) {
+            return this.createIv();
+        }
+
+        if (!this.sendFlag) {
+            return this.createFlag();
+        }
+
+        if (!this.sendSalt) {
+            return this.createSalt();
+        }
+
+        if (!this.sendMetadata) {
+            return this.createMetadata();
+        }
+
+        return this.createChunk(progress);
+    }
+
+    private createIv(): Uint8Array {
+        this.sendIv = true;
+        return this.cipher.initializationVector();
+    }
+
+    private createFlag(): Uint8Array {
+        this.sendFlag = true;
+        const flags = new Uint8Array(1);
+        flags[0] = this.password ? 1 : 0;
+        return flags;
+    }
+
+    private async createSalt(): Promise<Uint8Array> {
+        this.sendSalt = true;
+        return await this.cipher.getSalt();
+    }
+
+    private async createMetadata(): Promise<Uint8Array> {
+        this.sendMetadata = true;
+        const metadata = await this.cipher.encryptMetadata(this.metadata);
+        const length: Uint8Array = lengthOfMetadata(metadata.length);
+
+        const m = new Uint8Array(length.length + metadata.length);
+        m.set(length);
+        m.set(metadata, length.length);
+        return m;
+    }
+
+    private async createChunk(
+        progress: (u: number) => any
+    ): Promise<Uint8Array | string> {
         const chunk = await this.fileStream.read();
         const uploaded = chunk.value.length;
         progress(uploaded); // users function

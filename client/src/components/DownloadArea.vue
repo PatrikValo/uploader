@@ -32,7 +32,8 @@ import DownloadButton from "./DownloadButton.vue";
     props: {
         id: String,
         metadata: Metadata,
-        cipher: Object as () => Cipher
+        cipher: Object as () => Cipher,
+        startFrom: Number
     }
 })
 export default class DownloadArea extends Vue {
@@ -57,7 +58,8 @@ export default class DownloadArea extends Vue {
         const download = new DownloadFile(
             this.$props.id,
             this.$props.metadata,
-            this.$props.cipher
+            this.$props.cipher,
+            this.$props.startFrom
         );
 
         const progress = (u: number) => {

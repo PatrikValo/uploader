@@ -26,7 +26,7 @@ export abstract class Cipher {
                     return resolve(new Uint8Array(xhr.response));
                 }
 
-                return reject(new Error("Response is empty"));
+                return reject(new Error("Empty Response"));
             };
             xhr.onabort = reject;
             xhr.onerror = reject;

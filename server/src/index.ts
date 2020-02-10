@@ -1,3 +1,4 @@
+import cors from "cors";
 import express from "express";
 import expressWs from "express-ws";
 import path from "path";
@@ -9,16 +10,13 @@ import ws from "./routes/ws";
 
 const app = expressWs(express()).app;
 
-app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    next();
-});
+app.use(cors());
 
 app.get("/api/random/:size", random);
 
 app.get("/api/metadata/:id", metadata);
 
-app.get("/api/download/:id/:chunk", download);
+app.get("/api/download/:id", download);
 
 app.ws("/api/upload", ws);
 
