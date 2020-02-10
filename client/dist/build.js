@@ -13481,7 +13481,6 @@ var Client = /** @class */ (function () {
         this.protocol = production ? "https" : "http";
         this.fileSizeLimit = 1024 * 1024 * 1024;
         this.chunkSize = 64 * 1024;
-        this.flagsSize = 1;
         this.blobFileSizeLimit = 1024 * 1024 * 250;
     }
     return Client;
@@ -38082,7 +38081,7 @@ var Cipher = /** @class */ (function () {
                     if (xhr.response) {
                         return [2 /*return*/, resolve(new Uint8Array(xhr.response))];
                     }
-                    return [2 /*return*/, reject(new Error("Response is empty"))];
+                    return [2 /*return*/, reject(new Error("Empty Response"))];
                 });
             }); };
             xhr.onabort = reject;
@@ -46118,6 +46117,7 @@ var Download = /** @class */ (function (_super) {
         _this.iv = null;
         _this.rawMetadata = null;
         _this.salt = null;
+        _this.startFrom = null;
         return _this;
     }
     // noinspection JSUnusedGlobalSymbols
@@ -46142,6 +46142,7 @@ var Download = /** @class */ (function (_super) {
                         this.iv = result.iv;
                         this.rawMetadata = result.metadata;
                         this.salt = result.password.salt;
+                        this.startFrom = result.startFrom;
                         if (!result.password.flag) return [3 /*break*/, 5];
                         this.showInput = true;
                         return [3 /*break*/, 9];
@@ -46234,7 +46235,8 @@ var Download = /** @class */ (function (_super) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__config__ = __webpack_require__(33);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils__ = __webpack_require__(28);
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -46272,52 +46274,117 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 
+
+function lengthOfMetadata(uint) {
+    if (uint.length !== 2) {
+        throw new Error("Incorrect size");
+    }
+    var fst = uint[0].toString(16);
+    var snd = uint[1].toString(16);
+    snd = snd.length === 1 ? "0" + snd : snd;
+    return parseInt(fst + snd, 16);
+}
 var DownloadMetadata = /** @class */ (function () {
     function DownloadMetadata(id) {
         this.id = id;
     }
     DownloadMetadata.prototype.download = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var iv, flag, len, metadata, c, startFrom, salt;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.getIv()];
+                    case 1:
+                        iv = _a.sent();
+                        return [4 /*yield*/, this.getFlag()];
+                    case 2:
+                        flag = _a.sent();
+                        return [4 /*yield*/, this.getLength()];
+                    case 3:
+                        len = _a.sent();
+                        return [4 /*yield*/, this.getMetadata(len)];
+                    case 4:
+                        metadata = _a.sent();
+                        c = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher;
+                        startFrom = c.ivLength + 1 + c.saltLength + 2 + len;
+                        if (flag[0] === 0) {
+                            return [2 /*return*/, {
+                                    iv: iv,
+                                    metadata: metadata,
+                                    password: { flag: false, salt: null },
+                                    startFrom: startFrom
+                                }];
+                        }
+                        return [4 /*yield*/, this.getSalt()];
+                    case 5:
+                        salt = _a.sent();
+                        return [2 /*return*/, {
+                                iv: iv,
+                                metadata: metadata,
+                                password: { flag: true, salt: salt },
+                                startFrom: startFrom
+                            }];
+                }
+            });
+        });
+    };
+    DownloadMetadata.prototype.range = function (start, end) {
         var _this = this;
         return new Promise(function (resolve, reject) {
             var xhr = new XMLHttpRequest();
             xhr.onloadend = function () { return __awaiter(_this, void 0, void 0, function () {
-                var iv, metadata, flags, salt, password;
                 return __generator(this, function (_a) {
                     if (xhr.status !== 200) {
                         return [2 /*return*/, reject(new Error(String(xhr.status)))];
                     }
                     if (xhr.response) {
-                        if (!xhr.response.iv ||
-                            !xhr.response.metadata ||
-                            !xhr.response.flags ||
-                            !xhr.response.salt) {
-                            return [2 /*return*/, reject(new Error("Required parameter is not available"))];
-                        }
-                        iv = new Uint8Array(xhr.response.iv.data);
-                        metadata = new Uint8Array(xhr.response.metadata.data);
-                        flags = new Uint8Array(xhr.response.flags.data);
-                        salt = new Uint8Array(xhr.response.salt.data);
-                        password = flags[0] === 1
-                            ? {
-                                flag: true,
-                                salt: salt
-                            }
-                            : {
-                                flag: false,
-                                salt: null
-                            };
-                        return [2 /*return*/, resolve({ iv: iv, metadata: metadata, password: password })];
+                        return [2 /*return*/, resolve(new Uint8Array(xhr.response))];
                     }
                     return [2 /*return*/, reject(new Error("Response is empty"))];
                 });
             }); };
             xhr.onabort = reject;
             xhr.onerror = reject;
-            var url = __WEBPACK_IMPORTED_MODULE_0__utils__["a" /* default */].server.classicUrl("/api/metadata/" + _this.id);
-            xhr.open("get", url);
-            xhr.responseType = "json";
+            var url = __WEBPACK_IMPORTED_MODULE_1__utils__["a" /* default */].server.classicUrl("/api/metadata/" + _this.id);
+            xhr.open("get", url, true);
+            xhr.setRequestHeader("Range", "bytes=" + start + "-" + end);
+            xhr.responseType = "arraybuffer";
             xhr.send();
         });
+    };
+    DownloadMetadata.prototype.getIv = function () {
+        return this.range(0, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.saltLength);
+    };
+    DownloadMetadata.prototype.getFlag = function () {
+        var start = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.saltLength;
+        var end = start + 1;
+        return this.range(start, end);
+    };
+    DownloadMetadata.prototype.getSalt = function () {
+        var start = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.ivLength + 1;
+        var end = start + __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.saltLength;
+        return this.range(start, end);
+    };
+    DownloadMetadata.prototype.getLength = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var start, end, uint;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        start = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.ivLength + 1 + __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.saltLength;
+                        end = start + 2;
+                        return [4 /*yield*/, this.range(start, end)];
+                    case 1:
+                        uint = _a.sent();
+                        return [2 /*return*/, lengthOfMetadata(uint)];
+                }
+            });
+        });
+    };
+    DownloadMetadata.prototype.getMetadata = function (length) {
+        var start = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.ivLength + 1 + __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].cipher.saltLength + 2;
+        var end = start + length;
+        return this.range(start, end);
     };
     return DownloadMetadata;
 }());
@@ -46928,7 +46995,11 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
       "maxlength": "25"
     },
     on: {
-      "focus": _vm.focus
+      "focus": _vm.focus,
+      "keyup": function($event) {
+        if (!('button' in $event) && _vm._k($event.keyCode, "enter", 13, $event.key)) { return null; }
+        _vm.confirm($event)
+      }
     },
     model: {
       value: (_vm.password),
@@ -50462,7 +50533,7 @@ var DownloadArea = /** @class */ (function (_super) {
                         if (!this.$props.cipher) {
                             return [2 /*return*/];
                         }
-                        download = new __WEBPACK_IMPORTED_MODULE_5__ts_downloadFile__["a" /* default */](this.$props.id, this.$props.metadata, this.$props.cipher);
+                        download = new __WEBPACK_IMPORTED_MODULE_5__ts_downloadFile__["a" /* default */](this.$props.id, this.$props.metadata, this.$props.cipher, this.$props.startFrom);
                         progress = function (u) {
                             _this.uploaded += u;
                         };
@@ -50505,7 +50576,8 @@ var DownloadArea = /** @class */ (function (_super) {
             props: {
                 id: String,
                 metadata: __WEBPACK_IMPORTED_MODULE_2__ts_metadata__["a" /* default */],
-                cipher: Object
+                cipher: Object,
+                startFrom: Number
             }
         })
     ], DownloadArea);
@@ -50567,12 +50639,12 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 
 var createWriteStream = __WEBPACK_IMPORTED_MODULE_1_streamsaver___default.a.createWriteStream;
 var DownloadFile = /** @class */ (function () {
-    function DownloadFile(id, metadata, cipher) {
+    function DownloadFile(id, metadata, cipher, startFrom) {
         this.id = id;
         this.metadata = metadata;
         this.cipher = cipher;
         var url = __WEBPACK_IMPORTED_MODULE_3__utils__["a" /* default */].server.classicUrl("/api/download/" + this.id);
-        this.stream = new __WEBPACK_IMPORTED_MODULE_2__downloadStream__["a" /* default */](url);
+        this.stream = new __WEBPACK_IMPORTED_MODULE_2__downloadStream__["a" /* default */](url, startFrom);
     }
     DownloadFile.prototype.download = function (blob, progress) {
         return __awaiter(this, void 0, void 0, function () {
@@ -51070,10 +51142,11 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 
 var DownloadStream = /** @class */ (function (_super) {
     __extends(DownloadStream, _super);
-    function DownloadStream(url) {
+    function DownloadStream(url, startFrom) {
         var _this = _super.call(this) || this;
         _this.url = url;
         _this.chunkNumber = 0;
+        _this.startFrom = startFrom;
         return _this;
     }
     DownloadStream.prototype.read = function () {
@@ -51123,7 +51196,9 @@ var DownloadStream = /** @class */ (function (_super) {
             }); };
             xhr.onabort = reject;
             xhr.onerror = reject;
-            xhr.open("get", _this.url + "/" + numberOfChunk);
+            xhr.open("get", _this.url);
+            xhr.setRequestHeader("X-Chunk-Number", numberOfChunk.toString());
+            xhr.setRequestHeader("X-Start-From", _this.startFrom.toString());
             xhr.responseType = "arraybuffer";
             xhr.send();
         });
@@ -51201,7 +51276,8 @@ module.exports={render:function (){var _vm=this;var _h=_vm.$createElement;var _c
     attrs: {
       "id": _vm.id,
       "metadata": _vm.metadata,
-      "cipher": _vm.cipher
+      "cipher": _vm.cipher,
+      "start-from": _vm.startFrom
     }
   }) : _vm._e()], 1), _vm._v(" "), _c('b-col', {
     staticClass: "d-none d-sm-none d-md-block",
@@ -51706,10 +51782,9 @@ var UploadArea = /** @class */ (function (_super) {
 
 "use strict";
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__cipher__ = __webpack_require__(233);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__config__ = __webpack_require__(33);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__fileStream__ = __webpack_require__(348);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__metadata__ = __webpack_require__(102);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils__ = __webpack_require__(28);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__fileStream__ = __webpack_require__(348);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__metadata__ = __webpack_require__(102);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils__ = __webpack_require__(28);
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -51750,18 +51825,41 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 
 
 
-
+function lengthOfMetadata(n) {
+    var hex = n.toString(16);
+    var len = hex.length;
+    if (len > 4) {
+        throw new Error("Metadata is too long");
+    }
+    if (len <= 2) {
+        return new Uint8Array([0, n]);
+    }
+    if (len === 3) {
+        return new Uint8Array([
+            parseInt(hex[0], 16),
+            parseInt(hex.slice(1, 3), 16)
+        ]);
+    }
+    return new Uint8Array([
+        parseInt(hex.slice(0, 2), 16),
+        parseInt(hex.slice(2, 4), 16)
+    ]);
+}
 var UploadFile = /** @class */ (function () {
     function UploadFile(file, password) {
         this.stop = false;
         this.id = "";
+        this.sendIv = false;
+        this.sendFlag = false;
+        this.sendSalt = false;
+        this.sendMetadata = false;
         this.cipher = password
             ? new __WEBPACK_IMPORTED_MODULE_0__cipher__["b" /* PasswordCipher */](password)
             : new __WEBPACK_IMPORTED_MODULE_0__cipher__["a" /* ClassicCipher */]();
-        this.fileStream = new __WEBPACK_IMPORTED_MODULE_2__fileStream__["a" /* default */](file);
-        this.metadata = new __WEBPACK_IMPORTED_MODULE_3__metadata__["a" /* default */](file);
+        this.fileStream = new __WEBPACK_IMPORTED_MODULE_1__fileStream__["a" /* default */](file);
+        this.metadata = new __WEBPACK_IMPORTED_MODULE_2__metadata__["a" /* default */](file);
         this.password = !!password;
-        this.url = __WEBPACK_IMPORTED_MODULE_4__utils__["a" /* default */].server.websocketUrl("/api/upload");
+        this.url = __WEBPACK_IMPORTED_MODULE_3__utils__["a" /* default */].server.websocketUrl("/api/upload");
     }
     UploadFile.prototype.upload = function (progress) {
         return __awaiter(this, void 0, void 0, function () {
@@ -51831,45 +51929,85 @@ var UploadFile = /** @class */ (function () {
     };
     UploadFile.prototype.message = function (msg, progress) {
         return __awaiter(this, void 0, void 0, function () {
-            var nextEl, flags, chunk, uploaded;
+            return __generator(this, function (_a) {
+                if (msg.id) {
+                    this.id = msg.id;
+                    return [2 /*return*/, null];
+                }
+                if (msg.status !== 200) {
+                    return [2 /*return*/, null];
+                }
+                if (!this.sendIv) {
+                    return [2 /*return*/, this.createIv()];
+                }
+                if (!this.sendFlag) {
+                    return [2 /*return*/, this.createFlag()];
+                }
+                if (!this.sendSalt) {
+                    return [2 /*return*/, this.createSalt()];
+                }
+                if (!this.sendMetadata) {
+                    return [2 /*return*/, this.createMetadata()];
+                }
+                return [2 /*return*/, this.createChunk(progress)];
+            });
+        });
+    };
+    UploadFile.prototype.createIv = function () {
+        this.sendIv = true;
+        return this.cipher.initializationVector();
+    };
+    UploadFile.prototype.createFlag = function () {
+        this.sendFlag = true;
+        var flags = new Uint8Array(1);
+        flags[0] = this.password ? 1 : 0;
+        return flags;
+    };
+    UploadFile.prototype.createSalt = function () {
+        return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        if (msg.hasOwnProperty("id")) {
-                            this.id = msg.id;
-                            return [2 /*return*/, null];
-                        }
-                        if (!msg.hasOwnProperty("nextElement")) return [3 /*break*/, 5];
-                        nextEl = msg.nextElement;
-                        if (nextEl === "iv") {
-                            return [2 /*return*/, this.cipher.initializationVector()];
-                        }
-                        if (!(nextEl === "metadata")) return [3 /*break*/, 2];
-                        return [4 /*yield*/, this.cipher.encryptMetadata(this.metadata)];
-                    case 1: return [2 /*return*/, _a.sent()];
-                    case 2:
-                        if (nextEl === "flags") {
-                            flags = new Uint8Array(__WEBPACK_IMPORTED_MODULE_1__config__["a" /* default */].client.flagsSize);
-                            flags[0] = this.password ? 1 : 0;
-                            return [2 /*return*/, flags];
-                        }
-                        if (!(nextEl === "salt")) return [3 /*break*/, 4];
+                        this.sendSalt = true;
                         return [4 /*yield*/, this.cipher.getSalt()];
-                    case 3: return [2 /*return*/, _a.sent()];
-                    case 4: return [2 /*return*/, null];
-                    case 5:
-                        if (msg.status !== 200) {
-                            return [2 /*return*/, null];
-                        }
-                        return [4 /*yield*/, this.fileStream.read()];
-                    case 6:
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    UploadFile.prototype.createMetadata = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var metadata, length, m;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        this.sendMetadata = true;
+                        return [4 /*yield*/, this.cipher.encryptMetadata(this.metadata)];
+                    case 1:
+                        metadata = _a.sent();
+                        length = lengthOfMetadata(metadata.length);
+                        m = new Uint8Array(length.length + metadata.length);
+                        m.set(length);
+                        m.set(metadata, length.length);
+                        return [2 /*return*/, m];
+                }
+            });
+        });
+    };
+    UploadFile.prototype.createChunk = function (progress) {
+        return __awaiter(this, void 0, void 0, function () {
+            var chunk, uploaded;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.fileStream.read()];
+                    case 1:
                         chunk = _a.sent();
                         uploaded = chunk.value.length;
                         progress(uploaded); // users function
-                        if (!!chunk.done) return [3 /*break*/, 8];
+                        if (!!chunk.done) return [3 /*break*/, 3];
                         return [4 /*yield*/, this.cipher.encryptChunk(chunk.value)];
-                    case 7: return [2 /*return*/, _a.sent()];
-                    case 8: return [2 /*return*/, "null"];
+                    case 2: return [2 /*return*/, _a.sent()];
+                    case 3: return [2 /*return*/, "null"];
                 }
             });
         });

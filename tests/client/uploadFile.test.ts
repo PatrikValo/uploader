@@ -1,8 +1,15 @@
 import WS from "jest-websocket-mock";
+import {
+    TextDecoder as Decoder,
+    TextEncoder as Encoder
+} from "text-encoding-shim";
 import Config from "../../client/src/ts/config";
 import Metadata from "../../client/src/ts/metadata";
 import UploadFile from "../../client/src/ts/uploadFile";
 import Utils from "../../client/src/ts/utils";
+
+(window as any).TextEncoder = Encoder;
+(window as any).TextDecoder = Decoder;
 
 async function exportedKey(): Promise<string> {
     return new Promise(resolve => {
@@ -57,7 +64,7 @@ jest.mock("../../client/src/ts/cipher", () => {
     return {
         ClassicCipher: class {
             public getSalt(): Uint8Array {
-                return new Uint8Array(16);
+                return new Uint8Array(Config.cipher.saltLength);
             }
 
             public async exportedKey(): Promise<string> {
@@ -91,6 +98,22 @@ jest.mock("../../client/src/ts/cipher", () => {
         PasswordCipher: class {
             public getSalt(): Uint8Array {
                 return new Uint8Array([
+                    0,
+                    15,
+                    1,
+                    14,
+                    2,
+                    13,
+                    3,
+                    12,
+                    4,
+                    11,
+                    5,
+                    10,
+                    6,
+                    9,
+                    7,
+                    8,
                     0,
                     15,
                     1,
@@ -142,369 +165,407 @@ jest.mock("../../client/src/ts/cipher", () => {
 });
 
 describe("UploadFile tests", () => {
-    const firstChunk = [125];
-    for (let i = 0; i < Config.client.chunkSize - 18; i++) {
-        firstChunk.push(8);
-    }
-    firstChunk.push(125);
+    describe("UploadFile basic tests", () => {
+        const firstChunk = [125];
+        for (let i = 0; i < Config.client.chunkSize - 18; i++) {
+            firstChunk.push(8);
+        }
+        firstChunk.push(125);
 
-    const secondChunk = [1, 2, 3, 4, 5, 6, 7, 8];
-    const concat = new Uint8Array(firstChunk.concat(secondChunk));
-    const blob = new Blob([], { type: "application/javascript" });
-    const file = new File([blob, concat], "test.js");
+        const secondChunk = [1, 2, 3, 4, 5, 6, 7, 8];
+        const concat = new Uint8Array(firstChunk.concat(secondChunk));
+        const blob = new Blob([], { type: "application/javascript" });
+        const file = new File([blob, concat], "test.js");
+        const metadata: Uint8Array = new Metadata(file).toUint8Array();
 
-    afterEach(() => {
-        WS.clean();
-    });
-
-    test("It should send correct IV to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: "iv" }));
-        await expect(server).toReceiveMessage(
-            new Uint8Array([
-                1,
-                2,
-                3,
-                4,
-                5,
-                6,
-                7,
-                8,
-                9,
-                10,
-                11,
-                12,
-                13,
-                14,
-                15,
-                16
-            ])
-        );
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct Flags without password to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: "flags" }));
-        await expect(server).toReceiveMessage(new Uint8Array(1));
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct Flags with password to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file, "aaa");
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: "flags" }));
-        await expect(server).toReceiveMessage(new Uint8Array([1]));
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct Salt without password to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: "salt" }));
-        await expect(server).toReceiveMessage(new Uint8Array(16));
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct Salt with password to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file, "ahoj");
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: "salt" }));
-        await expect(server).toReceiveMessage(
-            new Uint8Array([
-                0,
-                15,
-                1,
-                14,
-                2,
-                13,
-                3,
-                12,
-                4,
-                11,
-                5,
-                10,
-                6,
-                9,
-                7,
-                8
-            ])
-        );
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct Metadata to server and throw Exception after closed connection", async () => {
-        const metadataUint = new Uint8Array([1, 2, 125]);
-
-        const encoder = () => ({
-            encode: jest.fn().mockReturnValue(metadataUint)
+        afterEach(() => {
+            WS.clean();
         });
 
-        (window as any).TextEncoder = jest.fn().mockImplementation(encoder);
+        test("It should return correct key and ID without password", async () => {
+            expect.assertions(10);
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
 
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
+            await serverPromise;
 
-        await serverPromise;
+            // send IV
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(initializationVector());
+            // send flag
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array([0]));
+            // send salt
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(
+                new Uint8Array(Config.cipher.saltLength)
+            );
+            // send metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            const mtd = new Uint8Array(metadata.length + 2);
+            mtd.set(new Uint8Array([0, metadata.length]));
+            mtd.set(metadata, 2);
+            await expect(server).toReceiveMessage(mtd);
+            // send first chunk
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array(firstChunk));
+            expect(mockProgress.mock.calls[0][0]).toBe(firstChunk.length);
+            // send second chunk
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array(secondChunk));
+            expect(mockProgress.mock.calls[1][0]).toBe(secondChunk.length);
+            // send null
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage("null");
+            // receive ID
+            server.send(JSON.stringify({ id: "25id25" }));
 
-        server.send(JSON.stringify({ nextElement: "metadata" }));
-        await expect(server).toReceiveMessage(metadataUint);
-        expect(TextEncoder).toBeCalled();
-
-        server.close();
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should send correct all data to server and throw Exception after closed connection", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.send(JSON.stringify({ status: 200 }));
-        await expect(server).toReceiveMessage(new Uint8Array(firstChunk));
-        expect(mockProgress.mock.calls[0][0]).toBe(firstChunk.length);
-
-        server.send(JSON.stringify({ status: 200 }));
-        await expect(server).toReceiveMessage(new Uint8Array(secondChunk));
-        expect(mockProgress.mock.calls[1][0]).toBe(secondChunk.length);
-
-        server.send(JSON.stringify({ status: 200 }));
-        await expect(server).toReceiveMessage("null");
-        expect(mockProgress.mock.calls[2][0]).toBe(0);
-
-        server.close();
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-
-        expect(mockProgress.mock.calls.length).toBe(3);
-    });
-
-    test("It should throw Exception because server send bad status", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.send(JSON.stringify({ status: 500 }));
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should return correct key and ID without password", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.send(JSON.stringify({ id: "25-id-25" }));
-
-        await expect(resultPromise).resolves.toEqual({
-            id: "25-id-25",
-            key: "key"
-        });
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should return correct ID with password", async () => {
-        const uploadFile = new UploadFile(file, "aa");
-        const server = new WS(Utils.server.websocketUrl("/api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.send(JSON.stringify({ id: "25-id-25" }));
-
-        await expect(resultPromise).resolves.toEqual({
-            id: "25-id-25",
-            key: ""
-        });
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should return empty key and ID after stop uploading", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        uploadFile.cancel();
-        server.send(JSON.stringify({ status: 200 }));
-
-        await expect(resultPromise).resolves.toEqual({
-            id: "",
-            key: ""
+            await expect(resultPromise).resolves.toEqual({
+                id: "25id25",
+                key: "key"
+            });
         });
 
-        expect(mockProgress).not.toBeCalled();
-    });
+        test("It should return correct ID with password", async () => {
+            const uploadFile = new UploadFile(file, "aa");
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
 
-    test("It should throw Exception because server send incorrect message", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("api/upload"));
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
 
-        const mockProgress = jest.fn();
-        const serverPromise = server.connected;
-        const resultPromise = uploadFile.upload(mockProgress);
+            await serverPromise;
 
-        await serverPromise;
+            // send IV
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(initializationVector());
+            // send flag
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array([1]));
+            // send salt
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(
+                new Uint8Array([
+                    0,
+                    15,
+                    1,
+                    14,
+                    2,
+                    13,
+                    3,
+                    12,
+                    4,
+                    11,
+                    5,
+                    10,
+                    6,
+                    9,
+                    7,
+                    8,
+                    0,
+                    15,
+                    1,
+                    14,
+                    2,
+                    13,
+                    3,
+                    12,
+                    4,
+                    11,
+                    5,
+                    10,
+                    6,
+                    9,
+                    7,
+                    8
+                ])
+            );
+            // send metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            const mtd = new Uint8Array(metadata.length + 2);
+            mtd.set(new Uint8Array([0, metadata.length]));
+            mtd.set(metadata, 2);
+            await expect(server).toReceiveMessage(mtd);
+            // send first chunk
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array(firstChunk));
+            expect(mockProgress.mock.calls[0][0]).toBe(firstChunk.length);
+            // send second chunk
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(new Uint8Array(secondChunk));
+            expect(mockProgress.mock.calls[1][0]).toBe(secondChunk.length);
+            // send null
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage("null");
+            // receive ID
+            server.send(JSON.stringify({ id: "2id5" }));
 
-        server.send(JSON.stringify({ incorrectMsg: 200 }));
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should throw Exception because server send incorrect nextElement", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.send(JSON.stringify({ nextElement: 200 }));
-
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should throw Exception because websocket.onerror", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn();
-        const resultPromise = uploadFile.upload(mockProgress);
-
-        await serverPromise;
-
-        server.error();
-
-        await expect(resultPromise).rejects.not.toBeNull();
-        expect(mockProgress).not.toBeCalled();
-    });
-
-    test("It should throw Exception because progress function throws Error", async () => {
-        const uploadFile = new UploadFile(file);
-        const server = new WS(Utils.server.websocketUrl("api/upload"));
-
-        const serverPromise = server.connected;
-        const mockProgress = jest.fn().mockImplementation((u: number) => {
-            throw new Error("test" + u);
+            await expect(resultPromise).resolves.toEqual({
+                id: "2id5",
+                key: ""
+            });
         });
-        const resultPromise = uploadFile.upload(mockProgress);
 
-        await serverPromise;
+        test("It should return empty key and ID after stop uploading", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("api/upload"));
 
-        server.send(JSON.stringify({ status: 200 }));
-        await expect(resultPromise).rejects.toEqual(
-            new Error("Websocket problem")
-        );
-        expect(mockProgress.mock.calls[0][0]).toBe(firstChunk.length);
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            uploadFile.cancel();
+            server.send(JSON.stringify({ status: 200 }));
+
+            await expect(resultPromise).resolves.toEqual({
+                id: "",
+                key: ""
+            });
+
+            expect(mockProgress).not.toBeCalled();
+        });
+
+        test("It should upload IV but throw exception after closed connection", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // send IV
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(server).toReceiveMessage(initializationVector());
+            server.close();
+
+            await expect(resultPromise).rejects.toEqual(
+                new Error("Websocket problem")
+            );
+        });
+
+        test("It should throw exception because bad server status", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // send IV
+            server.send(JSON.stringify({ status: 500 }));
+
+            await expect(resultPromise).rejects.toEqual(
+                new Error("Websocket problem")
+            );
+        });
+
+        test("It should throw Exception because server send incorrect message", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("api/upload"));
+
+            const mockProgress = jest.fn();
+            const serverPromise = server.connected;
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            server.send(JSON.stringify({ incorrectMsg: 200 }));
+
+            await expect(resultPromise).rejects.toEqual(
+                new Error("Websocket problem")
+            );
+            expect(mockProgress).not.toBeCalled();
+        });
+
+        test("It should throw Exception because websocket.onerror", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            server.error();
+
+            await expect(resultPromise).rejects.not.toBeNull();
+            expect(mockProgress).not.toBeCalled();
+        });
+
+        test("It should throw Exception because progress function throws Error", async () => {
+            const uploadFile = new UploadFile(file);
+            const server = new WS(Utils.server.websocketUrl("api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn().mockImplementation((u: number) => {
+                throw new Error("test" + u);
+            });
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // IV
+            server.send(JSON.stringify({ status: 200 }));
+            // flag
+            server.send(JSON.stringify({ status: 200 }));
+            // salt
+            server.send(JSON.stringify({ status: 200 }));
+            // metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            // send first chunk
+            server.send(JSON.stringify({ status: 200 }));
+            await expect(resultPromise).rejects.toEqual(
+                new Error("Websocket problem")
+            );
+            expect(mockProgress.mock.calls[0][0]).toBe(firstChunk.length);
+        });
+    });
+
+    describe("Metadata size test", () => {
+        afterEach(() => {
+            WS.clean();
+        });
+        test("It should upload correct small metadata", async () => {
+            const name = "a";
+            const b = new Blob([], { type: "application/javascript" });
+            const f = new File([b], name);
+            const uploadFile = new UploadFile(f);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // IV
+            server.send(JSON.stringify({ status: 200 }));
+            // flag
+            server.send(JSON.stringify({ status: 200 }));
+            // salt
+            server.send(JSON.stringify({ status: 200 }));
+            // metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            // chunk
+            server.send(JSON.stringify({ status: 200 }));
+            server.send(JSON.stringify({ id: "aaa" }));
+
+            await expect(resultPromise).resolves.toEqual({
+                id: "aaa",
+                key: "key"
+            });
+        });
+
+        test("It should upload correct medium metadata", async () => {
+            let name = "";
+            for (let i = 0; i < 257; i++) {
+                name += "a";
+            }
+            name += ".js";
+            const b = new Blob([], { type: "application/javascript" });
+            const f = new File([b], name);
+            const uploadFile = new UploadFile(f);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // IV
+            server.send(JSON.stringify({ status: 200 }));
+            // flag
+            server.send(JSON.stringify({ status: 200 }));
+            // salt
+            server.send(JSON.stringify({ status: 200 }));
+            // metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            // chunk
+            server.send(JSON.stringify({ status: 200 }));
+            server.send(JSON.stringify({ id: "iid" }));
+
+            await expect(resultPromise).resolves.toEqual({
+                id: "iid",
+                key: "key"
+            });
+        });
+
+        test("It should upload correct big metadata", async () => {
+            let name = "";
+            for (let i = 0; i < 65500; i++) {
+                name += "a";
+            }
+            name += ".js";
+            const b = new Blob([], { type: "application/javascript" });
+            const f = new File([b], name);
+            const uploadFile = new UploadFile(f);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // IV
+            server.send(JSON.stringify({ status: 200 }));
+            // flag
+            server.send(JSON.stringify({ status: 200 }));
+            // salt
+            server.send(JSON.stringify({ status: 200 }));
+            // metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+            // chunk
+            server.send(JSON.stringify({ status: 200 }));
+            server.send(JSON.stringify({ id: "id" }));
+
+            await expect(resultPromise).resolves.toEqual({
+                id: "id",
+                key: "key"
+            });
+        });
+
+        test("It should throw exception because metadata is bigger than 2^16", async () => {
+            let name = "";
+            for (let i = 0; i < 64 * 1024; i++) {
+                name += "a";
+            }
+            name += ".js";
+            const b = new Blob([], { type: "application/javascript" });
+            const f = new File([b], name);
+            const uploadFile = new UploadFile(f);
+            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+
+            const serverPromise = server.connected;
+            const mockProgress = jest.fn();
+            const resultPromise = uploadFile.upload(mockProgress);
+
+            await serverPromise;
+
+            // IV
+            server.send(JSON.stringify({ status: 200 }));
+            // flag
+            server.send(JSON.stringify({ status: 200 }));
+            // salt
+            server.send(JSON.stringify({ status: 200 }));
+            // metadata + length
+            server.send(JSON.stringify({ status: 200 }));
+
+            await expect(resultPromise).rejects.toEqual(
+                new Error("Websocket problem")
+            );
+        });
     });
 });

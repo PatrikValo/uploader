@@ -97,6 +97,12 @@ describe("Storage tests", () => {
                 const result = file.size();
                 await expect(result).rejects.not.toBeNull();
             });
+
+            test("It should throw error because fd is not correct", async () => {
+                const file = new FileHandle(2.5);
+                const result = file.size();
+                await expect(result).rejects.not.toBeNull();
+            });
         });
 
         describe("Read", () => {
@@ -149,6 +155,12 @@ describe("Storage tests", () => {
                 await expect(read).rejects.toEqual(
                     new Error("File is already closed")
                 );
+            });
+
+            test("It should throw error because fd is not correct", async () => {
+                const file = new FileHandle(2.5);
+                const result = file.read(0, 10);
+                await expect(result).rejects.not.toBeNull();
             });
         });
 

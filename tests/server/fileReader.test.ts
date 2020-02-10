@@ -1,6 +1,7 @@
 import pathObj from "path";
 import Config from "../../server/src/config";
 import FileReader from "../../server/src/fileReader";
+import { FileHandle } from "../../server/src/storage";
 const path = pathObj.join(__dirname, "files");
 
 describe("FileReader tests", () => {
@@ -19,6 +20,15 @@ describe("FileReader tests", () => {
                 fileReader.close();
             };
             expect(fc).toThrow();
+        });
+    });
+
+    describe("Size", () => {
+        test("It should return correct size", async () => {
+            const file = new FileReader("correctFile", path);
+            const result = file.size();
+            await expect(result).resolves.toBe(65617);
+            await file.close();
         });
     });
 

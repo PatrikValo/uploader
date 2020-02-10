@@ -29,6 +29,7 @@ describe("DownloadMetadata test", () => {
     // METADATA
     const metadata = new Metadata(file);
     const metadataArray = [].slice.call(metadata.toUint8Array());
+    const c = Config.cipher;
 
     beforeEach(() => mock.setup());
     afterEach(() => mock.teardown());
@@ -40,26 +41,31 @@ describe("DownloadMetadata test", () => {
         const salt = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
         mock.get(url, (req, res) => {
-            const obj = {
-                flags: {
-                    data: flags,
-                    type: "Buffer"
-                },
-                iv: {
-                    data: iv,
-                    type: "Buffer"
-                },
-                metadata: {
-                    data: metadataArray,
-                    type: "Buffer"
-                },
-                salt: {
-                    data: salt,
-                    type: "Buffer"
-                }
-            };
-
-            return res.status(200).body(JSON.stringify(obj));
+            const header = req.header("Range");
+            expect(header).not.toBeNull();
+            switch (header) {
+                case `bytes=0-${c.ivLength}`:
+                    return res.status(200).body(new Uint8Array(iv));
+                case `bytes=${c.ivLength}-${c.ivLength + 1}`:
+                    return res.status(200).body(new Uint8Array(flags));
+                case `bytes=${c.ivLength + 1}-${c.ivLength + 1 + c.saltLength}`:
+                    return res.status(200).body(new Uint8Array(salt));
+                case `bytes=${c.ivLength + 1 + c.saltLength}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2}`:
+                    return res
+                        .status(200)
+                        .body(new Uint8Array([0, metadataArray.length]));
+                case `bytes=${c.ivLength + 1 + c.saltLength + 2}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2 +
+                    metadataArray.length}`:
+                    return res.status(200).body(new Uint8Array(metadataArray));
+                default:
+                    return res.status(500).body(null);
+            }
         });
 
         const resultPromise = download.download();
@@ -69,7 +75,8 @@ describe("DownloadMetadata test", () => {
             password: {
                 flag: true,
                 salt: new Uint8Array(salt)
-            }
+            },
+            startFrom: c.ivLength + 1 + c.saltLength + 2 + metadataArray.length
         });
     });
 
@@ -80,26 +87,31 @@ describe("DownloadMetadata test", () => {
         const salt = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
 
         mock.get(url, (req, res) => {
-            const obj = {
-                flags: {
-                    data: flags,
-                    type: "Buffer"
-                },
-                iv: {
-                    data: iv,
-                    type: "Buffer"
-                },
-                metadata: {
-                    data: metadataArray,
-                    type: "Buffer"
-                },
-                salt: {
-                    data: salt,
-                    type: "Buffer"
-                }
-            };
-
-            return res.status(200).body(JSON.stringify(obj));
+            const header = req.header("Range");
+            expect(header).not.toBeNull();
+            switch (header) {
+                case `bytes=0-${c.ivLength}`:
+                    return res.status(200).body(new Uint8Array(iv));
+                case `bytes=${c.ivLength}-${c.ivLength + 1}`:
+                    return res.status(200).body(new Uint8Array(flags));
+                case `bytes=${c.ivLength + 1}-${c.ivLength + 1 + c.saltLength}`:
+                    return res.status(200).body(new Uint8Array(salt));
+                case `bytes=${c.ivLength + 1 + c.saltLength}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2}`:
+                    return res
+                        .status(200)
+                        .body(new Uint8Array([0, metadataArray.length]));
+                case `bytes=${c.ivLength + 1 + c.saltLength + 2}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2 +
+                    metadataArray.length}`:
+                    return res.status(200).body(new Uint8Array(metadataArray));
+                default:
+                    return res.status(500).body(null);
+            }
         });
 
         const resultPromise = download.download();
@@ -109,31 +121,46 @@ describe("DownloadMetadata test", () => {
             password: {
                 flag: false,
                 salt: null
-            }
+            },
+            startFrom: c.ivLength + 1 + c.saltLength + 2 + metadataArray.length
         });
     });
 
-    test("It should throw Exception because flag and salt is not defined", async () => {
+    test("It should throw Exception because empty response", async () => {
         const download = new DownloadMetadata("1234-56789-d");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-d");
 
         mock.get(url, (req, res) => {
-            const obj = {
-                iv: {
-                    data: iv,
-                    type: "Buffer"
-                },
-                metadata: {
-                    data: metadataArray,
-                    type: "Buffer"
-                }
-            };
-            return res.status(200).body(JSON.stringify(obj));
+            const header = req.header("Range");
+            expect(header).not.toBeNull();
+            switch (header) {
+                case `bytes=0-${c.ivLength}`:
+                    return res.status(200).body(new Uint8Array(iv));
+                case `bytes=${c.ivLength}-${c.ivLength + 1}`:
+                    return res.status(200).body(null);
+                case `bytes=${c.ivLength + 1}-${c.ivLength + 1 + c.saltLength}`:
+                    return res.status(200).body(null);
+                case `bytes=${c.ivLength + 1 + c.saltLength}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2}`:
+                    return res
+                        .status(200)
+                        .body(new Uint8Array([0, metadataArray.length]));
+                case `bytes=${c.ivLength + 1 + c.saltLength + 2}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2 +
+                    metadataArray.length}`:
+                    return res.status(200).body(new Uint8Array(metadataArray));
+                default:
+                    return res.status(500).body(null);
+            }
         });
 
         const resultPromise = download.download();
         await expect(resultPromise).rejects.toEqual(
-            new Error("Required parameter is not available")
+            new Error("Response is empty")
         );
     });
 
@@ -149,17 +176,33 @@ describe("DownloadMetadata test", () => {
         await expect(resultPromise).rejects.toEqual(new Error("500"));
     });
 
-    test("It should throw Exception because empty response", async () => {
+    test("It should throw Exception because incorrect size of metadata", async () => {
         const download = new DownloadMetadata("1234-56789-ad");
         const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
 
         mock.get(url, (req, res) => {
-            return res.status(200).body(null);
+            const header = req.header("Range");
+            expect(header).not.toBeNull();
+            switch (header) {
+                case `bytes=0-${c.ivLength}`:
+                    return res.status(200).body(new Uint8Array(iv));
+                case `bytes=${c.ivLength}-${c.ivLength + 1}`:
+                    return res.status(200).body(new Uint8Array([0]));
+                case `bytes=${c.ivLength + 1}-${c.ivLength + 1 + c.saltLength}`:
+                    return res.status(200).body(new Uint8Array(c.saltLength));
+                case `bytes=${c.ivLength + 1 + c.saltLength}-${c.ivLength +
+                    1 +
+                    c.saltLength +
+                    2}`:
+                    return res.status(200).body(new Uint8Array([0]));
+                default:
+                    return res.status(500).body(null);
+            }
         });
 
         const resultPromise = download.download();
         await expect(resultPromise).rejects.toEqual(
-            new Error("Response is empty")
+            new Error("Incorrect size")
         );
     });
 });

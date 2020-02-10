@@ -17,20 +17,23 @@ describe("DownloadStream tests", () => {
     afterEach(() => mock.teardown());
 
     test("It should return correct all data", async () => {
-        expect.assertions(3);
+        expect.assertions(9);
 
-        const downloadStream = new DownloadStream(url);
+        const downloadStream = new DownloadStream(url, 250);
 
-        mock.get(url + "/0", (req, res) => {
-            return res.status(200).body(new Uint8Array(firstChunk));
-        });
-
-        mock.get(url + "/1", (req, res) => {
-            return res.status(200).body(new Uint8Array(secondChunk));
-        });
-
-        mock.get(url + "/2", (req, res) => {
-            return res.status(200).body(new Uint8Array(0));
+        mock.get(url, (req, res) => {
+            const start = req.header("X-Start-From");
+            const n = req.header("X-Chunk-Number");
+            expect(start).toEqual("250");
+            expect(n).not.toBeNull();
+            switch (n) {
+                case "0":
+                    return res.status(200).body(new Uint8Array(firstChunk));
+                case "1":
+                    return res.status(200).body(new Uint8Array(secondChunk));
+                default:
+                    return res.status(200).body(new Uint8Array(0));
+            }
         });
 
         let resultPromise = downloadStream.read();
@@ -53,16 +56,23 @@ describe("DownloadStream tests", () => {
     });
 
     test("It should return first chunk and after requesting second chunk throw Exception", async () => {
-        expect.assertions(2);
+        expect.assertions(6);
 
-        const downloadStream = new DownloadStream(url);
+        const downloadStream = new DownloadStream(url, 0);
 
-        mock.get(url + "/0", (req, res) => {
-            return res.status(200).body(new Uint8Array(firstChunk));
-        });
-
-        mock.get(url + "/1", (req, res) => {
-            return res.status(404).body(new Uint8Array(secondChunk));
+        mock.get(url, (req, res) => {
+            const start = req.header("X-Start-From");
+            const n = req.header("X-Chunk-Number");
+            expect(start).toEqual("0");
+            expect(n).not.toBeNull();
+            switch (n) {
+                case "0":
+                    return res.status(200).body(new Uint8Array(firstChunk));
+                case "1":
+                    return res.status(404).body(new Uint8Array(0));
+                default:
+                    return res.status(200).body(new Uint8Array(0));
+            }
         });
 
         let resultPromise = downloadStream.read();
@@ -76,12 +86,20 @@ describe("DownloadStream tests", () => {
     });
 
     test("It should throw Exception after empty response", async () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
-        const downloadStream = new DownloadStream(url);
+        const downloadStream = new DownloadStream(url, 0);
 
-        mock.get(url + "/0", (req, res) => {
-            return res.status(200).body(null);
+        mock.get(url, (req, res) => {
+            const start = req.header("X-Start-From");
+            const n = req.header("X-Chunk-Number");
+            expect(start).toEqual("0");
+            expect(n).not.toBeNull();
+            if (n === "0") {
+                return res.status(200).body(null);
+            } else {
+                return res.status(404).body(new Uint8Array(0));
+            }
         });
 
         const resultPromise = downloadStream.read();
@@ -92,12 +110,20 @@ describe("DownloadStream tests", () => {
     });
 
     test("It should throw Exception after bad status", async () => {
-        expect.assertions(1);
+        expect.assertions(3);
 
-        const downloadStream = new DownloadStream(url);
+        const downloadStream = new DownloadStream(url, 0);
 
-        mock.get(url + "/0", (req, res) => {
-            return res.status(500).body(null);
+        mock.get(url, (req, res) => {
+            const start = req.header("X-Start-From");
+            const n = req.header("X-Chunk-Number");
+            expect(start).toEqual("0");
+            expect(n).not.toBeNull();
+            if (n === "0") {
+                return res.status(500).body(null);
+            } else {
+                return res.status(404).body(new Uint8Array(0));
+            }
         });
 
         const resultPromise = downloadStream.read();
