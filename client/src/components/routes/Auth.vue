@@ -18,6 +18,7 @@ export default class Auth extends Vue {
         super();
     }
 
+    // noinspection JSUnusedGlobalSymbols
     public mounted() {
         const hash = this.$route.hash;
         if (!hash) {
