@@ -8,11 +8,7 @@
                 <redirect-button title="+" to="/"></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/image.svg"
-                    alt="Paper planes"
-                />
+                <plane-image></plane-image>
             </b-col>
         </b-row>
     </b-container>
@@ -25,8 +21,9 @@ import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import RedirectButton from "../RedirectButton.vue";
 import CopyButton from "../CopyButton.vue";
+import PlaneImage from "../PlaneImage.vue";
 @Component({
-    components: { RedirectButton, CopyButton, MainTitle }
+    components: { PlaneImage, RedirectButton, CopyButton, MainTitle }
 })
 export default class Copy extends Vue {
     public constructor() {
@@ -47,6 +44,7 @@ export default class Copy extends Vue {
 #input {
     margin: 10px 0 10px 0;
 }
+
 #input:focus {
     border-color: #343a40;
     box-shadow: none;
