@@ -9,11 +9,7 @@
                 ></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/empty-box.svg"
-                    alt="Paper planes"
-                />
+                <plane-image></plane-image>
             </b-col>
         </b-row>
     </b-container>
@@ -24,8 +20,9 @@ import Component from "vue-class-component";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import RedirectButton from "../RedirectButton.vue";
+import PlaneImage from "../PlaneImage.vue";
 @Component({
-    components: { RedirectButton, MainTitle }
+    components: { PlaneImage, RedirectButton, MainTitle }
 })
 export default class NotFound extends Vue {
     public constructor() {
