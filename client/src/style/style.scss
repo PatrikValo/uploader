@@ -4,13 +4,80 @@
 $font-family-sans-serif: "Roboto", sans-serif;
 $font-size-base: 1rem;
 
+.btn-warning, .alert-warning, .icon-format {
+  transition: background-color 1s;
+}
+
+.icon-format {
+  background-color: $yellow;
+}
+
+.dropbox-theme .btn-warning {
+  @extend .btn-primary;
+}
+
+.dropbox-theme .icon-format {
+  color: white;
+  background-color: $primary;
+}
+
+.dropbox-theme .st2 {
+  fill: $primary;
+}
+
+.dropbox-theme .alert-warning {
+  @extend .alert-primary;
+}
+
+.dropbox-theme .text-warning {
+  @extend .text-primary;
+}
+
+.dropbox-theme .bg-warning {
+  @extend .bg-primary;
+}
+
+.st0 {
+  fill: none;
+  stroke: #343a40;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+}
+
+.st2 {
+  fill: $yellow;
+  transition: fill 1s;
+}
+
+.st3 {
+  fill: #343a40;
+}
+
+.st4 {
+  fill: $yellow;
+  stroke: #343a40;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+  transition: fill 1s;
+}
+
+.dropbox-theme .st2 {
+  fill: $primary;
+}
+
+.dropbox-theme .st4 {
+  fill: $primary;
+  stroke: #343a40;
+  stroke-width: 3;
+  stroke-miterlimit: 10;
+}
+
 html,
 body {
   height: 100%;
 }
 
-body {
-  background-image: url("../assets/bg.svg");
+.background-theme {
   background-position: 15%;
   background-repeat: no-repeat;
   background-size: cover;
@@ -19,6 +86,17 @@ body {
   font-weight: 400;
   line-height: 1.5;
   color: #343a40;
+  transition: background-image 2s;
+}
+
+.dropbox-theme {
+  @extend .background-theme;
+  background-image: url("../assets/bg-blue.svg");
+}
+
+.classic-theme {
+  @extend .background-theme;
+  background-image: url("../assets/bg.svg");
 }
 
 button {
