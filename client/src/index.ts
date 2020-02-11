@@ -2,6 +2,7 @@ import BootstrapVue from "bootstrap-vue";
 import {
     AlertPlugin,
     ButtonPlugin,
+    DropdownPlugin,
     LayoutPlugin,
     ModalPlugin,
     ProgressPlugin
@@ -9,6 +10,7 @@ import {
 import Vue from "vue";
 import VueRouter from "vue-router";
 import App from "./App.vue";
+import AuthComponent from "./components/routes/Auth.vue";
 import CompatibilityComponent from "./components/routes/Compatibility.vue";
 import CopyComponent from "./components/routes/Copy.vue";
 import DownloadComponent from "./components/routes/Download.vue";
@@ -19,6 +21,7 @@ import "./style/style.scss";
 Vue.use(VueRouter);
 
 Vue.use(AlertPlugin);
+Vue.use(DropdownPlugin);
 Vue.use(BootstrapVue);
 Vue.use(LayoutPlugin);
 Vue.use(ProgressPlugin);
@@ -31,6 +34,7 @@ const routes = [
     { path: "/copy/:id", component: CopyComponent },
     { path: "/error", component: NotFoundComponent },
     { path: "/compatibility", component: CompatibilityComponent },
+    { path: "/auth", component: AuthComponent },
     { path: "*", redirect: "/" }
 ];
 
