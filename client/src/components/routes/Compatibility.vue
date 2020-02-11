@@ -10,11 +10,7 @@
                 >
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/image.svg"
-                    alt="Paper planes"
-                />
+                <plane-image></plane-image>
             </b-col>
         </b-row>
     </b-container>
@@ -24,9 +20,10 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
+import PlaneImage from "../PlaneImage.vue";
 
 @Component({
-    components: { MainTitle }
+    components: { PlaneImage, MainTitle }
 })
 export default class Compatibility extends Vue {
     public constructor() {
