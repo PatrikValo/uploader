@@ -28,6 +28,7 @@
     "bowser": "^2.7.0",
     "copy-to-clipboard": "^3.2.0",
     "cors": "^2.8.5",
+    "dropbox": "^4.0.30",
     "express": "^4.17.1",
     "express-ws": "^4.0.0",
     "file-saver": "^2.0.2",

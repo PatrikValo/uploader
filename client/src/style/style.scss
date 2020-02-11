@@ -21,10 +21,6 @@ $font-size-base: 1rem;
   background-color: $primary;
 }
 
-.dropbox-theme .st2 {
-  fill: $primary;
-}
-
 .dropbox-theme .alert-warning {
   @extend .alert-primary;
 }
@@ -51,6 +47,14 @@ $font-size-base: 1rem;
 
 .st3 {
   fill: #343a40;
+}
+
+.st5 {
+  fill: none;
+  stroke: #343a40;
+  stroke-width: 7;
+  stroke-linejoin: round;
+  stroke-miterlimit: 10;
 }
 
 .st4 {
