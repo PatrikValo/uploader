@@ -98,4 +98,32 @@ export default class Utils {
         const decoder: TextDecoder = new TextDecoder();
         return decoder.decode(uint);
     }
+
+    public static getRequest(
+        url: string,
+        headers: Array<{ header: string; value: string }>,
+        responseType: XMLHttpRequestResponseType
+    ): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onloadend = async () => {
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    return reject(new Error(String(xhr.status)));
+                }
+
+                return resolve(xhr.response);
+            };
+
+            xhr.onabort = reject;
+            xhr.onerror = reject;
+            xhr.open("get", url, true);
+
+            headers.forEach(value => {
+                xhr.setRequestHeader(value.header, value.value);
+            });
+
+            xhr.responseType = responseType;
+            xhr.send();
+        });
+    }
 }

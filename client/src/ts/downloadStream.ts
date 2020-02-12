@@ -1,4 +1,5 @@
 import { IReadStreamReturnValue, ReadStream } from "./readStream";
+import Utils from "./utils";
 
 export default class DownloadStream extends ReadStream {
     private readonly url: string;
@@ -28,32 +29,21 @@ export default class DownloadStream extends ReadStream {
         });
     }
 
-    private downloadChunk(numberOfChunk: number): Promise<Uint8Array | null> {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onloadend = async () => {
-                if (xhr.status !== 200) {
-                    return reject(new Error(String(xhr.status)));
-                }
+    private async downloadChunk(
+        numberOfChunk: number
+    ): Promise<Uint8Array | null> {
+        const headers = [
+            { header: "X-Chunk-Number", value: numberOfChunk.toString() },
+            { header: "X-Start-From", value: this.startFrom.toString() }
+        ];
 
-                if (xhr.response) {
-                    const chunk = new Uint8Array(xhr.response);
-                    if (!chunk.length) {
-                        return resolve(null);
-                    }
-                    return resolve(chunk);
-                }
+        const result = await Utils.getRequest(this.url, headers, "arraybuffer");
 
-                reject(new Error("Empty response"));
-            };
+        if (!result) {
+            throw new Error("Empty response");
+        }
 
-            xhr.onabort = reject;
-            xhr.onerror = reject;
-            xhr.open("get", this.url);
-            xhr.setRequestHeader("X-Chunk-Number", numberOfChunk.toString());
-            xhr.setRequestHeader("X-Start-From", this.startFrom.toString());
-            xhr.responseType = "arraybuffer";
-            xhr.send();
-        });
+        const chunk = new Uint8Array(result);
+        return !chunk.length ? null : chunk;
     }
 }

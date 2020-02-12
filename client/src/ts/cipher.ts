@@ -14,27 +14,15 @@ export abstract class Cipher {
         return this.crypto.getRandomValues(buff);
     }
 
-    public serverRandomValues(size: number): Promise<Uint8Array> {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onloadend = async () => {
-                if (xhr.status !== 200) {
-                    return reject(new Error(String(xhr.status)));
-                }
+    public async serverRandomValues(size: number): Promise<Uint8Array> {
+        const url = Utils.server.classicUrl("/api/random/" + size);
+        const result = await Utils.getRequest(url, [], "arraybuffer");
 
-                if (xhr.response) {
-                    return resolve(new Uint8Array(xhr.response));
-                }
+        if (!result || result.byteLength !== size) {
+            throw new Error("Incorrect response");
+        }
 
-                return reject(new Error("Empty Response"));
-            };
-            xhr.onabort = reject;
-            xhr.onerror = reject;
-            const url = Utils.server.classicUrl("/api/random/" + size);
-            xhr.open("get", url);
-            xhr.responseType = "arraybuffer";
-            xhr.send();
-        });
+        return new Uint8Array(result);
     }
 
     public randomValues(size: number): Promise<Uint8Array> {
