@@ -103,7 +103,7 @@ import Component from "vue-class-component";
 import Vue from "vue";
 
 @Component({})
-export default class PlaneImage extends Vue {
+export default class BoxImage extends Vue {
     public constructor() {
         super();
     }
