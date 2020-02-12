@@ -26,20 +26,20 @@ export default class App extends Vue {
         this.auth = new AuthDropbox();
         this.isLoggedIn = this.auth.isLoggedIn();
 
-        // logout event
-        this.auth.$on("changeStatus", this.changeStatus);
+        // login/logout event
+        this.auth.on("changeStatus", this.changeStatus);
     }
 
     public click() {
         if (this.auth.isLoggedIn()) {
-            return this.auth.logOut();
+            return this.$router.push("/logout");
         }
 
         location.href = this.auth.getAuthUrl();
     }
 
-    public changeStatus(value: boolean) {
-        this.isLoggedIn = value;
+    public changeStatus(isLoggedIn: boolean) {
+        this.isLoggedIn = isLoggedIn;
     }
 }
 </script>

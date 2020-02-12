@@ -16,21 +16,16 @@ import AuthDropbox from "../../ts/authDropbox";
         auth: AuthDropbox
     }
 })
-export default class Auth extends Vue {
+export default class Logout extends Vue {
     public constructor() {
         super();
     }
 
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
-        const hash = this.$route.hash;
-        if (!hash) {
-            return this.$router.push("/");
-        }
-
         try {
             const a: AuthDropbox = this.$props.auth;
-            a.logIn(hash);
+            a.logOut();
             setTimeout(() => {
                 return this.$router.push("/");
             }, 500);
