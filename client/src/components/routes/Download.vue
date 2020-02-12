@@ -48,6 +48,7 @@ import { Cipher, PasswordCipher, ClassicCipher } from "../../ts/cipher";
 import DownloadArea from "../DownloadArea.vue";
 import BoxImage from "../BoxImage.vue";
 import AuthDropbox from "../../ts/authDropbox";
+import { IDownloadMetadata } from "../../ts/interfaces/IDownloadMetadata";
 
 @Component({
     components: {
@@ -89,7 +90,7 @@ export default class Download extends Vue {
         this.id = this.$route.params.id;
         const a: AuthDropbox = this.$props.auth;
 
-        const downloadMetadata = a.isLoggedIn()
+        const downloadMetadata: IDownloadMetadata = a.isLoggedIn()
             ? new DownloadMetadataDropbox(this.id, a)
             : new DownloadMetadataServer(this.id);
 

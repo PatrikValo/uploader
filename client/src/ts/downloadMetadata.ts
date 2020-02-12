@@ -1,15 +1,10 @@
+import AuthDropbox from "./authDropbox";
 import Config from "./config";
+import {
+    IDownloadMetadata,
+    IReturnValue
+} from "./interfaces/IDownloadMetadata";
 import Utils from "./utils";
-
-interface IReturnValue {
-    iv: Uint8Array;
-    metadata: Uint8Array;
-    password: {
-        flag: boolean;
-        salt: Uint8Array | null;
-    };
-    startFrom: number;
-}
 
 function lengthOfMetadata(uint: Uint8Array): number {
     if (uint.length !== 2) {
@@ -22,13 +17,7 @@ function lengthOfMetadata(uint: Uint8Array): number {
     return parseInt(fst + snd, 16);
 }
 
-export default class DownloadMetadata {
-    private readonly id: string;
-
-    public constructor(id: string) {
-        this.id = id;
-    }
-
+abstract class DownloadMetadata implements IDownloadMetadata {
     public async download(): Promise<IReturnValue> {
         const iv: Uint8Array = await this.getIv();
         const flag: Uint8Array = await this.getFlag();
@@ -53,29 +42,7 @@ export default class DownloadMetadata {
         };
     }
 
-    private range(start: number, end: number): Promise<Uint8Array> {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onloadend = async () => {
-                if (xhr.status !== 200) {
-                    return reject(new Error(String(xhr.status)));
-                }
-
-                if (xhr.response) {
-                    return resolve(new Uint8Array(xhr.response));
-                }
-
-                return reject(new Error("Response is empty"));
-            };
-            xhr.onabort = reject;
-            xhr.onerror = reject;
-            const url = Utils.server.classicUrl("/api/metadata/" + this.id);
-            xhr.open("get", url, true);
-            xhr.setRequestHeader("Range", `bytes=${start}-${end}`);
-            xhr.responseType = "arraybuffer";
-            xhr.send();
-        });
-    }
+    protected abstract range(start: number, end: number): Promise<Uint8Array>;
 
     private getIv(): Promise<Uint8Array> {
         return this.range(0, Config.cipher.saltLength);
@@ -104,5 +71,68 @@ export default class DownloadMetadata {
         const start = Config.cipher.ivLength + 1 + Config.cipher.saltLength + 2;
         const end = start + length;
         return this.range(start, end);
+    }
+}
+
+export class DownloadMetadataServer extends DownloadMetadata {
+    private readonly id: string;
+
+    public constructor(id: string) {
+        super();
+        this.id = id;
+    }
+
+    protected async range(start: number, end: number): Promise<Uint8Array> {
+        const url = Utils.server.classicUrl("/api/metadata/" + this.id);
+        const headers = [
+            {
+                header: "Range",
+                value: `bytes=${start}-${end}`
+            }
+        ];
+
+        const result = await Utils.getRequest(url, headers, "arraybuffer");
+
+        if (!result || result.byteLength === 0) {
+            throw new Error("Empty response");
+        }
+
+        return new Uint8Array(result);
+    }
+}
+
+export class DownloadMetadataDropbox extends DownloadMetadata {
+    private readonly id: string;
+    private readonly auth: AuthDropbox;
+
+    public constructor(id: string, auth: AuthDropbox) {
+        super();
+        this.id = id;
+        this.auth = auth;
+    }
+
+    protected async range(start: number, end: number): Promise<Uint8Array> {
+        const url = "https://content.dropboxapi.com/2/files/download";
+        const headers = [
+            {
+                header: "Authorization",
+                value: `Bearer ${this.auth.getAccessToken()}`
+            },
+            {
+                header: "Dropbox-API-Arg",
+                value: `{"path": "/${this.id}"}`
+            },
+            {
+                header: "Range",
+                value: `bytes=${start}-${end - 1}`
+            }
+        ];
+        const result = await Utils.getRequest(url, headers, "arraybuffer");
+
+        if (!result || result.byteLength === 0) {
+            throw new Error("Empty response");
+        }
+
+        return new Uint8Array(result);
     }
 }
