@@ -114,8 +114,16 @@ export default class Utils {
                 return resolve(xhr.response);
             };
 
-            xhr.onabort = reject;
-            xhr.onerror = reject;
+            xhr.onabort = () => {
+                return reject(new Error("The request was aborted"));
+            };
+
+            xhr.onerror = () => {
+                return reject(
+                    new Error("An error occurred during the request")
+                );
+            };
+
             xhr.open("get", url, true);
 
             headers.forEach(value => {

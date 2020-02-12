@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-alert v-if="emptyPassword" show variant="warning" fade
+        <b-alert v-if="emptyPassword" show variant="warning"
             >Heslo nemôže byť prázdne</b-alert
         >
         <file-info :name="file.name" :size="file.size"></file-info>
@@ -22,7 +22,8 @@
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
 import SizeIndicator from "./SizeIndicator.vue";
-import UploadFile from "../ts/uploadFile";
+import IUploadFile from "../ts/interfaces/IUploadFile";
+import { UploadFileServer, UploadFileDropbox } from "../ts/uploadFile";
 import Vue from "vue";
 import FileName from "./FileName.vue";
 import FileIcon from "./FileIcon.vue";
@@ -30,6 +31,7 @@ import FileInfo from "./FileInfo.vue";
 import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
 import Limiter from "../ts/limiter";
+import AuthDropbox from "../ts/authDropbox";
 
 @Component({
     components: {
@@ -42,14 +44,15 @@ import Limiter from "../ts/limiter";
         SizeIndicator
     },
     props: {
-        file: File
+        file: File,
+        auth: AuthDropbox
     }
 })
 export default class UploadArea extends Vue {
     public startUploading: boolean = false;
     public uploaded: number = 0;
     public hasPassword: boolean = false;
-    private uploader: UploadFile | null = null;
+    private uploader: IUploadFile | null = null;
     private password: string = "";
 
     public constructor() {
@@ -71,10 +74,18 @@ export default class UploadArea extends Vue {
             return;
         }
 
-        this.uploader = new UploadFile(
-            this.$props.file,
-            this.hasPassword ? this.password : undefined
-        );
+        if (this.$props.auth.isLoggedIn()) {
+            this.uploader = new UploadFileDropbox(
+                this.$props.file,
+                this.$props.auth,
+                this.hasPassword ? this.password : undefined
+            );
+        } else {
+            this.uploader = new UploadFileServer(
+                this.$props.file,
+                this.hasPassword ? this.password : undefined
+            );
+        }
 
         this.startUploading = true;
 
@@ -86,7 +97,7 @@ export default class UploadArea extends Vue {
             }
             this.$emit("finish", result);
         } catch (e) {
-            this.$emit("error", new Error("Error during sending file"));
+            this.$emit("error", e);
         }
     }
 

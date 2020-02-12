@@ -6,6 +6,11 @@
                 <b-alert v-if="alert" show variant="warning">{{
                     alert
                 }}</b-alert>
+                <b-row v-if="!file" align-v="center">
+                    <b-col>
+                        <upload-image></upload-image>
+                    </b-col>
+                </b-row>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -24,6 +29,7 @@
                 <upload-area
                     v-if="file"
                     :file="file"
+                    :auth="auth"
                     @finish="finish"
                     @error="error"
                     @cancel="cancel"
@@ -31,11 +37,7 @@
                 ></upload-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/image.svg"
-                    alt="Paper planes"
-                />
+                <plane-image></plane-image>
             </b-col>
         </b-row>
     </b-container>
@@ -48,9 +50,15 @@ import UploadArea from "../UploadArea.vue";
 import Vue from "vue";
 import Utils from "../../ts/utils";
 import { UploadCompatibility } from "../../ts/compatibility";
+import PlaneImage from "../PlaneImage.vue";
+import AuthDropbox from "../../ts/authDropbox";
+import UploadImage from "../UploadImage.vue";
 
 @Component({
-    components: { UploadArea, MainTitle }
+    components: { UploadImage, PlaneImage, UploadArea, MainTitle },
+    props: {
+        auth: AuthDropbox
+    }
 })
 export default class Upload extends Vue {
     public file: File | null;
@@ -89,7 +97,7 @@ export default class Upload extends Vue {
 
     public error(e: Error): void {
         this.alert = "Počas nahrávania nastala chyba";
-        console.error(e.message);
+        console.error("Nastala chyba!", e);
         this.file = null;
     }
 
@@ -125,7 +133,7 @@ export default class Upload extends Vue {
 }
 
 #file-upload-label {
-    margin-top: 5px;
+    margin-top: 20px;
 }
 
 label {
