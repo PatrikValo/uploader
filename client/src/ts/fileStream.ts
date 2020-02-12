@@ -1,22 +1,20 @@
 import Config from "./config";
-import { IReadStreamReturnValue, ReadStream } from "./readStream";
 
-export default class FileStream extends ReadStream {
+export default class FileStream {
     private file: File;
     private readonly size: number;
     private index: number = 0;
     private chunkSize: number = Config.client.chunkSize - 16;
 
     public constructor(file: File) {
-        super();
         this.file = file;
         this.size = file.size;
     }
 
-    public read(): Promise<IReadStreamReturnValue> {
+    public read(): Promise<{ done: boolean; value: Uint8Array }> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
-                return resolve(super.close());
+                return resolve({ done: true, value: new Uint8Array(0) });
             }
 
             const start = this.index;
@@ -31,11 +29,10 @@ export default class FileStream extends ReadStream {
             const fileReader: FileReader = new FileReader();
 
             fileReader.onload = () => {
-                return resolve(
-                    super.enqueue(
-                        new Uint8Array(fileReader.result as ArrayBuffer)
-                    )
-                );
+                return resolve({
+                    done: false,
+                    value: new Uint8Array(fileReader.result as ArrayBuffer)
+                });
             };
 
             fileReader.onerror = reject;

@@ -1,28 +1,31 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
+import AuthDropbox from "./authDropbox";
 import { Cipher } from "./cipher";
-import DownloadStream from "./downloadStream";
+import { DownloadStreamDropbox, DownloadStreamServer } from "./downloadStream";
 import Metadata from "./metadata";
-import Utils from "./utils";
 const { createWriteStream } = streamSaver;
+import { IDownloadStream } from "./interfaces/IDownloadStream";
 
 export default class DownloadFile {
     private readonly id: string;
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
-    private readonly stream: DownloadStream;
+    private readonly stream: IDownloadStream;
 
     public constructor(
         id: string,
         metadata: Metadata,
         cipher: Cipher,
-        startFrom: number
+        startFrom: number,
+        auth: AuthDropbox
     ) {
         this.id = id;
         this.metadata = metadata;
         this.cipher = cipher;
-        const url = Utils.server.classicUrl("/api/download/" + this.id);
-        this.stream = new DownloadStream(url, startFrom);
+        this.stream = auth.isLoggedIn()
+            ? new DownloadStreamDropbox(this.id, startFrom, auth)
+            : new DownloadStreamServer(this.id, startFrom);
     }
 
     public async download(blob: boolean, progress: (u: number) => any) {
