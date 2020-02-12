@@ -5,6 +5,7 @@
                 <main-title title="Kopírovať odkaz"></main-title>
                 <b-input id="input" v-model="url"></b-input>
                 <copy-button :url="url"></copy-button>
+                <redirect-button title="Stiahnuť" :to="path"></redirect-button>
                 <redirect-button title="+" to="/"></redirect-button>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
@@ -30,13 +31,24 @@ export default class Copy extends Vue {
         super();
     }
 
-    get url(): string {
+    public key(): string {
         let key: string = this.$route.hash;
         if (key.length > 1) {
             key = key.substr(1);
         }
+        return key;
+    }
+
+    get url(): string {
+        let key = this.key();
 
         return Utils.buildUrl("download", this.$route.params.id, key);
+    }
+
+    get path(): string {
+        let key = this.key();
+
+        return Utils.buildPath("download", this.$route.params.id, key);
     }
 }
 </script>
