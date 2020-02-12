@@ -19,14 +19,11 @@
                     :metadata="metadata"
                     :cipher="cipher"
                     :start-from="startFrom"
+                    :auth="auth"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/empty-box.svg"
-                    alt="Paper planes"
-                />
+                <box-image></box-image>
             </b-col>
         </b-row>
     </b-container>
@@ -34,7 +31,10 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import DownloadMetadata from "../../ts/downloadMetadata";
+import {
+    DownloadMetadataServer,
+    DownloadMetadataDropbox
+} from "../../ts/downloadMetadata";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
@@ -46,9 +46,12 @@ import { DownloadCompatibility } from "../../ts/compatibility";
 import ProgressBar from "../ProgressBar.vue";
 import { Cipher, PasswordCipher, ClassicCipher } from "../../ts/cipher";
 import DownloadArea from "../DownloadArea.vue";
+import BoxImage from "../BoxImage.vue";
+import AuthDropbox from "../../ts/authDropbox";
 
 @Component({
     components: {
+        BoxImage,
         DownloadArea,
         ProgressBar,
         LoadingPage,
@@ -56,6 +59,9 @@ import DownloadArea from "../DownloadArea.vue";
         DownloadButton,
         FileInfo,
         MainTitle
+    },
+    props: {
+        auth: AuthDropbox
     }
 })
 export default class Download extends Vue {
@@ -81,7 +87,11 @@ export default class Download extends Vue {
         }
 
         this.id = this.$route.params.id;
-        const downloadMetadata = new DownloadMetadata(this.id);
+        const a: AuthDropbox = this.$props.auth;
+
+        const downloadMetadata = a.isLoggedIn()
+            ? new DownloadMetadataDropbox(this.id, a)
+            : new DownloadMetadataServer(this.id);
 
         try {
             const result = await downloadMetadata.download();

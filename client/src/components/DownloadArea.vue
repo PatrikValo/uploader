@@ -26,6 +26,7 @@ import DownloadFile from "../ts/downloadFile";
 import FileInfo from "./FileInfo.vue";
 import ProgressBar from "./ProgressBar.vue";
 import DownloadButton from "./DownloadButton.vue";
+import AuthDropbox from "../ts/authDropbox";
 
 @Component({
     components: { DownloadButton, ProgressBar, FileInfo },
@@ -33,7 +34,8 @@ import DownloadButton from "./DownloadButton.vue";
         id: String,
         metadata: Metadata,
         cipher: Object as () => Cipher,
-        startFrom: Number
+        startFrom: Number,
+        auth: AuthDropbox
     }
 })
 export default class DownloadArea extends Vue {
@@ -59,7 +61,8 @@ export default class DownloadArea extends Vue {
             this.$props.id,
             this.$props.metadata,
             this.$props.cipher,
-            this.$props.startFrom
+            this.$props.startFrom,
+            this.$props.auth
         );
 
         const progress = (u: number) => {
@@ -71,7 +74,7 @@ export default class DownloadArea extends Vue {
             await download.download(this.blob, progress);
         } catch (e) {
             this.alert = "Pri sťahovaní nastala chyba";
-            console.log("Nastala chyba!", e);
+            console.error("Nastala chyba!", e);
         }
 
         this.downloading = false;
