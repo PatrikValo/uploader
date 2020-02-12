@@ -14,6 +14,7 @@ import AuthComponent from "./components/routes/Auth.vue";
 import CompatibilityComponent from "./components/routes/Compatibility.vue";
 import CopyComponent from "./components/routes/Copy.vue";
 import DownloadComponent from "./components/routes/Download.vue";
+import LogoutComponent from "./components/routes/Logout.vue";
 import NotFoundComponent from "./components/routes/NotFound.vue";
 import UploadComponent from "./components/routes/Upload.vue";
 import "./style/style.scss";
@@ -35,6 +36,7 @@ const routes = [
     { path: "/error", component: NotFoundComponent },
     { path: "/compatibility", component: CompatibilityComponent },
     { path: "/auth", component: AuthComponent },
+    { path: "/logout", component: LogoutComponent },
     { path: "*", redirect: "/" }
 ];
 

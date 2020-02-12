@@ -1,8 +1,8 @@
 import { Dropbox } from "dropbox";
-import Vue from "vue";
+import { EventEmitter } from "events";
 import Utils from "./utils";
 
-export default class AuthDropbox extends Vue {
+export default class AuthDropbox extends EventEmitter {
     private readonly clientId: string;
     private accessToken: string;
     private accountId: string;
@@ -29,13 +29,13 @@ export default class AuthDropbox extends Vue {
         const accountId: string = decodeURIComponent(items[3].split("=")[1]);
         this.setAccessToken(accessToken);
         this.setAccountId(accountId);
-        this.$emit("changeStatus", true);
+        this.emit("changeStatus", true);
     }
 
     public logOut(): void {
         this.setAccountId("");
         this.setAccessToken("");
-        this.$emit("changeStatus", false);
+        this.emit("changeStatus", false);
     }
 
     public isLoggedIn(): boolean {
@@ -48,6 +48,10 @@ export default class AuthDropbox extends Vue {
             clientId: this.clientId,
             fetch
         });
+    }
+
+    public getAccessToken(): string {
+        return this.accessToken;
     }
 
     public getAccountId(): string {
