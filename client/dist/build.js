@@ -52828,7 +52828,7 @@ var DownloadFile = /** @class */ (function () {
 
 /* global chrome location ReadableStream define MessageChannel TransformStream */
 
-((name, definition) => {
+;((name, definition) => {
    true
     ? module.exports = definition()
     : typeof define === 'function' && typeof define.amd === 'object'
