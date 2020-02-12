@@ -1,5 +1,6 @@
 import { Dropbox } from "dropbox";
 import { EventEmitter } from "events";
+import fetch from "isomorphic-fetch";
 import Utils from "./utils";
 
 export default class AuthDropbox extends EventEmitter {
