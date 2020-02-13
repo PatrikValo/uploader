@@ -14,7 +14,7 @@ export default async (req: express.Request, res: express.Response) => {
                 const end = range[0].end;
                 const result = await fileReader.metadata(start, end);
 
-                return res.status(200).send(result);
+                return res.status(206).send(result);
             }
         }
 
