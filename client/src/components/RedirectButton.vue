@@ -23,7 +23,7 @@ export default class RedirectButton extends Vue {
         this.$router.push(this.$props.to);
     }
 
-    public get destination() {
+    get destination() {
         return this.$props.to == "/" ? "Domov" : this.$props.title;
     }
 }

@@ -49,9 +49,9 @@ import AuthDropbox from "../ts/authDropbox";
     }
 })
 export default class UploadArea extends Vue {
-    public startUploading: boolean = false;
-    public uploaded: number = 0;
-    public hasPassword: boolean = false;
+    private startUploading: boolean = false;
+    private uploaded: number = 0;
+    private hasPassword: boolean = false;
     private uploader: IUploadFile | null = null;
     private password: string = "";
 
@@ -116,7 +116,7 @@ export default class UploadArea extends Vue {
         this.password = "";
     }
 
-    public get emptyPassword() {
+    get emptyPassword() {
         return this.hasPassword && !this.password;
     }
 

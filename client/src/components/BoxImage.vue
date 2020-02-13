@@ -1,12 +1,6 @@
 <template>
-    <svg
-        version="1.1"
-        x="0px"
-        y="0px"
-        viewBox="0 0 708 587"
-        style="enable-background:new 0 0 708 587;"
-        xml:space="preserve"
-    >
+    <!--suppress HtmlDeprecatedAttribute, HtmlUnknownAttribute -->
+    <svg version="1.1" x="0px" y="0px" viewBox="0 0 708 587">
         <polygon class="st2" points="588,387 508,427 547,384 531,325 " />
         <polygon
             class="st2"

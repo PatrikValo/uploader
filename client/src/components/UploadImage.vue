@@ -1,4 +1,5 @@
 <template>
+    <!--suppress HtmlDeprecatedAttribute, HtmlUnknownAttribute -->
     <svg
         version="1.1"
         x="0px"

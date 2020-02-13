@@ -66,12 +66,12 @@ import { IDownloadMetadata } from "../../ts/interfaces/IDownloadMetadata";
     }
 })
 export default class Download extends Vue {
-    public showInput: boolean = false;
-    public mount: boolean = false;
-    public alert: string = "";
-    public id: string = "";
-    public metadata: Metadata | null = null;
-    public cipher: Cipher | null = null;
+    private showInput: boolean = false;
+    private mount: boolean = false;
+    private alert: string = "";
+    private id: string = "";
+    private metadata: Metadata | null = null;
+    private cipher: Cipher | null = null;
     private iv: Uint8Array | null = null;
     private rawMetadata: Uint8Array | null = null;
     private salt: Uint8Array | null = null;

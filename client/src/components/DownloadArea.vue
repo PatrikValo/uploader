@@ -39,9 +39,9 @@ import AuthDropbox from "../ts/authDropbox";
     }
 })
 export default class DownloadArea extends Vue {
-    public downloading: boolean = false;
-    public uploaded: number = 0;
-    public alert: string = "";
+    private downloading: boolean = false;
+    private uploaded: number = 0;
+    private alert: string = "";
     private readonly blob: boolean;
 
     public constructor() {
@@ -81,7 +81,7 @@ export default class DownloadArea extends Vue {
         this.uploaded = 0;
     }
 
-    public get showDownloadButton(): boolean {
+    get showDownloadButton(): boolean {
         const blobLimit = Config.client.blobFileSizeLimit;
 
         if (this.blob && blobLimit < this.$props.metadata.size) {

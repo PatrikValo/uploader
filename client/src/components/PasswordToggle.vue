@@ -23,7 +23,7 @@ import Vue from "vue";
 
 @Component({})
 export default class PasswordToggle extends Vue {
-    public show: boolean = false;
+    private show: boolean = false;
 
     public constructor() {
         super();

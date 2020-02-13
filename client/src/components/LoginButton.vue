@@ -44,9 +44,9 @@ import AuthDropbox from "../ts/authDropbox";
     }
 })
 export default class LoginButton extends Vue {
-    public loggedIn: boolean = false;
-    public name: string = "Načítava...";
-    public link: string = "";
+    private loggedIn: boolean = false;
+    private name: string = "Načítava...";
+    private link: string = "";
 
     public constructor() {
         super();

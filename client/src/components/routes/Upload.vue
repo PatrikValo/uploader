@@ -61,8 +61,8 @@ import UploadImage from "../UploadImage.vue";
     }
 })
 export default class Upload extends Vue {
-    public file: File | null;
-    public alert: string;
+    private file: File | null;
+    private alert: string;
 
     public constructor() {
         super();

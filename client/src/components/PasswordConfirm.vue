@@ -25,7 +25,7 @@ import RedirectButton from "./RedirectButton.vue";
     components: { RedirectButton }
 })
 export default class PasswordConfirm extends Vue {
-    public password: string = "";
+    private password: string = "";
 
     public constructor() {
         super();

@@ -1,12 +1,6 @@
 <template>
-    <svg
-        version="1.1"
-        x="0px"
-        y="0px"
-        viewBox="0 0 711 599"
-        style="enable-background:new 0 0 711 599;"
-        xml:space="preserve"
-    >
+    <!--suppress HtmlDeprecatedAttribute, HtmlUnknownAttribute -->
+    <svg version="1.1" x="0px" y="0px" viewBox="0 0 711 599">
         <circle class="st0" cx="652.3" cy="152.6" r="5" />
         <circle class="st0" cx="638.2" cy="152.6" r="5" />
         <circle class="st0" cx="666.5" cy="152.6" r="5" />
