@@ -31,7 +31,7 @@ export default class UploadButton extends Vue {
     }
 
     get name() {
-        return this.cancelButton ? "Nahrávanie sa ruší..." : "Zastaviť";
+        return this.cancelButton ? "Nahrávanie sa ruší..." : "Zrušiť";
     }
 
     public upload(): void {
