@@ -192,7 +192,7 @@ export class PasswordCipher extends Cipher {
                 salt
             },
             keyMaterial,
-            { name: "AES-GCM", length: Config.cipher.keyLength },
+            { name: "AES-GCM", length: 256 },
             true,
             ["encrypt", "decrypt"]
         );
