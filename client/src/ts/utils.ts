@@ -129,6 +129,8 @@ export default class Utils {
             headers.forEach(value => {
                 xhr.setRequestHeader(value.header, value.value);
             });
+            // IMPORTANT, it can caused problems without this header
+            xhr.setRequestHeader("Cache-Control", "no-cache");
 
             xhr.responseType = responseType;
             xhr.send();
