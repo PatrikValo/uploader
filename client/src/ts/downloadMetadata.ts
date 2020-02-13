@@ -4,18 +4,8 @@ import {
     IDownloadMetadata,
     IReturnValue
 } from "./interfaces/IDownloadMetadata";
+import Metadata from "./metadata";
 import Utils from "./utils";
-
-function lengthOfMetadata(uint: Uint8Array): number {
-    if (uint.length !== 2) {
-        throw new Error("Incorrect size");
-    }
-    const fst = uint[0].toString(16);
-    let snd = uint[1].toString(16);
-    snd = snd.length === 1 ? "0" + snd : snd;
-
-    return parseInt(fst + snd, 16);
-}
 
 abstract class DownloadMetadata implements IDownloadMetadata {
     public async download(): Promise<IReturnValue> {
@@ -64,7 +54,7 @@ abstract class DownloadMetadata implements IDownloadMetadata {
         const start = Config.cipher.ivLength + 1 + Config.cipher.saltLength;
         const end = start + 2;
         const uint = await this.range(start, end);
-        return lengthOfMetadata(uint);
+        return Metadata.lengthToNumber(uint);
     }
 
     private getMetadata(length: number): Promise<Uint8Array> {

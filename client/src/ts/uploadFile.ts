@@ -6,31 +6,6 @@ import IUploadFile from "./interfaces/IUploadFile";
 import Metadata from "./metadata";
 import Utils from "./utils";
 
-function lengthOfMetadata(n: number): Uint8Array {
-    const hex = n.toString(16);
-    const len = hex.length;
-
-    if (len > 4) {
-        throw new Error("Metadata is too long");
-    }
-
-    if (len <= 2) {
-        return new Uint8Array([0, n]);
-    }
-
-    if (len === 3) {
-        return new Uint8Array([
-            parseInt(hex[0], 16),
-            parseInt(hex.slice(1, 3), 16)
-        ]);
-    }
-
-    return new Uint8Array([
-        parseInt(hex.slice(0, 2), 16),
-        parseInt(hex.slice(2, 4), 16)
-    ]);
-}
-
 abstract class UploadFile implements IUploadFile {
     private readonly cipher: Cipher;
     private readonly fileStream: FileStream;
@@ -71,9 +46,9 @@ abstract class UploadFile implements IUploadFile {
         return await this.cipher.exportedKey();
     }
 
-    protected async message(
+    protected async content(
         progress: (u: number) => any
-    ): Promise<Uint8Array | string> {
+    ): Promise<Uint8Array | null> {
         if (!this.sendIv) {
             this.sendIv = true;
             return this.createIv();
@@ -117,7 +92,7 @@ abstract class UploadFile implements IUploadFile {
 
     private async createMetadata(): Promise<Uint8Array> {
         const metadata = await this.cipher.encryptMetadata(this.metadata);
-        const length: Uint8Array = lengthOfMetadata(metadata.length);
+        const length: Uint8Array = Metadata.lengthToUint8Array(metadata.length);
 
         const m = new Uint8Array(length.length + metadata.length);
         m.set(length);
@@ -127,7 +102,7 @@ abstract class UploadFile implements IUploadFile {
 
     private async createChunk(
         progress: (u: number) => any
-    ): Promise<Uint8Array | string> {
+    ): Promise<Uint8Array | null> {
         const chunk = await this.fileStream.read();
         const uploaded = chunk.value.length;
         progress(uploaded); // users function
@@ -136,7 +111,7 @@ abstract class UploadFile implements IUploadFile {
             return await this.cipher.encryptChunk(chunk.value);
         }
 
-        return "null";
+        return null;
     }
 }
 
@@ -172,7 +147,12 @@ export class UploadFileServer extends UploadFile {
                 }
 
                 try {
-                    const answer = await this.message(progress);
+                    const answer = await this.content(progress);
+
+                    if (!answer) {
+                        return socket.send("null");
+                    }
+
                     return socket.send(answer);
                 } catch (e) {
                     // close socket connection and there is thrown exception because id is not received
@@ -222,10 +202,10 @@ export class UploadFileDropbox extends UploadFile {
                 contents: new Uint8Array(0)
             })).session_id;
 
-            let content = await this.message(progress);
+            let content = await this.content(progress);
             let uploaded: number = 0;
 
-            while (content !== "null") {
+            while (content !== null) {
                 if (this.isCanceled()) {
                     await dbx.filesUploadSessionAppendV2({
                         close: true,
@@ -250,7 +230,7 @@ export class UploadFileDropbox extends UploadFile {
                     }
                 });
                 uploaded += content.length;
-                content = await this.message(progress);
+                content = await this.content(progress);
             }
 
             const filename = uuid().replace(/-/g, "");

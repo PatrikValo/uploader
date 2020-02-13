@@ -41,11 +41,11 @@ export default class DownloadFile {
         streamSaver.WritableStream = WritableStream;
 
         const writeStream: WritableStream = createWriteStream(
-            this.metadata.name,
+            this.metadata.getName(),
             {
-                size: this.metadata.size
+                size: this.metadata.getSize()
             },
-            this.metadata.size
+            this.metadata.getSize()
         );
 
         const writer = writeStream.getWriter();
@@ -91,7 +91,7 @@ export default class DownloadFile {
             throw e;
         }
 
-        saveAs(blob, this.metadata.name);
+        saveAs(blob, this.metadata.getName());
     }
 
     private initAbortEvent(writer: WritableStreamDefaultWriter<any>): void {
