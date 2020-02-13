@@ -18,7 +18,7 @@ export default async (req: express.Request, res: express.Response) => {
     try {
         fileReader = new FileReader(id);
         const chunk = await fileReader.chunk(chunkNumber, startFrom);
-        return res.status(200).send(chunk);
+        return res.status(206).send(chunk);
     } catch (e) {
         return res.status(404).send();
     } finally {
