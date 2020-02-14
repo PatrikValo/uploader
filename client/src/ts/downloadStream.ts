@@ -96,7 +96,7 @@ export class DownloadStreamDropbox extends DownloadStream {
             },
             {
                 header: "Dropbox-API-Arg",
-                value: `{"path": "/${this.id}"}`
+                value: JSON.stringify({ path: `/${this.id}` })
             },
             {
                 header: "Range",
