@@ -83,8 +83,12 @@ export class DownloadMetadataServer extends DownloadMetadata {
 
         const result = await Utils.getRequest(url, headers, "arraybuffer");
 
-        if (!result || result.byteLength === 0) {
-            throw new Error("Empty response");
+        if (
+            !result ||
+            result.byteLength === 0 ||
+            result.byteLength !== end - start
+        ) {
+            throw new Error("Invalid response");
         }
 
         return new Uint8Array(result);
@@ -110,7 +114,7 @@ export class DownloadMetadataDropbox extends DownloadMetadata {
             },
             {
                 header: "Dropbox-API-Arg",
-                value: `{"path": "/${this.id}"}`
+                value: JSON.stringify({ path: `/${this.id}` })
             },
             {
                 header: "Range",
@@ -119,8 +123,12 @@ export class DownloadMetadataDropbox extends DownloadMetadata {
         ];
         const result = await Utils.getRequest(url, headers, "arraybuffer");
 
-        if (!result || result.byteLength === 0) {
-            throw new Error("Empty response");
+        if (
+            !result ||
+            result.byteLength === 0 ||
+            result.byteLength !== end - start
+        ) {
+            throw new Error("Invalid response");
         }
 
         return new Uint8Array(result);
