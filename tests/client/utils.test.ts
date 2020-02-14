@@ -2,6 +2,7 @@ import {
     TextDecoder as Decoder,
     TextEncoder as Encoder
 } from "text-encoding-shim";
+import mock from "xhr-mock";
 import Config from "../../client/src/ts/config";
 import Utils from "../../client/src/ts/utils";
 
@@ -204,6 +205,163 @@ describe("Utils tests", () => {
         test("empty Uint8ArrayToString", () => {
             const result = Utils.Uint8ArrayToString(new Uint8Array(0));
             expect(result).toBe("");
+        });
+    });
+
+    describe("GetRequest", () => {
+        beforeEach(() => mock.setup());
+        afterEach(() => mock.teardown());
+        const url = Utils.server.classicUrl("/api/download/25-id");
+        describe("arraybuffer", () => {
+            test("empty headers", async () => {
+                const correctUint = new Uint8Array([25, 15, 40]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(200).body(correctUint);
+                });
+
+                const result = Utils.getRequest(url, [], "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("not empty headers", async () => {
+                const correctUint = new Uint8Array([25, 15, 40, 60]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "start-from": "20",
+                        "x-chunk": "2"
+                    });
+                    return res.status(200).body(correctUint);
+                });
+
+                const headers = [
+                    { header: "X-Chunk", value: "2" },
+                    { header: "start-from", value: "20" }
+                ];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("correct status", async () => {
+                const correctUint = new Uint8Array([25, 15, 40, 60]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(206).body(correctUint);
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("incorrect status", async () => {
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(404).body(null);
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+
+            test("error occured", async () => {
+                mock.error(() => {
+                    return;
+                });
+                mock.get(url, () => Promise.reject(new Error()));
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+
+            test("null status", async () => {
+                mock.get(url, (req, res) => {
+                    return res.body(new Uint8Array(0));
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+        });
+        describe("json", () => {
+            test("empty headers", async () => {
+                const correctJson = { result: "OK" };
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(200).body(JSON.stringify(correctJson));
+                });
+
+                const result = Utils.getRequest(url, [], "json");
+
+                await expect(result).resolves.toStrictEqual(correctJson);
+            });
+
+            test("not empty headers", async () => {
+                mock.get(url, (req, res) => {
+                    return res.status(200).body(JSON.stringify(req.headers()));
+                });
+
+                const headers = [
+                    { header: "X-Chunk", value: "2" },
+                    { header: "start-from", value: "20" }
+                ];
+                const result = Utils.getRequest(url, headers, "json");
+
+                await expect(result).resolves.toStrictEqual({
+                    "cache-control": "no-cache",
+                    "start-from": "20",
+                    "x-chunk": "2"
+                });
+            });
+
+            test("correct status", async () => {
+                const correctJson = { result: "OK", chunk: 1 };
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(206).body(JSON.stringify(correctJson));
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "json");
+
+                await expect(result).resolves.toStrictEqual(correctJson);
+            });
+
+            test("incorrect status", async () => {
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(404).body(null);
+                });
+
+                const result = Utils.getRequest(url, [], "json");
+
+                await expect(result).rejects.not.toBeNull();
+            });
         });
     });
 });
