@@ -27,6 +27,11 @@ if (Config.environment === "production") {
         express.static(path.join(__dirname, "../../client/dist/"))
     );
 
+    app.use(
+        "/favicon.ico",
+        express.static(path.join(__dirname, "./assets/favicon.ico"))
+    );
+
     app.get("*", (req, res) => {
         res.status(200).sendFile(path.join(__dirname, "../../index.html"));
     });
