@@ -87,7 +87,8 @@
       },
       "environment": {
         "NODE_ENV": "development",
-        "HOST": ""
+        "HOST": "",
+        "PORT": ""
       }
     }
   }
