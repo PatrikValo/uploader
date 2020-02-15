@@ -2,8 +2,10 @@ import Config from "./config";
 export default class Limiter {
     private readonly size: number;
 
-    public constructor(size?: number) {
-        this.size = size === undefined ? Config.client.fileSizeLimit : size;
+    public constructor(isDropbox: boolean) {
+        this.size = isDropbox
+            ? Config.client.fileSizeLimitDropbox
+            : Config.client.fileSizeLimit;
     }
 
     public validateFileSize(size: number): boolean {

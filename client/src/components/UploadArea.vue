@@ -62,7 +62,7 @@ export default class UploadArea extends Vue {
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
         // control of size limit
-        const limiter = new Limiter();
+        const limiter = new Limiter(this.$props.auth.isLoggedIn());
         const file: File = this.$props.file;
         if (!limiter.validateFileSize(file.size)) {
             this.$emit("limit");
