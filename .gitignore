@@ -1,4 +1,4 @@
 node_modules/
 server/dist
-client/dist
 .idea/
+!server/dist/files/.gitkeep
