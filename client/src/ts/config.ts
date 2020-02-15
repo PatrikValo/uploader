@@ -11,6 +11,9 @@ class CipherConfig {
 class Server {
     public readonly host: string = environment.HOST || "localhost";
     public readonly port: string = production ? "" : "9998";
+    public readonly websocketPort: string = Config.server.port
+        ? Config.server.port
+        : "8080";
     public readonly protocol: string = production ? "https" : "http";
 }
 

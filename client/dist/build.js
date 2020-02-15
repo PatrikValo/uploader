@@ -13229,7 +13229,8 @@ var Utils = /** @class */ (function () {
         websocketUrl: function (path) {
             var protocol = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].server.protocol;
             var host = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].server.host;
-            var port = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].server.port;
+            var port = __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].server.websocketPort;
+            console.log(port, __WEBPACK_IMPORTED_MODULE_0__config__["a" /* default */].server.websocketPort);
             var url = protocol === "http" ? "ws" : "wss";
             url += "://" + basicUrl(host, port, path);
             return url;
@@ -13295,6 +13296,9 @@ var Server = /** @class */ (function () {
     function Server() {
         this.host = __WEBPACK_IMPORTED_MODULE_0__environment__["a" /* environment */].HOST || "localhost";
         this.port = production ? "" : "9998";
+        this.websocketPort = Config.server.port
+            ? Config.server.port
+            : "8080";
         this.protocol = production ? "https" : "http";
     }
     return Server;
@@ -46718,7 +46722,7 @@ if (!self.fetch) {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return environmental; });
-var environmental = Object({"NODE_ENV":"production","HOST":"aploader.herokuapp.com"});
+var environmental = Object({"NODE_ENV":"production","HOST":"uploader.azurewebsites.net"});
 
 
 

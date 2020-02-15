@@ -21,7 +21,8 @@ export default class Utils {
         websocketUrl(path?: string): string {
             const protocol = Config.server.protocol;
             const host = Config.server.host;
-            const port = Config.server.port;
+            const port = Config.server.websocketPort;
+            console.log(port, Config.server.websocketPort);
 
             let url = protocol === "http" ? "ws" : "wss";
             url += "://" + basicUrl(host, port, path);
