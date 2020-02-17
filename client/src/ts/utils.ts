@@ -1,7 +1,7 @@
 import Config from "./config";
 
 /**
- * Function, which joins parameters to the url without protocol part
+ * It joins parameters of function to the url without protocol part
  *
  * host(:port)(/path)
  * @param host
@@ -26,7 +26,7 @@ function basicUrl(host: string, port?: string, path?: string): string {
 
 export default class Utils {
     /**
-     * Function, which creates url for websocket connection to server with path
+     * It creates url for websocket connection to server with path
      *
      * ws(s)://host(:port)(/path)
      * @param path
@@ -43,7 +43,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which creates server url with path
+     * It creates server url with path
      *
      * http(s)://host(:port)(/path)
      * @param path
@@ -58,7 +58,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which creates client url with path. Path is created from parameters.
+     * It creates client url with path. Path is created from parameters.
      *
      * http(s)://host(:port)/base(/id)(#key)
      * @param base
@@ -76,7 +76,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which creates path of url correctly. This function is created
+     * It creates path of url correctly. This function is created
      * mainly for creating /base/id#key format path, but it can be used
      * in other cases.
      *
@@ -113,7 +113,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which converts base64 format to Uint8Array
+     * It converts base64 format to Uint8Array
      *
      * @param str - string in base64 format
      * @return Uint8Array corresponds to str param
@@ -130,7 +130,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which converts Uint8Array to base64 format
+     * It converts Uint8Array to base64 format
      *
      * @param uint
      * @return string corresponds to uint param
@@ -142,7 +142,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which converts string to Uint8Array
+     * It converts string to Uint8Array
      *
      * @param str
      * @return Uint8Array corresponds to str param
@@ -153,7 +153,7 @@ export default class Utils {
     }
 
     /**
-     * Function, which converts Uint8Array to string
+     * It converts Uint8Array to string
      *
      * @param uint
      * @return string corresponds to uint param
@@ -164,13 +164,13 @@ export default class Utils {
     }
 
     /**
-     * Function, which makes GET request
+     * It makes GET request
      *
      * @param url - destination where is sent the request
      * @param headers - array of objects with header name and value of an HTTP request header
      * @param responseType - defines the response type
      * @return Promise with result of request
-     * @throws Error object, if something went wrong
+     * @exception Error object - if something went wrong
      */
     public static getRequest(
         url: string,

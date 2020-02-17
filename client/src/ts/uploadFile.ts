@@ -38,6 +38,12 @@ abstract class UploadFile implements IUploadFile {
         return this.stop;
     }
 
+    /**
+     * It exports the key, which was used for encryption
+     *
+     * @return empty string - if key was derived from password
+     *          exported key - otherwise
+     */
     protected async exportKey(): Promise<string> {
         if (this.password) {
             return "";
@@ -46,6 +52,15 @@ abstract class UploadFile implements IUploadFile {
         return await this.cipher.exportedKey();
     }
 
+    /**
+     * Each time when this method is called, it returns part of file or
+     * metadata (iv, flag, ..., file's metadata), which should be send to server next.
+     * Progress is executed when metadata was sent and file is currently read.
+     * Progress is executed with length of chunk before encryption.
+     * @param progress
+     * @return null - there is nothing to read from file
+     *         data - otherwise
+     */
     protected async content(
         progress: (u: number) => any
     ): Promise<Uint8Array | null> {
@@ -72,12 +87,23 @@ abstract class UploadFile implements IUploadFile {
         return this.createChunk(progress);
     }
 
+    /**
+     * It returns initialisation vector, which is used for encryption.
+     *
+     * @return iv
+     */
     private createIv(): Promise<Uint8Array> {
         return new Promise(resolve => {
             return resolve(this.cipher.initializationVector());
         });
     }
 
+    /**
+     * It returns flag. Length of flag is 1. If key was derived from
+     * password, flag contains 1. Flag contains 0, otherwise.
+     *
+     * @return flag
+     */
     private createFlag(): Promise<Uint8Array> {
         return new Promise(resolve => {
             const flags = new Uint8Array(1);
@@ -86,10 +112,21 @@ abstract class UploadFile implements IUploadFile {
         });
     }
 
+    /**
+     * It returns salt, which was used for deriving the key from password. If
+     * password wasn't available, salt contains only zeros.
+     *
+     * @return salt
+     */
     private async createSalt(): Promise<Uint8Array> {
         return await this.cipher.getSalt();
     }
 
+    /**
+     * It returns encrypted metadata with its length.
+     *
+     * @return length joins with metadata
+     */
     private async createMetadata(): Promise<Uint8Array> {
         const metadata = await this.cipher.encryptMetadata(this.metadata);
         const length: Uint8Array = Metadata.lengthToUint8Array(metadata.length);
@@ -100,6 +137,15 @@ abstract class UploadFile implements IUploadFile {
         return m;
     }
 
+    /**
+     * It returns encrypted chunk of file and progress is executed with length
+     * of chunk before encryption. Method returns null, if there is nothing
+     * to read from file.
+     *
+     * @param progress
+     * @return null - whole file was returned in previous callings of this method
+     *         chunk - otherwise
+     */
     private async createChunk(
         progress: (u: number) => any
     ): Promise<Uint8Array | null> {
