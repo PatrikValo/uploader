@@ -19,9 +19,10 @@ export interface IReturnValue {
 
 export interface IDownloadMetadata {
     /**
-     * Function, which download basic metadata (iv, encrypted metadata, flag
-     * for UI, salt, start of data in file on server) of file
+     * Download basic metadata (iv, encrypted metadata, flag
+     * for UI, salt, start position of data in file on server) of file
      * @return Object implements IReturnValue
+     * @exception Error - if something went wrong
      */
     download(): Promise<IReturnValue>;
 }

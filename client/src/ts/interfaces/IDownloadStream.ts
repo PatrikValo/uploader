@@ -13,7 +13,7 @@ export interface IDownloadStream {
      * repeatedly until it returns object, which contains positive done property.
      * @return Promise, which contains object implements
      * IDownloadStreamReturnValue interface
-     * @throws Error object, if something went wrong
+     * @exception Error - if something went wrong
      */
     read(): Promise<IDownloadStreamReturnValue>;
 }
