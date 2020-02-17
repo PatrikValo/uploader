@@ -121,7 +121,7 @@ export class UploadFileServer extends UploadFile {
 
     public constructor(file: File, password?: string) {
         super(file, password);
-        this.url = Utils.server.websocketUrl("/api/upload");
+        this.url = Utils.serverWebsocketUrl("/api/upload");
     }
 
     public async upload(

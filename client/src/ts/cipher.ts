@@ -15,7 +15,7 @@ export abstract class Cipher {
     }
 
     public async serverRandomValues(size: number): Promise<Uint8Array> {
-        const url = Utils.server.classicUrl("/api/random/" + size);
+        const url = Utils.serverClassicUrl("/api/random/" + size);
         const result = await Utils.getRequest(url, [], "arraybuffer");
 
         if (!result || result.byteLength !== size) {

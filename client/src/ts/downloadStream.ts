@@ -36,7 +36,7 @@ export class DownloadStreamServer extends DownloadStream {
 
     public constructor(id: string, startFrom: number) {
         super();
-        this.url = Utils.server.classicUrl("/api/download/" + id);
+        this.url = Utils.serverClassicUrl("/api/download/" + id);
         this.startFrom = startFrom;
     }
 

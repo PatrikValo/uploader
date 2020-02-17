@@ -73,7 +73,7 @@ export class DownloadMetadataServer extends DownloadMetadata {
     }
 
     protected async range(start: number, end: number): Promise<Uint8Array> {
-        const url = Utils.server.classicUrl("/api/metadata/" + this.id);
+        const url = Utils.serverClassicUrl("/api/metadata/" + this.id);
         const headers = [
             {
                 header: "Range",
