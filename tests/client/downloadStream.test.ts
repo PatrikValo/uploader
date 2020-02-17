@@ -29,7 +29,7 @@ describe("DownloadStream tests", () => {
     afterEach(() => mock.teardown());
 
     describe("DownloadStreamServer tests", () => {
-        const url = Utils.server.classicUrl("/api/download/25-id");
+        const url = Utils.serverClassicUrl("/api/download/25-id");
         test("It should return correct all data", async () => {
             expect.assertions(9);
 

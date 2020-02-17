@@ -138,7 +138,7 @@ describe("UploadFile tests", () => {
         test("It should return correct key and ID without password", async () => {
             expect.assertions(10);
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("/api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -185,7 +185,7 @@ describe("UploadFile tests", () => {
 
         test("It should return correct ID with password", async () => {
             const uploadFile = new UploadFileServer(file, "aa");
-            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("/api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -230,7 +230,7 @@ describe("UploadFile tests", () => {
 
         test("It should return empty key and ID after stop uploading", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -251,7 +251,7 @@ describe("UploadFile tests", () => {
 
         test("It should upload IV but throw exception after closed connection", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("/api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -269,7 +269,7 @@ describe("UploadFile tests", () => {
 
         test("It should throw exception because bad server status", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("/api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("/api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -285,7 +285,7 @@ describe("UploadFile tests", () => {
 
         test("It should throw Exception because server send incorrect message", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("api/upload"));
 
             const mockProgress = jest.fn();
             const serverPromise = server.connected;
@@ -301,7 +301,7 @@ describe("UploadFile tests", () => {
 
         test("It should throw Exception because websocket.onerror", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn();
@@ -317,7 +317,7 @@ describe("UploadFile tests", () => {
 
         test("It should throw Exception because progress function throws Error", async () => {
             const uploadFile = new UploadFileServer(file);
-            const server = new WS(Utils.server.websocketUrl("api/upload"));
+            const server = new WS(Utils.serverWebsocketUrl("api/upload"));
 
             const serverPromise = server.connected;
             const mockProgress = jest.fn().mockImplementation((u: number) => {

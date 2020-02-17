@@ -53,7 +53,7 @@ describe("DownloadMetadata test", () => {
     describe("DownloadMetadataServer test", () => {
         test("It should return correct metadata with password", async () => {
             const download = new DownloadMetadataServer("1234-56789-ad");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-ad");
             const flags = [1];
             const salt = iv;
 
@@ -107,7 +107,7 @@ describe("DownloadMetadata test", () => {
 
         test("It should return correct metadata without password", async () => {
             const download = new DownloadMetadataServer("1234-56789-adc");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-adc");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-adc");
             const flags = [0];
             const salt = new Array(Config.cipher.saltLength);
 
@@ -161,7 +161,7 @@ describe("DownloadMetadata test", () => {
 
         test("It should throw Exception because empty response", async () => {
             const download = new DownloadMetadataServer("1234-56789-d");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-d");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-d");
 
             mock.get(url, (req, res) => {
                 const header = req.header("Range");
@@ -204,7 +204,7 @@ describe("DownloadMetadata test", () => {
 
         test("It should throw Exception because bad status", async () => {
             const download = new DownloadMetadataServer("1234-56789-ad");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-ad");
 
             mock.get(url, (req, res) => {
                 return res.status(500).body(null);
@@ -216,7 +216,7 @@ describe("DownloadMetadata test", () => {
 
         test("It should throw Exception because incorrect size of metadata", async () => {
             const download = new DownloadMetadataServer("1234-56789-ad");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-ad");
 
             mock.get(url, (req, res) => {
                 const header = req.header("Range");
@@ -248,7 +248,7 @@ describe("DownloadMetadata test", () => {
 
         test("It should throw Exception because server return smaller chunk", async () => {
             const download = new DownloadMetadataServer("1234-56789-ad");
-            const url = Utils.server.classicUrl("/api/metadata/1234-56789-ad");
+            const url = Utils.serverClassicUrl("/api/metadata/1234-56789-ad");
 
             mock.get(url, (req, res) => {
                 const header = req.header("Range");

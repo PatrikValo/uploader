@@ -18,38 +18,38 @@ describe("Utils tests", () => {
             const p = pro === "http" ? "ws" : "wss";
             test("It should return correct url without path as parameter", () => {
                 const correct = `${p}://${host}${port}`;
-                const result = Utils.server.websocketUrl();
+                const result = Utils.serverWebsocketUrl();
                 expect(result).toBe(correct);
             });
             test("It should return correct url with slash before path as parameter", () => {
                 const path = "/download/websocket/abc";
                 const correct = `${p}://${host}${port}${path}`;
-                const result = Utils.server.websocketUrl(path);
+                const result = Utils.serverWebsocketUrl(path);
                 expect(result).toBe(correct);
             });
             test("It should return correct url without slash before path as parameter", () => {
                 const path = "download/websocket/abc";
                 const correct = `${p}://${host}${port}/${path}`;
-                const result = Utils.server.websocketUrl(path);
+                const result = Utils.serverWebsocketUrl(path);
                 expect(result).toBe(correct);
             });
         });
         describe("ClassicUrl", () => {
             test("It should return correct url without path as parameter", () => {
                 const correct = `${pro}://${host}${port}`;
-                const result = Utils.server.classicUrl();
+                const result = Utils.serverClassicUrl();
                 expect(result).toBe(correct);
             });
             test("It should return correct url with slash before path as parameter", () => {
                 const path = "/download/abc";
                 const correct = `${pro}://${host}${port}${path}`;
-                const result = Utils.server.classicUrl(path);
+                const result = Utils.serverClassicUrl(path);
                 expect(result).toBe(correct);
             });
             test("It should return correct url without slash before path as parameter", () => {
                 const path = "download/abc";
                 const correct = `${pro}://${host}${port}/${path}`;
-                const result = Utils.server.classicUrl(path);
+                const result = Utils.serverClassicUrl(path);
                 expect(result).toBe(correct);
             });
         });
@@ -211,7 +211,7 @@ describe("Utils tests", () => {
     describe("GetRequest", () => {
         beforeEach(() => mock.setup());
         afterEach(() => mock.teardown());
-        const url = Utils.server.classicUrl("/api/download/25-id");
+        const url = Utils.serverClassicUrl("/api/download/25-id");
         describe("arraybuffer", () => {
             test("empty headers", async () => {
                 const correctUint = new Uint8Array([25, 15, 40]);
