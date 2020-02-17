@@ -25,6 +25,7 @@ export abstract class Cipher {
         return new Uint8Array(result);
     }
 
+    // TODO change the size param, because result is always 32bytes long
     public randomValues(size: number): Promise<Uint8Array> {
         return new Promise(async resolve => {
             const clientRandom = this.clientRandomValues(size);
