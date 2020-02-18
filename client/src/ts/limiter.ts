@@ -8,6 +8,13 @@ export default class Limiter {
             : Config.client.fileSizeLimit;
     }
 
+    /**
+     * It verifies if size fulfils max limit of file size
+     *
+     * @param size
+     * @return True - if size param fulfills max limit of file size
+     *         False - otherwise
+     */
     public validateFileSize(size: number): boolean {
         return size <= this.size;
     }
