@@ -25,7 +25,7 @@ export default class Logout extends Vue {
     public mounted() {
         try {
             const a: AuthDropbox = this.$props.auth;
-            a.logOut();
+            a.logout();
             setTimeout(() => {
                 return this.$router.push("/");
             }, 500);

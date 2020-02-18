@@ -30,7 +30,7 @@ export default class Auth extends Vue {
 
         try {
             const a: AuthDropbox = this.$props.auth;
-            a.logIn(hash);
+            a.login(hash);
             setTimeout(() => {
                 return this.$router.push("/");
             }, 500);
