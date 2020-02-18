@@ -9,6 +9,13 @@ import {
 } from "web-streams-polyfill/ponyfill";
 
 class BaseCompatibility {
+    /**
+     * It verifies compatibility of browser with application. If some components
+     * are missing, they are replace by alternative implementation.
+     *
+     * @return True - if browser is compatible
+     *         False - otherwise
+     */
     public static isCompatible(): boolean {
         try {
             if (!TextEncoder || !TextDecoder) {
@@ -39,6 +46,14 @@ class BaseCompatibility {
 }
 
 export class DownloadCompatibility {
+    /**
+     * It verifies availability tools in browser, which are needed for part of
+     * application, which is responsible for downloading.
+     * If some components are missing, they are replace by alternative implementation.
+     *
+     * @return True - if browser is compatible
+     *         False - otherwise
+     */
     public static isCompatible(): boolean {
         if (!BaseCompatibility.isCompatible()) {
             return false;
@@ -67,6 +82,13 @@ export class DownloadCompatibility {
         }
     }
 
+    /**
+     * It verifies, if is necessary to download whole file to memory before it
+     * is sent to user filesystem
+     *
+     * @return True - it doesn't support streamsaver
+     *         False - it supports streamsaver
+     */
     public static blob(): boolean {
         const browser = Bowser.getParser(window.navigator.userAgent);
         const safari = browser.satisfies({
@@ -86,6 +108,13 @@ export class DownloadCompatibility {
 }
 
 export class UploadCompatibility {
+    /**
+     * It verifies availability tools in browser, which are needed for part of
+     * application, which is responsible for uploading.
+     *
+     * @return True - if browser is compatible
+     *         False - otherwise
+     */
     public static isCompatible(): boolean {
         try {
             return (
