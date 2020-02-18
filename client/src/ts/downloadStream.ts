@@ -25,6 +25,15 @@ abstract class DownloadStream implements IDownloadStream {
         });
     }
 
+    /**
+     * It downloads the chunk, whose position in chunks of file is given
+     * by numberOfChunk param.
+     *
+     * @param numberOfChunk
+     * @return null - there is nothing to download, because all data was downloaded
+     *         data - otherwise
+     * @exception Error - if something went wrong
+     */
     protected abstract downloadChunk(
         numberOfChunk: number
     ): Promise<Uint8Array | null>;
@@ -113,6 +122,11 @@ export class DownloadStreamDropbox extends DownloadStream {
         return new Uint8Array(result);
     }
 
+    /**
+     * It returns real size of encrypted file, which is stored on dropbox server.
+     *
+     * @return Promise with size of file
+     */
     private getSizeOfEncryptedFile(): Promise<number> {
         const url = "https://api.dropboxapi.com/2/files/get_metadata";
         const headers = [
