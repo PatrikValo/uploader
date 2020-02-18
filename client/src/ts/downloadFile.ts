@@ -28,6 +28,15 @@ export default class DownloadFile {
             : new DownloadStreamServer(this.id, startFrom);
     }
 
+    /**
+     * It downloads file to local filesystem of user
+     *
+     * @param blob - False - streamsaver can be used
+     *               True - streamsaver isn't supported and whole file is downloaded
+     * to memory before it is downloaded to user filesystem
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     public async download(blob: boolean, progress: (u: number) => any) {
         if (!blob) {
             return await this.downloadStream(progress);
@@ -36,6 +45,12 @@ export default class DownloadFile {
         return await this.downloadBlob(progress);
     }
 
+    /**
+     * It downloads the file by using streamsaver
+     *
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     private async downloadStream(progress: (u: number) => any) {
         streamSaver.TransformStream = TransformStream;
         streamSaver.WritableStream = WritableStream;
@@ -50,7 +65,9 @@ export default class DownloadFile {
 
         const writer = writeStream.getWriter();
 
-        this.initAbortEvent(writer);
+        window.onunload = async () => {
+            await writer.abort("Close window");
+        };
 
         try {
             let chunk = await this.stream.read();
@@ -62,18 +79,22 @@ export default class DownloadFile {
                 chunk = await this.stream.read();
             }
         } catch (e) {
-            // stop download window in browser
             await writer.abort("Exception");
-            this.termAbortEvent();
+            window.onunload = null;
 
             throw e;
         }
 
         await writer.close();
-
-        this.termAbortEvent();
+        window.onunload = null;
     }
 
+    /**
+     * It stores the file to memory and finally is downloaded to user filesystem
+     *
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     private async downloadBlob(progress: (u: number) => any) {
         let blob = new Blob([], { type: "application/octet-stream" });
         try {
@@ -92,16 +113,5 @@ export default class DownloadFile {
         }
 
         saveAs(blob, this.metadata.getName());
-    }
-
-    private initAbortEvent(writer: WritableStreamDefaultWriter<any>): void {
-        window.onunload = async () => {
-            await writer.abort("Close window");
-        };
-    }
-
-    // noinspection JSMethodCanBeStatic
-    private termAbortEvent(): void {
-        window.onunload = null;
     }
 }
