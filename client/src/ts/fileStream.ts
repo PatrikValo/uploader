@@ -11,6 +11,14 @@ export default class FileStream {
         this.size = file.size;
     }
 
+    /**
+     * It reads one chunk of file. Each time when this method is called, it returns
+     * different chunk of file. If there is nothing to read, done property is True and
+     * value property is empty Uint8Array. Value is not empty and done property
+     * is False, when there is still data, which can be read from file.
+     *
+     * @return Object contains done and value property
+     */
     public read(): Promise<{ done: boolean; value: Uint8Array }> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
