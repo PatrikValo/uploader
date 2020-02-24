@@ -27,12 +27,23 @@ if (Config.environment === "production") {
         express.static(path.join(__dirname, "../../client/dist/"))
     );
 
+    // http -> https
+    app.use((req, res, next) => {
+        if (req.secure) {
+            next();
+        } else {
+            res.redirect("https://" + req.headers.host + req.url);
+        }
+    });
+
+    // favicon.ico
     app.get("/favicon.ico", (req, res) => {
         res.status(200).sendFile(
             path.join(__dirname, "../src/assets/favicon.ico")
         );
     });
 
+    // every request, which doesn't fit to server api is sent to client router
     app.get("*", (req, res) => {
         res.status(200).sendFile(path.join(__dirname, "../../index.html"));
     });
