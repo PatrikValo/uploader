@@ -119,6 +119,10 @@ export default class Utils {
      * @return Uint8Array corresponds to str param
      */
     public static base64toUint8Array(str: string): Uint8Array {
+        if (str.length % 4 !== 0) {
+            str += "===".slice(0, 4 - (str.length % 4));
+        }
+
         const replaced = str.replace(/_/g, "/").replace(/-/g, "+");
         return new Uint8Array(
             atob(replaced)
@@ -138,7 +142,10 @@ export default class Utils {
     public static Uint8ArrayToBase64(uint: Uint8Array): string {
         const array = [].slice.call(uint);
         const str = btoa(String.fromCharCode.apply(null, array));
-        return str.replace(/\//g, "_").replace(/[+]/g, "-");
+        return str
+            .replace(/\//g, "_")
+            .replace(/[+]/g, "-")
+            .replace(/=+$/, "");
     }
 
     /**
