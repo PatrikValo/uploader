@@ -3,8 +3,9 @@ import { environment } from "../environment";
 const production = environment.NODE_ENV === "production";
 
 class CipherConfig {
-    public readonly ivLength: number = 32;
-    public readonly saltLength: number = 32;
+    public readonly ivLength: number = 16;
+    public readonly saltLength: number = 16;
+    public readonly keyLength: number = 16;
     public readonly deriveIterations: number = 10000;
 }
 

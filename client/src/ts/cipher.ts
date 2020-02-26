@@ -7,13 +7,32 @@ export abstract class Cipher {
     protected abstract readonly keyPromise: Promise<CryptoKey>;
     protected abstract readonly iv: Uint8Array;
 
+    /**
+     * It returns salt, which was used for deriving key from password. If password
+     * wasn't used, it returns result, which contains only zeros. Length of salt
+     * is defined in Config.cipher.saltLength
+     *
+     * @return Promise with salt
+     */
     public abstract getSalt(): Promise<Uint8Array>;
 
+    /**
+     * It generates random values on client side.
+     *
+     * @param size
+     * @return random values
+     */
     public clientRandomValues(size: number): Uint8Array {
         const buff = new Uint8Array(size);
         return this.crypto.getRandomValues(buff);
     }
 
+    /**
+     * It downloads random values generated on server side.
+     *
+     * @param size
+     * @return Promise with random values
+     */
     public async serverRandomValues(size: number): Promise<Uint8Array> {
         const url = Utils.serverClassicUrl("/api/random/" + size);
         const result = await Utils.getRequest(url, [], "arraybuffer");
@@ -25,9 +44,18 @@ export abstract class Cipher {
         return new Uint8Array(result);
     }
 
-    // TODO change the size param, because result is always 32bytes long
+    /**
+     * It creates random values, which are combination of client and server
+     * random values. Number of random values is limited by 32 values.
+     * @param size
+     * @throws Error object, if size param is greater than 32
+     */
     public randomValues(size: number): Promise<Uint8Array> {
-        return new Promise(async resolve => {
+        return new Promise(async (resolve, reject) => {
+            if (size > 32) {
+                return reject(new Error("Size param is limited by 32"));
+            }
+
             const clientRandom = this.clientRandomValues(size);
 
             try {
@@ -37,42 +65,63 @@ export abstract class Cipher {
                 concat.set(clientRandom);
                 concat.set(serverRandom, size);
 
-                const result = await this.digest(concat);
-                return resolve(result);
+                const hash = await this.crypto.subtle.digest("SHA-256", concat);
+
+                return resolve(new Uint8Array(hash.slice(0, size)));
             } catch (e) {
                 return resolve(clientRandom);
             }
         });
     }
 
+    /**
+     * It returns iv, which is used in encryption
+     *
+     * @return iv
+     */
     public initializationVector(): Uint8Array {
         return this.iv;
     }
 
-    public async digest(array: Uint8Array): Promise<Uint8Array> {
-        const short: ArrayBuffer = await this.crypto.subtle.digest(
-            "SHA-256",
-            array
-        );
-        return new Uint8Array(short);
-    }
-
+    /**
+     * It exports key to printable string
+     *
+     * @return Promise exported key
+     */
     public async exportedKey(): Promise<string> {
         const key: CryptoKey = await this.keyPromise;
         const buffer = await this.crypto.subtle.exportKey("raw", key);
         return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
     }
 
+    /**
+     * It encrypts metadata
+     *
+     * @param metadata
+     * @return Promise with encrypted metadata
+     */
     public async encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
         const metadataArray: Uint8Array = metadata.toUint8Array();
         return await this.encryptChunk(metadataArray);
     }
 
+    /**
+     * It decrypts metadata
+     *
+     * @param metadata
+     * @return Promise with decrypted metadata
+     */
     public async decryptMetadata(metadata: Uint8Array): Promise<Metadata> {
         const decryptMetadata = await this.decryptChunk(metadata);
         return new Metadata(decryptMetadata);
     }
 
+    /**
+     * It encrypts any chunk of data
+     *
+     * @param chunk
+     * @return Promise with encrypted chunk
+     */
     public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const key: CryptoKey = await this.keyPromise;
         const encrypted: ArrayBuffer = await this.crypto.subtle.encrypt(
@@ -86,6 +135,12 @@ export abstract class Cipher {
         return new Uint8Array(encrypted);
     }
 
+    /**
+     * It decrypts any chunk of data
+     *
+     * @param chunk
+     * @return Promise with encrypted chunk
+     */
     public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const key: CryptoKey = await this.keyPromise;
         const decrypted: ArrayBuffer = await this.crypto.subtle.decrypt(
@@ -116,6 +171,13 @@ export class ClassicCipher extends Cipher {
         });
     }
 
+    /**
+     * It creates key. If key param is available, there is used key defined in
+     * param.
+     *
+     * @param key
+     * @retun Promise with key
+     */
     private async initKeyPromise(key?: CryptoKey | string): Promise<CryptoKey> {
         if (!key) {
             return await this.generateKey();
@@ -130,6 +192,12 @@ export class ClassicCipher extends Cipher {
         return await this.importKey(key);
     }
 
+    /**
+     * It converts string representation of key to CryptoKey object
+     *
+     * @param key
+     * @return Promise with key
+     */
     private async importKey(key: string): Promise<CryptoKey> {
         const uint = Utils.base64toUint8Array(key);
         return await this.crypto.subtle.importKey(
@@ -141,8 +209,13 @@ export class ClassicCipher extends Cipher {
         );
     }
 
+    /**
+     * It generates key randomly.
+     *
+     * @return Promise with key
+     */
     private async generateKey(): Promise<CryptoKey> {
-        const random = await this.randomValues(Config.cipher.saltLength);
+        const random = await this.randomValues(Config.cipher.keyLength);
 
         return await this.crypto.subtle.importKey(
             "raw",
@@ -172,6 +245,12 @@ export class PasswordCipher extends Cipher {
         return this.salt;
     }
 
+    /**
+     * It derives the key from password by using PBKDF2
+     *
+     * @param pw
+     * @return Promise with key
+     */
     private async deriveKey(pw: string): Promise<CryptoKey> {
         const buff = Utils.stringToUint8Array(pw);
 
@@ -193,7 +272,7 @@ export class PasswordCipher extends Cipher {
                 salt
             },
             keyMaterial,
-            { name: "AES-GCM", length: 256 },
+            { name: "AES-GCM", length: Config.cipher.keyLength * 8 },
             true,
             ["encrypt", "decrypt"]
         );
