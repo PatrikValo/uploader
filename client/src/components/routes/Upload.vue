@@ -53,6 +53,7 @@ import { UploadCompatibility } from "../../ts/compatibility";
 import PlaneImage from "../PlaneImage.vue";
 import AuthDropbox from "../../ts/authDropbox";
 import UploadImage from "../UploadImage.vue";
+import Config from "../../ts/config";
 
 @Component({
     components: { UploadImage, PlaneImage, UploadArea, MainTitle },
@@ -102,13 +103,17 @@ export default class Upload extends Vue {
     }
 
     public cancel(): void {
-        this.alert = "Nahrávanie bolo zastavené";
         this.file = null;
     }
 
     public limit(): void {
         this.file = null;
-        this.alert = "Veľkosť súboru presahuje 1GB";
+        const gb = 1024 * 1024 * 1024;
+        this.alert = `Veľkosť súboru presahuje ${
+            this.$props.auth.isLoggedIn()
+                ? Config.client.fileSizeLimitDropbox / gb
+                : Config.client.fileSizeLimit / gb
+        }GB`;
     }
 
     public clearAlert(): void {
