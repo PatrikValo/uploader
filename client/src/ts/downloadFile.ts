@@ -12,6 +12,7 @@ export default class DownloadFile {
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
     private readonly stream: IDownloadStream;
+    private stop: boolean;
 
     public constructor(
         id: string,
@@ -26,6 +27,7 @@ export default class DownloadFile {
         this.stream = auth.isLoggedIn()
             ? new DownloadStreamDropbox(this.id, startFrom, auth)
             : new DownloadStreamServer(this.id, startFrom);
+        this.stop = false;
     }
 
     /**
@@ -43,6 +45,13 @@ export default class DownloadFile {
         }
 
         return await this.downloadBlob(progress);
+    }
+
+    /**
+     * Method, which stop downloading of file
+     */
+    public cancel(): void {
+        this.stop = true;
     }
 
     /**
@@ -73,6 +82,12 @@ export default class DownloadFile {
             let chunk = await this.stream.read();
 
             while (!chunk.done) {
+                if (this.stop) {
+                    await writer.abort("Cancel");
+                    window.onunload = null;
+                    return;
+                }
+
                 const decrypted = await this.cipher.decryptChunk(chunk.value);
                 await writer.write(decrypted);
                 progress(decrypted.length);

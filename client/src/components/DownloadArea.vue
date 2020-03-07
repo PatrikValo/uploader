@@ -11,6 +11,7 @@
             v-if="showDownloadButton"
             :downloading="downloading"
             @download="download"
+            @cancel="cancel"
         ></download-button>
     </div>
 </template>
@@ -42,6 +43,7 @@ export default class DownloadArea extends Vue {
     private downloading: boolean = false;
     private uploaded: number = 0;
     private alert: string = "";
+    private downloader: DownloadFile | null = null;
     private readonly blob: boolean;
 
     public constructor() {
@@ -57,7 +59,7 @@ export default class DownloadArea extends Vue {
             return;
         }
 
-        const download = new DownloadFile(
+        this.downloader = new DownloadFile(
             this.$props.id,
             this.$props.metadata,
             this.$props.cipher,
@@ -71,14 +73,21 @@ export default class DownloadArea extends Vue {
 
         try {
             this.downloading = true;
-            await download.download(this.blob, progress);
+            await this.downloader.download(this.blob, progress);
         } catch (e) {
             this.alert = "Pri sťahovaní nastala chyba";
             console.error("Nastala chyba!", e);
         }
 
+        this.downloader = null;
         this.downloading = false;
         this.uploaded = 0;
+    }
+
+    public cancel() {
+        if (this.downloader) {
+            this.downloader.cancel();
+        }
     }
 
     get showDownloadButton(): boolean {
