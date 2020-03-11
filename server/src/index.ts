@@ -6,6 +6,8 @@ import Config from "./config";
 import download from "./routes/download";
 import metadata from "./routes/metadata";
 import random from "./routes/random";
+import upload from "./routes/upload";
+import uploadInit from "./routes/uploadInit";
 import ws from "./routes/ws";
 
 const app = expressWs(express()).app;
@@ -17,6 +19,10 @@ app.get("/api/random/:size", random);
 app.get("/api/metadata/:id", metadata);
 
 app.get("/api/download/:id", download);
+
+app.post("/api/upload", uploadInit);
+
+app.post("/api/upload/:id", express.raw({ limit: "1mb" }), upload);
 
 app.ws("/api/upload", ws);
 

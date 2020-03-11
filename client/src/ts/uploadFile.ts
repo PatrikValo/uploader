@@ -93,9 +93,7 @@ abstract class UploadFile implements IUploadFile {
      * @return iv
      */
     private createIv(): Promise<Uint8Array> {
-        return new Promise(resolve => {
-            return resolve(this.cipher.initializationVector());
-        });
+        return this.cipher.getInitializationVector();
     }
 
     /**
@@ -225,6 +223,79 @@ export class UploadFileServer extends UploadFile {
                     new Error("An error occurred during websocket connection")
                 );
             };
+        });
+    }
+}
+
+export class UploadFileXHR extends UploadFile {
+    public constructor(file: File, password?: string) {
+        super(file, password);
+    }
+
+    public async upload(
+        progress: (u: number) => any
+    ): Promise<{ id: string; key: string }> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const idObj = await this.post(
+                    Utils.serverClassicUrl("/api/upload"),
+                    [],
+                    new Uint8Array(0)
+                );
+
+                let answer = await this.content(progress);
+
+                while (answer) {
+                    if (this.isCanceled()) {
+                        return resolve({ id: "", key: "" });
+                    }
+
+                    await this.post(
+                        Utils.serverClassicUrl("/api/upload/" + idObj.id),
+                        [
+                            {
+                                header: "Content-Type",
+                                value: "application/octet-stream"
+                            }
+                        ],
+                        answer
+                    );
+
+                    answer = await this.content(progress);
+                }
+
+                return resolve({ id: idObj.id, key: await this.exportKey() });
+            } catch (e) {
+                return reject(e);
+            }
+        });
+    }
+
+    private post(
+        url: string,
+        headers: Array<{ header: string; value: string }>,
+        body: Uint8Array
+    ): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onloadend = async () => {
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    return reject(new Error(String(xhr.status)));
+                }
+
+                return resolve(xhr.response);
+            };
+
+            xhr.onabort = reject;
+            xhr.onerror = reject;
+            xhr.open("post", url);
+
+            headers.forEach(value => {
+                xhr.setRequestHeader(value.header, value.value);
+            });
+
+            xhr.responseType = "json";
+            xhr.send(body);
         });
     }
 }

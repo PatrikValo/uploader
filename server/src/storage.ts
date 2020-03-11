@@ -152,6 +152,6 @@ export class Storage {
 
     public writableStream(id: string): fs.WriteStream {
         const path = pathObj.join(this.path, id);
-        return fs.createWriteStream(path);
+        return fs.createWriteStream(path, { flags: "a" });
     }
 }

@@ -21,8 +21,8 @@ for (let i = 1; i < Config.cipher.ivLength; i++) {
     iv.push(i);
 }
 
-function initializationVector(): Uint8Array {
-    return new Uint8Array(iv);
+function getInitializationVector(): Promise<Uint8Array> {
+    return new Promise(resolve => resolve(new Uint8Array(iv)));
 }
 
 async function encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
@@ -58,8 +58,8 @@ jest.mock("../../client/src/ts/cipher", () => {
                 return exportedKey();
             }
 
-            public initializationVector(): Uint8Array {
-                return initializationVector();
+            public getInitializationVector(): Promise<Uint8Array> {
+                return getInitializationVector();
             }
 
             public async encryptMetadata(
@@ -91,8 +91,8 @@ jest.mock("../../client/src/ts/cipher", () => {
                 return exportedKey();
             }
 
-            public initializationVector(): Uint8Array {
-                return initializationVector();
+            public getInitializationVector(): Promise<Uint8Array> {
+                return getInitializationVector();
             }
 
             public async encryptMetadata(
@@ -148,7 +148,9 @@ describe("UploadFile tests", () => {
 
             // send IV
             server.send(JSON.stringify({ status: 200 }));
-            await expect(server).toReceiveMessage(initializationVector());
+            await expect(server).toReceiveMessage(
+                await getInitializationVector()
+            );
             // send flag
             server.send(JSON.stringify({ status: 200 }));
             await expect(server).toReceiveMessage(new Uint8Array([0]));
@@ -195,7 +197,9 @@ describe("UploadFile tests", () => {
 
             // send IV
             server.send(JSON.stringify({ status: 200 }));
-            await expect(server).toReceiveMessage(initializationVector());
+            await expect(server).toReceiveMessage(
+                await getInitializationVector()
+            );
             // send flag
             server.send(JSON.stringify({ status: 200 }));
             await expect(server).toReceiveMessage(new Uint8Array([1]));
@@ -261,7 +265,9 @@ describe("UploadFile tests", () => {
 
             // send IV
             server.send(JSON.stringify({ status: 200 }));
-            await expect(server).toReceiveMessage(initializationVector());
+            await expect(server).toReceiveMessage(
+                await getInitializationVector()
+            );
             server.close();
 
             await expect(resultPromise).rejects.not.toBeNull();

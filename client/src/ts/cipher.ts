@@ -4,8 +4,20 @@ import Utils from "./utils";
 
 export abstract class Cipher {
     protected readonly crypto: Crypto = window.crypto;
-    protected abstract readonly keyPromise: Promise<CryptoKey>;
-    protected abstract readonly iv: Uint8Array;
+
+    /**
+     * It returns iv, which is used for encryption
+     *
+     * @return Promise with iv
+     */
+    public abstract getInitializationVector(): Promise<Uint8Array>;
+
+    /**
+     * It returns key, which is used for encryption
+     *
+     * @return Promise with key
+     */
+    public abstract getKey(): Promise<CryptoKey>;
 
     /**
      * It returns salt, which was used for deriving key from password. If password
@@ -75,21 +87,12 @@ export abstract class Cipher {
     }
 
     /**
-     * It returns iv, which is used in encryption
-     *
-     * @return iv
-     */
-    public initializationVector(): Uint8Array {
-        return this.iv;
-    }
-
-    /**
      * It exports key to printable string
      *
      * @return Promise exported key
      */
     public async exportedKey(): Promise<string> {
-        const key: CryptoKey = await this.keyPromise;
+        const key: CryptoKey = await this.getKey();
         const buffer = await this.crypto.subtle.exportKey("raw", key);
         return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
     }
@@ -123,10 +126,11 @@ export abstract class Cipher {
      * @return Promise with encrypted chunk
      */
     public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-        const key: CryptoKey = await this.keyPromise;
+        const key: CryptoKey = await this.getKey();
+        const iv: Uint8Array = await this.getInitializationVector();
         const encrypted: ArrayBuffer = await this.crypto.subtle.encrypt(
             {
-                iv: this.iv,
+                iv,
                 name: "AES-GCM"
             },
             key,
@@ -142,10 +146,11 @@ export abstract class Cipher {
      * @return Promise with encrypted chunk
      */
     public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-        const key: CryptoKey = await this.keyPromise;
+        const key: CryptoKey = await this.getKey();
+        const iv: Uint8Array = await this.getInitializationVector();
         const decrypted: ArrayBuffer = await this.crypto.subtle.decrypt(
             {
-                iv: this.iv,
+                iv,
                 name: "AES-GCM"
             },
             key,
@@ -157,12 +162,22 @@ export abstract class Cipher {
 
 export class ClassicCipher extends Cipher {
     protected readonly keyPromise: Promise<CryptoKey>;
-    protected readonly iv: Uint8Array;
+    protected readonly ivPromise: Promise<Uint8Array>;
 
     public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
         super();
         this.keyPromise = this.initKeyPromise(key);
-        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
+        this.ivPromise = iv
+            ? new Promise(resolve => resolve(iv))
+            : this.randomValues(Config.cipher.ivLength);
+    }
+
+    public getKey(): Promise<CryptoKey> {
+        return this.keyPromise;
+    }
+
+    public getInitializationVector(): Promise<Uint8Array> {
+        return this.ivPromise;
     }
 
     public getSalt(): Promise<Uint8Array> {
@@ -229,16 +244,26 @@ export class ClassicCipher extends Cipher {
 
 export class PasswordCipher extends Cipher {
     protected readonly keyPromise: Promise<CryptoKey>;
-    protected readonly iv: Uint8Array;
+    protected readonly ivPromise: Promise<Uint8Array>;
     protected readonly salt: Promise<Uint8Array>;
 
     public constructor(password: string, salt?: Uint8Array, iv?: Uint8Array) {
         super();
         this.keyPromise = this.deriveKey(password);
-        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
+        this.ivPromise = iv
+            ? new Promise(resolve => resolve(iv))
+            : this.randomValues(Config.cipher.ivLength);
         this.salt = new Promise(resolve => {
             return resolve(salt || this.randomValues(Config.cipher.saltLength));
         });
+    }
+
+    public getKey(): Promise<CryptoKey> {
+        return this.keyPromise;
+    }
+
+    public getInitializationVector(): Promise<Uint8Array> {
+        return this.ivPromise;
     }
 
     public getSalt(): Promise<Uint8Array> {
