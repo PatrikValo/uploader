@@ -2,7 +2,7 @@
     <b-container class="h-100">
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
-                <main-title title="Súbor už neexistuje"></main-title>
+                <main-title title="Súbor neexistuje"></main-title>
                 <redirect-button
                     title="Hlavná stránka"
                     to="/"
