@@ -33,6 +33,7 @@ import AuthDropbox from "../ts/authDropbox";
     components: { DownloadButton, ProgressBar, FileInfo },
     props: {
         id: String,
+        sharing: String,
         metadata: Metadata,
         cipher: Object as () => Cipher,
         startFrom: Number,
@@ -61,10 +62,10 @@ export default class DownloadArea extends Vue {
 
         this.downloader = new DownloadFile(
             this.$props.id,
+            this.$props.sharing,
             this.$props.metadata,
             this.$props.cipher,
-            this.$props.startFrom,
-            this.$props.auth
+            this.$props.startFrom
         );
 
         const progress = (u: number) => {

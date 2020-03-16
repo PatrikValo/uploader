@@ -19,7 +19,7 @@ export default class AuthDropbox extends EventEmitter {
     }
 
     /**
-     * It creates url for authorisation to dropbox
+     * It creates url for Authentication to dropbox
      *
      * @return url
      */
@@ -50,7 +50,8 @@ export default class AuthDropbox extends EventEmitter {
      * It clears information about user from local storage and changeStatus event
      * is emitted with False param.
      */
-    public logout(): void {
+    public async logout(): Promise<void> {
+        await this.getDropboxObject().authTokenRevoke();
         this.setAccountId("");
         this.setAccessToken("");
         this.emit("changeStatus", false);
@@ -77,15 +78,6 @@ export default class AuthDropbox extends EventEmitter {
             clientId: this.clientId,
             fetch
         });
-    }
-
-    /**
-     * Getter for accessToken
-     *
-     * @return accessToken or empty string
-     */
-    public getAccessToken(): string {
-        return this.accessToken;
     }
 
     /**

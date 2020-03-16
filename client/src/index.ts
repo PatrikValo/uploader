@@ -30,8 +30,10 @@ Vue.use(ModalPlugin);
 Vue.use(ButtonPlugin);
 
 const routes = [
+    { path: "/download/:sharing/:id", component: DownloadComponent },
     { path: "/download/:id", component: DownloadComponent },
     { path: "/", component: UploadComponent },
+    { path: "/copy/:sharing/:id", component: CopyComponent },
     { path: "/copy/:id", component: CopyComponent },
     { path: "/error", component: NotFoundComponent },
     { path: "/compatibility", component: CompatibilityComponent },

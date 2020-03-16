@@ -22,15 +22,15 @@ export default class Logout extends Vue {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    public mounted() {
+    public async mounted() {
         try {
             const a: AuthDropbox = this.$props.auth;
-            a.logout();
+            await a.logout();
             setTimeout(() => {
                 return this.$router.push("/");
             }, 500);
         } catch (e) {
-            return this.$router.push("/");
+            return await this.$router.push("/");
         }
     }
 }

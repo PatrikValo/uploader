@@ -4,7 +4,6 @@ import expressWs from "express-ws";
 import path from "path";
 import Config from "./config";
 import download from "./routes/download";
-import metadata from "./routes/metadata";
 import random from "./routes/random";
 import upload from "./routes/upload";
 import uploadInit from "./routes/uploadInit";
@@ -15,8 +14,6 @@ const app = expressWs(express()).app;
 app.use(cors());
 
 app.get("/api/random/:size", random);
-
-app.get("/api/metadata/:id", metadata);
 
 app.get("/api/download/:id", download);
 

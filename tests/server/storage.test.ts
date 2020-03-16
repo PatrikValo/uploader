@@ -1,7 +1,7 @@
 import fs from "fs";
 import pathObj from "path";
 import Config from "../../server/src/config";
-import { FileHandle, Storage } from "../../server/src/storage";
+import { Storage } from "../../server/src/storage";
 const path = pathObj.join(__dirname, "files");
 
 function createFile(name: string): Promise<boolean> {
@@ -24,22 +24,6 @@ describe("Storage tests", () => {
             test("It should create valid object with config path", () => {
                 const storage = new Storage();
                 expect((storage as any).path).toEqual(Config.spacePath);
-            });
-        });
-
-        describe("Open", () => {
-            test("It should open file correctly", async () => {
-                const storage = new Storage(path);
-                const fileHandle = storage.open("exist");
-                await expect(fileHandle).resolves.not.toBeNull();
-                const file = await fileHandle;
-                await file.close();
-            });
-
-            test("It should open file with error, because file doesn't exist", async () => {
-                const storage = new Storage(path);
-                const fileHandle = storage.open("nOtExIsT");
-                await expect(fileHandle).rejects.not.toBeNull();
             });
         });
 
@@ -77,170 +61,6 @@ describe("Storage tests", () => {
                 const storage = new Storage(path);
                 const result = storage.remove("abcde");
                 await expect(result).rejects.not.toBeNull();
-            });
-        });
-    });
-
-    describe("FileHandle test", () => {
-        describe("Size", () => {
-            const storage = new Storage(path);
-            test("It should return correct size", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.size();
-                await expect(result).resolves.toEqual(54);
-                await file.close();
-            });
-
-            test("It should throw exception because file is already closed", async () => {
-                const file = await storage.open("createWritable.txt");
-                await file.close();
-                const result = file.size();
-                await expect(result).rejects.not.toBeNull();
-            });
-
-            test("It should throw error because fd is not correct", async () => {
-                const file = new FileHandle(2.5);
-                const result = file.size();
-                await expect(result).rejects.not.toBeNull();
-            });
-        });
-
-        describe("Read", () => {
-            const storage = new Storage(path);
-            const buff = Buffer.from(
-                "This text is only for test purpose. AaBbCcDd\n" + "This text"
-            );
-
-            test("It should read correctly", async () => {
-                const file = await storage.open("createWritable.txt");
-                expect.assertions(buff.length);
-                for (let i = 0; i < buff.length; i++) {
-                    const result = file.read(i, i + 1);
-                    await expect(result).resolves.toStrictEqual(
-                        buff.slice(i, i + 1)
-                    );
-                }
-                await file.close();
-            });
-
-            test("It should read correctly whole file", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.read(0, buff.length);
-                await expect(result).resolves.toStrictEqual(buff);
-                await file.close();
-            });
-
-            test("It should read throw error because there is negative index", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.read(0, -5);
-                await expect(result).rejects.toEqual(
-                    new Error("Negative parameter")
-                );
-                await file.close();
-            });
-
-            test("It should read throw error because read more than file size", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.read(0, buff.length + 1);
-                await expect(result).rejects.toEqual(
-                    new Error("File doesn't have correct size")
-                );
-                await file.close();
-            });
-
-            test("It should error, because read from close file", async () => {
-                const file = await storage.open("createWritable.txt");
-                await file.close();
-                const read = file.read(0, 1);
-                await expect(read).rejects.toEqual(
-                    new Error("File is already closed")
-                );
-            });
-
-            test("It should throw error because fd is not correct", async () => {
-                const file = new FileHandle(2.5);
-                const result = file.read(0, 10);
-                await expect(result).rejects.not.toBeNull();
-            });
-        });
-
-        describe("ReadChunk", () => {
-            const storage = new Storage(path);
-            const buff = Buffer.from(
-                "This text is only for test purpose. AaBbCcDd\n" + "This text"
-            );
-
-            test("It should read chunks correctly", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.readChunk(0, 0);
-                await expect(result).resolves.toStrictEqual(buff);
-                let shouldBeEmpty = file.readChunk(1, 0);
-                await expect(shouldBeEmpty).resolves.toStrictEqual(
-                    Buffer.from([])
-                );
-                shouldBeEmpty = file.readChunk(555, 0);
-                await expect(shouldBeEmpty).resolves.toStrictEqual(
-                    Buffer.from([])
-                );
-                await file.close();
-            });
-
-            test("It should read chunks correctly from start", async () => {
-                const file = await storage.open("createWritable.txt");
-                const result = file.readChunk(0, 5);
-                await expect(result).resolves.toStrictEqual(buff.slice(5));
-                let shouldBeEmpty = file.readChunk(1, 5);
-                await expect(shouldBeEmpty).resolves.toStrictEqual(
-                    Buffer.from([])
-                );
-                shouldBeEmpty = file.readChunk(555, 5);
-                await expect(shouldBeEmpty).resolves.toStrictEqual(
-                    Buffer.from([])
-                );
-                await file.close();
-            });
-
-            test("It should throw error because chunk number is negative index", async () => {
-                const file = await storage.open("createWritable.txt");
-                let result = file.readChunk(-1, Config.chunkSize);
-                await expect(result).rejects.toEqual(
-                    new Error("Negative parameter")
-                );
-                result = file.readChunk(1, -Config.chunkSize);
-                await expect(result).rejects.toEqual(
-                    new Error("Negative parameter")
-                );
-                await file.close();
-            });
-
-            test("It should error, because read chunk from close file", async () => {
-                const file = await storage.open("createWritable.txt");
-                await file.close();
-                const read = file.readChunk(0, 0);
-                await expect(read).rejects.toEqual(
-                    new Error("File is already closed")
-                );
-            });
-        });
-
-        describe("Close", () => {
-            test("It should close file correctly", async () => {
-                const storage = new Storage(path);
-                const file = await storage.open("exist");
-                await expect(file.close()).resolves.not.toBeNull();
-            });
-
-            test("It should return error, because fd is not correct", async () => {
-                const file = new FileHandle(2.5);
-                await expect(file.close()).rejects.not.toBeNull();
-            });
-
-            test("It should close file correctly", async () => {
-                const storage = new Storage(path);
-                const file = await storage.open("exist");
-                await expect(file.close()).resolves.not.toBeNull();
-                await expect(file.close()).resolves.not.toBeNull();
-                await expect(file.close()).resolves.not.toBeNull();
             });
         });
     });

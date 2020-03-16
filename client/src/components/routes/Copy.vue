@@ -41,14 +41,20 @@ export default class Copy extends Vue {
 
     get url(): string {
         let key = this.key();
+        let id = this.$route.params.id;
+        const sharing = this.$route.params.sharing;
 
-        return Utils.buildUrl("download", this.$route.params.id, key);
+        id = sharing ? sharing + "/" + id : id;
+        return Utils.buildUrl("download", id, key);
     }
 
     get path(): string {
         let key = this.key();
+        let id = this.$route.params.id;
+        const sharing = this.$route.params.sharing;
 
-        return Utils.buildPath("download", this.$route.params.id, key);
+        id = sharing ? sharing + "/" + id : id;
+        return Utils.buildPath("download", id, key);
     }
 }
 </script>

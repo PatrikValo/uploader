@@ -1,14 +1,13 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import AuthDropbox from "./authDropbox";
 import { Cipher } from "./cipher";
-import { DownloadStreamDropbox, DownloadStreamServer } from "./downloadStream";
+import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
 const { createWriteStream } = streamSaver;
+import Config from "./config";
 import { IDownloadStream } from "./interfaces/IDownloadStream";
 
 export default class DownloadFile {
-    private readonly id: string;
     private readonly metadata: Metadata;
     private readonly cipher: Cipher;
     private readonly stream: IDownloadStream;
@@ -16,17 +15,17 @@ export default class DownloadFile {
 
     public constructor(
         id: string,
+        sharing: string,
         metadata: Metadata,
         cipher: Cipher,
-        startFrom: number,
-        auth: AuthDropbox
+        startFrom: number
     ) {
-        this.id = id;
         this.metadata = metadata;
         this.cipher = cipher;
-        this.stream = auth.isLoggedIn()
-            ? new DownloadStreamDropbox(this.id, startFrom, auth)
-            : new DownloadStreamServer(this.id, startFrom);
+        const size = this.lengthEncryptedFile(startFrom);
+        this.stream = sharing
+            ? new DownloadStream(id, startFrom, size, { sharing }) // dbx
+            : new DownloadStream(id, startFrom, size); // server
         this.stop = false;
     }
 
@@ -128,5 +127,22 @@ export default class DownloadFile {
         }
 
         saveAs(blob, this.metadata.getName());
+    }
+
+    /**
+     * It calculates length of encrypted content of file
+     *
+     * @param startFrom - first position of encrypted file
+     * @return length of encrypted file
+     */
+    private lengthEncryptedFile(startFrom: number): number {
+        const size = this.metadata.getSize();
+        const count = Math.floor(size / Config.client.chunkSize);
+        return (
+            startFrom +
+            count * (Config.client.chunkSize + 16) +
+            (size - count * Config.client.chunkSize) +
+            16
+        );
     }
 }

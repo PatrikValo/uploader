@@ -16,6 +16,7 @@
                 <download-area
                     v-if="showDownloadArea"
                     :id="id"
+                    :sharing="sharing"
                     :metadata="metadata"
                     :cipher="cipher"
                     :start-from="startFrom"
@@ -31,10 +32,7 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import {
-    DownloadMetadataServer,
-    DownloadMetadataDropbox
-} from "../../ts/downloadMetadata";
+import DownloadMetadata from "../../ts/downloadMetadata";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
@@ -70,6 +68,7 @@ export default class Download extends Vue {
     private mount: boolean = false;
     private alert: string = "";
     private id: string = "";
+    private sharing: string = "";
     private metadata: Metadata | null = null;
     private cipher: Cipher | null = null;
     private iv: Uint8Array | null = null;
@@ -88,11 +87,11 @@ export default class Download extends Vue {
         }
 
         this.id = this.$route.params.id;
-        const a: AuthDropbox = this.$props.auth;
+        this.sharing = this.$route.params.sharing;
 
-        const downloadMetadata: IDownloadMetadata = a.isLoggedIn()
-            ? new DownloadMetadataDropbox(this.id, a)
-            : new DownloadMetadataServer(this.id);
+        const downloadMetadata: IDownloadMetadata = this.sharing
+            ? new DownloadMetadata(this.id, { sharing: this.sharing })
+            : new DownloadMetadata(this.id);
 
         try {
             const result = await downloadMetadata.download();
