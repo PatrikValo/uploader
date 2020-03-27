@@ -1,7 +1,8 @@
+import { AesGcmDecryptor, AesGcmEncryptor } from "../js/aesGcm";
 import Config from "./config";
 import Metadata from "./metadata";
 import Utils from "./utils";
-
+const a = new AesGcmEncryptor(new Uint8Array(16), new Uint8Array(16));
 export abstract class Cipher {
     protected readonly crypto: Crypto = window.crypto;
 
@@ -128,6 +129,7 @@ export abstract class Cipher {
     public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
         const key: CryptoKey = await this.getKey();
         const iv: Uint8Array = await this.getInitializationVector();
+        a.update(chunk);
         const encrypted: ArrayBuffer = await this.crypto.subtle.encrypt(
             {
                 iv,
