@@ -1,35 +1,52 @@
 import AbstractDownloadMetadata from "./abstract/abstractDownloadMetadata";
 import Utils from "./utils";
 
-export default class DownloadMetadata extends AbstractDownloadMetadata {
+async function rangeRequest(
+    url: string,
+    start: number,
+    end: number
+): Promise<Uint8Array> {
+    const headers = [
+        {
+            header: "Range",
+            value: `bytes=${start}-${end - 1}`
+        }
+    ];
+    const result = await Utils.getRequest(url, headers, "arraybuffer");
+
+    if (
+        !result ||
+        result.byteLength === 0 ||
+        result.byteLength !== end - start
+    ) {
+        throw new Error("Invalid response");
+    }
+
+    return new Uint8Array(result);
+}
+
+export class DownloadMetadataServer extends AbstractDownloadMetadata {
     private readonly url: string;
 
-    public constructor(id: string, dropbox?: { sharing: string }) {
+    public constructor(id: string) {
         super();
-        if (dropbox) {
-            this.url = `https://www.dl.dropboxusercontent.com/s/${dropbox.sharing}/${id}?dl=1`;
-            return;
-        }
-        this.url = Utils.serverClassicUrl("/api/download/" + id);
+        this.url = Utils.serverClassicUrl("/api/range/" + id);
     }
 
     protected async range(start: number, end: number): Promise<Uint8Array> {
-        const headers = [
-            {
-                header: "Range",
-                value: `bytes=${start}-${end - 1}`
-            }
-        ];
-        const result = await Utils.getRequest(this.url, headers, "arraybuffer");
+        return rangeRequest(this.url, start, end);
+    }
+}
 
-        if (
-            !result ||
-            result.byteLength === 0 ||
-            result.byteLength !== end - start
-        ) {
-            throw new Error("Invalid response");
-        }
+export class DownloadMetadataDropbox extends AbstractDownloadMetadata {
+    private readonly url: string;
 
-        return new Uint8Array(result);
+    public constructor(id: string, sharing: string) {
+        super();
+        this.url = `https://www.dl.dropboxusercontent.com/s/${sharing}/${id}?dl=1`;
+    }
+
+    protected async range(start: number, end: number): Promise<Uint8Array> {
+        return rangeRequest(this.url, start, end);
     }
 }

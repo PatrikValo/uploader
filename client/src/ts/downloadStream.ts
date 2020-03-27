@@ -2,23 +2,48 @@ import AbstractDownloadStream from "./abstract/abstractDownloadStream";
 import Config from "./config";
 import Utils from "./utils";
 
-export default class DownloadStream extends AbstractDownloadStream {
+export class DownloadStreamServer extends AbstractDownloadStream {
+    private readonly url: string;
+    private readonly startFrom: number;
+
+    public constructor(id: string, startFrom: number) {
+        super();
+        this.url = Utils.serverClassicUrl("/api/download/" + id);
+        this.startFrom = startFrom;
+    }
+
+    protected async downloadChunk(
+        numberOfChunk: number
+    ): Promise<Uint8Array | null> {
+        const headers = [
+            { header: "X-Chunk-Number", value: numberOfChunk.toString() },
+            { header: "X-Start-From", value: this.startFrom.toString() }
+        ];
+
+        const result = await Utils.getRequest(this.url, headers, "arraybuffer");
+
+        if (!result) {
+            throw new Error("Empty response");
+        }
+
+        const chunk = new Uint8Array(result);
+        return !chunk.length ? null : chunk;
+    }
+}
+
+export class DownloadStreamDropbox extends AbstractDownloadStream {
     private readonly url: string;
     private readonly startFrom: number;
     private readonly sizeEncryptedFile: number;
 
     public constructor(
         id: string,
+        sharing: string,
         startFrom: number,
-        sizeEncryptedFile: number,
-        dropbox?: { sharing: string }
+        sizeEncryptedFile: number
     ) {
         super();
-        if (dropbox) {
-            this.url = `https://dl.dropboxusercontent.com/s/${dropbox.sharing}/${id}?dl=1`;
-        } else {
-            this.url = Utils.serverClassicUrl("/api/download/" + id);
-        }
+        this.url = `https://dl.dropboxusercontent.com/s/${sharing}/${id}?dl=1`;
         this.startFrom = startFrom;
         this.sizeEncryptedFile = sizeEncryptedFile;
     }

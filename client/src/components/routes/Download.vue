@@ -32,7 +32,10 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import DownloadMetadata from "../../ts/downloadMetadata";
+import {
+    DownloadMetadataServer,
+    DownloadMetadataDropbox
+} from "../../ts/downloadMetadata";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
@@ -90,8 +93,8 @@ export default class Download extends Vue {
         this.sharing = this.$route.params.sharing;
 
         const downloadMetadata: IDownloadMetadata = this.sharing
-            ? new DownloadMetadata(this.id, { sharing: this.sharing })
-            : new DownloadMetadata(this.id);
+            ? new DownloadMetadataDropbox(this.id, this.sharing)
+            : new DownloadMetadataServer(this.id);
 
         try {
             const result = await downloadMetadata.download();

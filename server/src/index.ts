@@ -1,13 +1,16 @@
 import cors from "cors";
+import { CronJob } from "cron";
 import express from "express";
 import expressWs from "express-ws";
 import path from "path";
 import Config from "./config";
 import download from "./routes/download";
 import random from "./routes/random";
+import range from "./routes/range";
 import upload from "./routes/upload";
 import uploadInit from "./routes/uploadInit";
 import ws from "./routes/ws";
+import { Storage } from "./storage";
 
 const app = expressWs(express()).app;
 
@@ -16,6 +19,8 @@ app.use(cors());
 app.get("/api/random/:size", random);
 
 app.get("/api/download/:id", download);
+
+app.get("/api/range/:id", range);
 
 app.post("/api/upload", uploadInit);
 
@@ -63,3 +68,15 @@ app.listen(Config.port, () =>
     // tslint:disable-next-line:no-console
     console.log(`Listening for port ${Config.port}...`)
 );
+
+const job = new CronJob(
+    "25 * * * *",
+    async () => {
+        console.log(new Date());
+        const st = new Storage();
+        await st.removeAllFilesOlderThan(0);
+    },
+    null,
+    true
+);
+job.start();

@@ -1,7 +1,7 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
 import { Cipher } from "./cipher";
-import DownloadStream from "./downloadStream";
+import { DownloadStreamDropbox, DownloadStreamServer } from "./downloadStream";
 import Metadata from "./metadata";
 const { createWriteStream } = streamSaver;
 import Config from "./config";
@@ -24,8 +24,8 @@ export default class DownloadFile {
         this.cipher = cipher;
         const size = this.lengthEncryptedFile(startFrom);
         this.stream = sharing
-            ? new DownloadStream(id, startFrom, size, { sharing }) // dbx
-            : new DownloadStream(id, startFrom, size); // server
+            ? new DownloadStreamDropbox(id, sharing, startFrom, size) // dbx
+            : new DownloadStreamServer(id, startFrom); // server
         this.stop = false;
     }
 

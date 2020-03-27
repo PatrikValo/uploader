@@ -6,7 +6,7 @@ class CipherConfig {
     public readonly ivLength: number = 16;
     public readonly saltLength: number = 16;
     public readonly keyLength: number = 16;
-    public readonly deriveIterations: number = 10000;
+    public readonly deriveIterations: number = 100000;
 }
 
 class Server {
@@ -21,7 +21,7 @@ class Client {
     public readonly protocol: string = production ? "https" : "http";
     public readonly fileSizeLimit: number = 1024 * 1024 * 1024 * 5;
     public readonly fileSizeLimitDropbox: number = 1024 * 1024 * 1024 * 350;
-    public readonly chunkSize: number = 1024 * 1024;
+    public readonly chunkSize: number = 64 * 1024;
     public readonly blobFileSizeLimit: number = 1024 * 1024 * 250;
 }
 
