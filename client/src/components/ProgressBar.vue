@@ -3,8 +3,6 @@
         <b-progress
             :value="percentage"
             variant="warning"
-            striped
-            :animated="true"
             height="1.5rem"
             class="mt-2"
         ></b-progress>

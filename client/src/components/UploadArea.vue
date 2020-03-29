@@ -22,8 +22,7 @@
 import Component from "vue-class-component";
 import ProgressBar from "./ProgressBar.vue";
 import SizeIndicator from "./SizeIndicator.vue";
-import IUploadFile from "../ts/interfaces/IUploadFile";
-import { UploadFileServer, UploadFileDropbox } from "../ts/uploadFile";
+import UploadFile from "../ts/uploadFile";
 import Vue from "vue";
 import FileName from "./FileName.vue";
 import FileIcon from "./FileIcon.vue";
@@ -52,7 +51,7 @@ export default class UploadArea extends Vue {
     private startUploading: boolean = false;
     private uploaded: number = 0;
     private hasPassword: boolean = false;
-    private uploader: IUploadFile | null = null;
+    private uploader: UploadFile | null = null;
     private password: string = "";
 
     public constructor() {
@@ -75,14 +74,15 @@ export default class UploadArea extends Vue {
         }
 
         if (this.$props.auth.isLoggedIn()) {
-            this.uploader = new UploadFileDropbox(
+            this.uploader = new UploadFile(
                 this.$props.file,
-                this.$props.auth,
+                { sender: "dropbox", data: this.$props.auth },
                 this.hasPassword ? this.password : undefined
             );
         } else {
-            this.uploader = new UploadFileServer(
+            this.uploader = new UploadFile(
                 this.$props.file,
+                { sender: "server" },
                 this.hasPassword ? this.password : undefined
             );
         }

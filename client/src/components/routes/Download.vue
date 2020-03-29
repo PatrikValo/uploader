@@ -18,9 +18,7 @@
                     :id="id"
                     :sharing="sharing"
                     :metadata="metadata"
-                    :cipher="cipher"
-                    :start-from="startFrom"
-                    :auth="auth"
+                    :decryption="decryption"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
@@ -32,24 +30,20 @@
 
 <script lang="ts">
 import Component from "vue-class-component";
-import {
-    DownloadMetadataServer,
-    DownloadMetadataDropbox
-} from "../../ts/downloadMetadata";
+import DownloadMetadata from "../../ts/downloadMetadata";
 import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
 import DownloadButton from "../DownloadButton.vue";
-import Metadata from "../../ts/metadata";
 import PasswordConfirm from "../PasswordConfirm.vue";
 import LoadingPage from "../LoadingPage.vue";
 import { DownloadCompatibility } from "../../ts/compatibility";
 import ProgressBar from "../ProgressBar.vue";
-import { Cipher, PasswordCipher, ClassicCipher } from "../../ts/cipher";
 import DownloadArea from "../DownloadArea.vue";
 import BoxImage from "../BoxImage.vue";
 import AuthDropbox from "../../ts/authDropbox";
-import { IDownloadMetadata } from "../../ts/interfaces/IDownloadMetadata";
+import Utils from "../../ts/utils";
+import Metadata from "../../ts/metadata";
 
 @Component({
     components: {
@@ -73,11 +67,8 @@ export default class Download extends Vue {
     private id: string = "";
     private sharing: string = "";
     private metadata: Metadata | null = null;
-    private cipher: Cipher | null = null;
-    private iv: Uint8Array | null = null;
-    private rawMetadata: Uint8Array | null = null;
-    private salt: Uint8Array | null = null;
-    private startFrom: number | null = null;
+    private decryption: { key: Uint8Array; iv: Uint8Array } | null = null;
+    private downloadMetadata: DownloadMetadata | null = null;
 
     public constructor() {
         super();
@@ -91,36 +82,34 @@ export default class Download extends Vue {
 
         this.id = this.$route.params.id;
         this.sharing = this.$route.params.sharing;
-
-        const downloadMetadata: IDownloadMetadata = this.sharing
-            ? new DownloadMetadataDropbox(this.id, this.sharing)
-            : new DownloadMetadataServer(this.id);
+        this.downloadMetadata = new DownloadMetadata(this.id, this.sharing);
 
         try {
-            const result = await downloadMetadata.download();
-            this.iv = result.iv;
-            this.rawMetadata = result.metadata;
-            this.salt = result.password.salt;
-            this.startFrom = result.startFrom;
-
             // file with password
-            if (result.password.flag) {
-                this.showInput = true;
-            } else {
+            const pw = await this.downloadMetadata.passwordIsRequired();
+            if (!pw) {
                 // file without password
-
                 if (this.$route.hash.length <= 1) {
                     return await this.$router.push("/error");
                 }
 
-                const key = this.$route.hash.substr(1);
-
-                this.cipher = new ClassicCipher(key, this.iv);
-
-                this.metadata = await this.cipher.decryptMetadata(
-                    this.rawMetadata
+                const key = Utils.base64toUint8Array(
+                    this.$route.hash.substr(1)
                 );
+
+                const result = await this.downloadMetadata.download(key);
+
+                if (!result) {
+                    return await this.$router.push("/error");
+                }
+                this.metadata = result.metadata;
+                this.decryption = result.decryptionForFile;
+                this.mount = true;
+                return;
             }
+
+            // file with password
+            this.showInput = true;
             this.mount = true;
         } catch (e) {
             return await this.$router.push("/error");
@@ -128,18 +117,26 @@ export default class Download extends Vue {
     }
 
     public async verify(password: string): Promise<void> {
-        if (!this.iv || !this.rawMetadata || !this.salt) {
+        if (!this.downloadMetadata) {
             return;
         }
-
-        this.cipher = new PasswordCipher(password, this.salt, this.iv);
-
+        this.mount = false;
         try {
-            this.metadata = await this.cipher.decryptMetadata(this.rawMetadata);
+            const result = await this.downloadMetadata.download(password);
+
+            if (!result) {
+                this.alert = "Nesprávne heslo";
+                this.mount = true;
+                return;
+            }
+
+            this.metadata = result.metadata;
+            this.decryption = result.decryptionForFile;
             this.showInput = false;
         } catch (e) {
-            this.alert = "Nesprávne heslo";
+            this.alert = "Pri overovaní nastala chyba";
         }
+        this.mount = true;
     }
 
     public get showPasswordInput() {
@@ -147,7 +144,9 @@ export default class Download extends Vue {
     }
 
     public get showDownloadArea() {
-        return this.mount && !this.showInput && this.metadata;
+        return (
+            this.mount && !this.showInput && this.metadata && this.decryption
+        );
     }
 }
 </script>

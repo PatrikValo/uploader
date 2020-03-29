@@ -1,5 +1,5 @@
 import Config from "../../client/src/ts/config";
-import FileStream from "../../client/src/ts/fileStream";
+import FileStream from "../../client/src/ts/fileSource";
 
 describe("FileStream tests", () => {
     describe("Read function", () => {

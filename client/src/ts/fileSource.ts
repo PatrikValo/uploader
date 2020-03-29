@@ -1,6 +1,6 @@
 import Config from "./config";
 
-export default class FileStream {
+export default class FileSource {
     private file: File;
     private readonly size: number;
     private index: number = 0;
@@ -13,16 +13,14 @@ export default class FileStream {
 
     /**
      * It reads one chunk of file. Each time when this method is called, it returns
-     * different chunk of file. If there is nothing to read, done property is True and
-     * value property is empty Uint8Array. Value is not empty and done property
-     * is False, when there is still data, which can be read from file.
+     * different chunk of file. If there is nothing to read, it returns null.
      *
-     * @return Object contains done and value property
+     * @return Chunk or null
      */
-    public read(): Promise<{ done: boolean; value: Uint8Array }> {
+    public read(): Promise<Uint8Array | null> {
         return new Promise((resolve, reject) => {
             if (this.index >= this.size) {
-                return resolve({ done: true, value: new Uint8Array(0) });
+                return resolve(null);
             }
 
             const start = this.index;
@@ -37,10 +35,9 @@ export default class FileStream {
             const fileReader: FileReader = new FileReader();
 
             fileReader.onload = () => {
-                return resolve({
-                    done: false,
-                    value: new Uint8Array(fileReader.result as ArrayBuffer)
-                });
+                return resolve(
+                    new Uint8Array(fileReader.result as ArrayBuffer)
+                );
             };
 
             fileReader.onerror = reject;

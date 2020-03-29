@@ -7,7 +7,6 @@ import {
     TransformStream as TrS,
     WritableStream as WrS
 } from "web-streams-polyfill/ponyfill";
-import { AesGcmDecryptor, AesGcmEncryptor } from "../js/aesGcm";
 
 class BaseCompatibility {
     /**
@@ -26,91 +25,6 @@ class BaseCompatibility {
         } catch (e) {
             (window as any).TextEncoder = Encoder;
             (window as any).TextDecoder = Decoder;
-        }
-
-        try {
-            const a = new AesGcmEncryptor(
-                new Uint8Array(16),
-                new Uint8Array(16)
-            );
-            const res1 = a.update(new Uint8Array(16));
-            const right1 = new Uint8Array([
-                163,
-                178,
-                43,
-                132,
-                73,
-                175,
-                175,
-                188,
-                214,
-                192,
-                159,
-                44,
-                250,
-                157,
-                226,
-                190
-            ]);
-            const res2 = a.update(new Uint8Array(16));
-            const right2 = new Uint8Array([
-                147,
-                143,
-                139,
-                191,
-                35,
-                88,
-                99,
-                208,
-                206,
-                2,
-                132,
-                39,
-                34,
-                253,
-                80,
-                52
-            ]);
-
-            for (let i = 0; i < res1.length; i++) {
-                if (res1[i] !== right1[i]) {
-                    return false;
-                }
-                if (res2[i] !== right2[i]) {
-                    return false;
-                }
-            }
-
-            if (a.final().length !== 0) {
-                return false;
-            }
-
-            const res3 = a.getAuthTag();
-            const right3 = new Uint8Array([
-                83,
-                81,
-                130,
-                90,
-                124,
-                170,
-                24,
-                151,
-                139,
-                230,
-                35,
-                118,
-                164,
-                165,
-                36,
-                160
-            ]);
-            for (let i = 0; i < res3.length; i++) {
-                if (res3[i] !== right3[i]) {
-                    return false;
-                }
-            }
-        } catch (e) {
-            return false;
         }
 
         try {

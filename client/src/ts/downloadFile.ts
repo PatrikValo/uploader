@@ -1,31 +1,34 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import { Cipher } from "./cipher";
-import { DownloadStreamDropbox, DownloadStreamServer } from "./downloadStream";
 import Metadata from "./metadata";
 const { createWriteStream } = streamSaver;
+import { Decryption } from "./cipher";
 import Config from "./config";
-import { IDownloadStream } from "./interfaces/IDownloadStream";
+import { DownloadFileSource } from "./downloadSource";
 
 export default class DownloadFile {
     private readonly metadata: Metadata;
-    private readonly cipher: Cipher;
-    private readonly stream: IDownloadStream;
+    private readonly decryptor: Decryption;
+    private readonly source: DownloadFileSource;
     private stop: boolean;
 
     public constructor(
         id: string,
         sharing: string,
         metadata: Metadata,
-        cipher: Cipher,
-        startFrom: number
+        decryption: { key: Uint8Array; iv: Uint8Array }
     ) {
         this.metadata = metadata;
-        this.cipher = cipher;
-        const size = this.lengthEncryptedFile(startFrom);
-        this.stream = sharing
-            ? new DownloadStreamDropbox(id, sharing, startFrom, size) // dbx
-            : new DownloadStreamServer(id, startFrom); // server
+        this.decryptor = new Decryption(decryption.key, decryption.iv);
+        const { startFrom, encryptedSize } = this.paramOfEncryptedFile();
+        this.source = sharing
+            ? new DownloadFileSource(
+                  `${sharing}/${id}`,
+                  "dropbox",
+                  startFrom,
+                  encryptedSize
+              ) // dbx
+            : new DownloadFileSource(id, "server", startFrom, encryptedSize); // server
         this.stop = false;
     }
 
@@ -78,19 +81,22 @@ export default class DownloadFile {
         };
 
         try {
-            let chunk = await this.stream.read();
+            let chunk = await this.source.downloadChunk();
 
-            while (!chunk.done) {
+            while (chunk) {
                 if (this.stop) {
                     await writer.abort("Cancel");
                     window.onunload = null;
                     return;
                 }
 
-                const decrypted = await this.cipher.decryptChunk(chunk.value);
+                const decrypted = chunk.last
+                    ? await this.decryptor.final(chunk.value)
+                    : await this.decryptor.decrypt(chunk.value);
+
                 await writer.write(decrypted);
                 progress(decrypted.length);
-                chunk = await this.stream.read();
+                chunk = await this.source.downloadChunk();
             }
         } catch (e) {
             await writer.abort("Exception");
@@ -112,37 +118,49 @@ export default class DownloadFile {
     private async downloadBlob(progress: (u: number) => any) {
         let blob = new Blob([], { type: "application/octet-stream" });
         try {
-            let chunk = await this.stream.read();
+            let chunk = await this.source.downloadChunk();
 
-            while (!chunk.done) {
-                const decrypted = await this.cipher.decryptChunk(chunk.value);
+            while (chunk) {
+                if (this.stop) {
+                    return;
+                }
+
+                const decrypted = chunk.last
+                    ? await this.decryptor.final(chunk.value)
+                    : await this.decryptor.decrypt(chunk.value);
+
                 blob = new Blob([blob, decrypted], {
                     type: "application/octet-stream"
                 });
                 progress(decrypted.length);
-                chunk = await this.stream.read();
+                chunk = await this.source.downloadChunk();
             }
         } catch (e) {
             throw e;
         }
 
-        saveAs(blob, this.metadata.getName());
+        if (!this.stop) {
+            saveAs(blob, this.metadata.getName());
+        }
     }
 
     /**
-     * It calculates length of encrypted content of file
-     *
-     * @param startFrom - first position of encrypted file
-     * @return length of encrypted file
+     * It calculates size of whole saved file and first position, where
+     * data of file starts
+     * @return Object, which contains position, where data of file starts and
+     * size of whole saved file
      */
-    private lengthEncryptedFile(startFrom: number): number {
-        const size = this.metadata.getSize();
-        const count = Math.floor(size / Config.client.chunkSize);
-        return (
-            startFrom +
-            count * (Config.client.chunkSize + 16) +
-            (size - count * Config.client.chunkSize) +
-            16
-        );
+    private paramOfEncryptedFile(): {
+        startFrom: number;
+        encryptedSize: number;
+    } {
+        const { ivLength, saltLength, authTagLength } = Config.cipher;
+        const metadataSize = this.metadata.toUint8Array().length;
+
+        // ivLength + flagLength + saltLength + lengthOfMetadata + metadataSize + authTag
+        const s = ivLength + 1 + saltLength + 2 + metadataSize + authTagLength;
+        // startFrom + fileSize + authTag
+        const encryptedSize = s + this.metadata.getSize() + authTagLength;
+        return { startFrom: s, encryptedSize };
     }
 }

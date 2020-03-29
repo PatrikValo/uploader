@@ -20,14 +20,12 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import Metadata from "../ts/metadata";
-import { Cipher } from "../ts/cipher";
 import { DownloadCompatibility } from "../ts/compatibility";
 import Config from "../ts/config";
 import DownloadFile from "../ts/downloadFile";
 import FileInfo from "./FileInfo.vue";
 import ProgressBar from "./ProgressBar.vue";
 import DownloadButton from "./DownloadButton.vue";
-import AuthDropbox from "../ts/authDropbox";
 
 @Component({
     components: { DownloadButton, ProgressBar, FileInfo },
@@ -35,9 +33,7 @@ import AuthDropbox from "../ts/authDropbox";
         id: String,
         sharing: String,
         metadata: Metadata,
-        cipher: Object as () => Cipher,
-        startFrom: Number,
-        auth: AuthDropbox
+        decryption: Object as () => { key: Uint8Array; iv: Uint8Array }
     }
 })
 export default class DownloadArea extends Vue {
@@ -56,16 +52,11 @@ export default class DownloadArea extends Vue {
     public mounted() {}
 
     public async download(): Promise<void> {
-        if (!this.$props.cipher) {
-            return;
-        }
-
         this.downloader = new DownloadFile(
             this.$props.id,
             this.$props.sharing,
             this.$props.metadata,
-            this.$props.cipher,
-            this.$props.startFrom
+            this.$props.decryption
         );
 
         const progress = (u: number) => {

@@ -4,7 +4,7 @@ import Config from "../../client/src/ts/config";
 import {
     DownloadStreamDropbox,
     DownloadStreamServer
-} from "../../client/src/ts/downloadStream";
+} from "../../client/src/ts/downloadSource";
 import Utils from "../../client/src/ts/utils";
 
 const token = "token125";
