@@ -1,6 +1,6 @@
 import uuid from "uuid/v1";
 import AuthDropbox from "./authDropbox";
-import ISender from "./interfaces/ISender";
+import ISender from "./interfaces/iSender";
 import UploadSource from "./uploadSource";
 import Utils from "./utils";
 
@@ -40,7 +40,7 @@ export class SenderServer implements ISender {
                 }
 
                 try {
-                    const answer = await this.source.getChunk(progress);
+                    const answer = await this.source.getContent(progress);
                     if (!answer) {
                         return socket.send("null");
                     }
@@ -87,7 +87,7 @@ export class SenderDropbox implements ISender {
         progress: (u: number) => any
     ): Promise<{ id: string; key: string }> {
         try {
-            let content = await this.source.getChunk(progress);
+            let content = await this.source.getContent(progress);
             let uploaded: number = 0;
 
             while (content !== null) {
@@ -99,7 +99,7 @@ export class SenderDropbox implements ISender {
 
                 await this.upload(uploaded, content);
                 uploaded += content.length;
-                content = await this.source.getChunk(progress);
+                content = await this.source.getContent(progress);
             }
 
             const filename = await this.finish(uploaded);

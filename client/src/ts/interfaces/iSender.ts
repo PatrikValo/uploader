@@ -4,11 +4,11 @@
  */
 export default interface ISender {
     /**
-     * Async method for sending file
+     * Async method for sending UploadSource (file), which is given as param in constructor
      * @param progress - function, which is called with size of chunk each time,
      * when new chunk is sent to server
      * @return Promise, which contains object with id of uploaded file and
-     * key in exported format, which was used for encryption. If uploading of file
+     * key in base64 format, which will be part of URL. If uploading of file
      * was stopped with cancel method, it returns object with empty id and empty key.
      */
     send(progress: (u: number) => any): Promise<{ id: string; key: string }>;

@@ -14,45 +14,6 @@ function clientRandomValues(size: number): Uint8Array {
 }
 
 /**
- * It derives the key from password by using PBKDF2
- *
- * @param pw
- * @param salt
- * @return Promise with key
- */
-async function deriveKey(
-    pw: string,
-    salt: Promise<Uint8Array>
-): Promise<Uint8Array> {
-    const buff = Utils.stringToUint8Array(pw);
-    const s = await salt;
-
-    const keyMaterial = await window.crypto.subtle.importKey(
-        "raw",
-        buff,
-        "PBKDF2",
-        false,
-        ["deriveKey"]
-    );
-
-    const key = await window.crypto.subtle.deriveKey(
-        {
-            hash: "SHA-256",
-            iterations: Config.cipher.deriveIterations,
-            name: "PBKDF2",
-            salt: s
-        },
-        keyMaterial,
-        { name: "AES-GCM", length: Config.cipher.keyLength * 8 },
-        true,
-        ["encrypt", "decrypt"]
-    );
-
-    const exported = await window.crypto.subtle.exportKey("raw", key);
-    return new Uint8Array(exported);
-}
-
-/**
  * It downloads random values generated on server side.
  *
  * @param size
@@ -71,9 +32,11 @@ async function serverRandomValues(size: number): Promise<Uint8Array> {
 
 /**
  * It creates random values, which are combination of client and server
- * random values. Number of random values is limited by 64 values.
- * @param size
- * @throws Error object, if size param is greater than 64
+ * random values. If server isn't available, only client values are returned.
+ * Number of random values is limited by 64 values.
+ *
+ * @param size - length of Uint8Array, which contains random values
+ * @return Promise with random values
  */
 export function randomValues(size: number): Promise<Uint8Array> {
     return new Promise(async (resolve, reject) => {
@@ -99,51 +62,117 @@ export function randomValues(size: number): Promise<Uint8Array> {
     });
 }
 
+/**
+ * It derives the key from password and salt by using PBKDF2
+ *
+ * @param pw - password
+ * @param s - salt
+ * @return Promise with key
+ */
+async function pbkdf2(pw: string, s: Promise<Uint8Array>): Promise<Uint8Array> {
+    const buff = Utils.stringToUint8Array(pw);
+    const salt = await s;
+
+    const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        buff,
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+    );
+
+    const derived = await window.crypto.subtle.deriveKey(
+        {
+            hash: "SHA-256",
+            iterations: Config.cipher.deriveIterations,
+            name: "PBKDF2",
+            salt
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: Config.cipher.keyLength * 8 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+
+    const key = await window.crypto.subtle.exportKey("raw", derived);
+    return new Uint8Array(key);
+}
+
+/**
+ * It creates key, which is combination of key1 and key2 params. For this
+ * purpose it uses sha-512 function.
+ *
+ * @param k1 - first key
+ * @param k2 - second key
+ * @return Promise with key
+ */
+async function createKeyFromKeys(
+    k1: Promise<Uint8Array>,
+    k2: Promise<Uint8Array>
+): Promise<Uint8Array> {
+    const key1 = await k1;
+    const key2 = await k2;
+
+    const concat = new Uint8Array(key1.length + key2.length);
+    concat.set(key1);
+    concat.set(key2, key1.length);
+
+    const mixed = await window.crypto.subtle.digest("sha-512", concat);
+    return new Uint8Array(mixed).slice(0, Config.cipher.keyLength);
+}
+
 export class Encryption {
-    private readonly ivPromise: Promise<Uint8Array>;
+    private ivPromise: Promise<Uint8Array>;
+    private readonly exportableKey: Promise<Uint8Array>;
     private readonly keyPromise: Promise<Uint8Array>;
-    private readonly aesPromise: Promise<AesGcmEncryptor>;
+    private aesPromise: Promise<AesGcmEncryptor>;
     private readonly saltPromise: Promise<Uint8Array>;
 
     constructor(password?: string);
     constructor(key: Uint8Array, iv?: Uint8Array);
+
+    /**
+     * It creates new instance of Encryption class.
+     * @param keyMaterial - if type of keyMaterial is string, password is defined,
+     * otherwise key is defined
+     * @param iv - initialization vector
+     */
     public constructor(keyMaterial?: string | Uint8Array, iv?: Uint8Array) {
         this.ivPromise = new Promise(resolve =>
             resolve(iv || randomValues(Config.cipher.ivLength))
         );
 
+        // password
         if (typeof keyMaterial === "string") {
-            const password = keyMaterial;
             this.saltPromise = randomValues(Config.cipher.saltLength);
-            this.keyPromise = deriveKey(password, this.saltPromise);
-        } else {
-            this.saltPromise = new Promise(resolve =>
-                resolve(new Uint8Array(Config.cipher.saltLength))
-            );
-            this.keyPromise = new Promise(resolve =>
-                resolve(keyMaterial || randomValues(Config.cipher.keyLength))
-            );
+            this.exportableKey = randomValues(Config.cipher.keyLength);
+            const pwKey = pbkdf2(keyMaterial, this.saltPromise);
+
+            this.keyPromise = createKeyFromKeys(this.exportableKey, pwKey);
+            this.aesPromise = this.createAesEncryptor();
+            return;
         }
+
+        // without password
+        this.saltPromise = new Promise(resolve =>
+            resolve(new Uint8Array(Config.cipher.saltLength))
+        );
+        this.keyPromise = new Promise(resolve =>
+            resolve(keyMaterial || randomValues(Config.cipher.keyLength))
+        );
+        this.exportableKey = this.keyPromise;
 
         this.aesPromise = this.createAesEncryptor();
     }
 
     /**
-     * It returns iv, which is used for encryption
+     * It returns iv, which is used for encryption. Length of iv is defined in
+     * Config.cipher.ivLength.
      *
      * @return Promise with iv
      */
     public getInitializationVector(): Promise<Uint8Array> {
         return this.ivPromise;
-    }
-
-    /**
-     * It returns key, which is used for encryption
-     *
-     * @return Promise with key
-     */
-    public getKey(): Promise<Uint8Array> {
-        return this.keyPromise;
     }
 
     /**
@@ -158,7 +187,20 @@ export class Encryption {
     }
 
     /**
-     * It encrypts the data, which is given
+     * It returns key in base64 format, which can be part of URL.
+     * In case if password was defined, this key is different that
+     * encryption key
+     *
+     * @return key in base64 format.
+     */
+    public async exportKey(): Promise<string> {
+        const exportableKey = await this.exportableKey;
+        return Utils.Uint8ArrayToBase64(exportableKey);
+    }
+
+    /**
+     * It encrypts chunk of the data, which is given.
+     *
      * @param chunk
      * @return Promise with encrypted data
      */
@@ -168,7 +210,8 @@ export class Encryption {
     }
 
     /**
-     * It closes the current encryptor and it returns authTag
+     * It closes the current encryptor and it returns authTag.
+     *
      * @return Promise with authTag
      */
     public async final(): Promise<Uint8Array> {
@@ -182,8 +225,22 @@ export class Encryption {
     }
 
     /**
+     * It resets the encryptor and it sets up new iv for encryptor.
+     *
+     * @param newIV
+     */
+    public reset(newIV?: Uint8Array): void {
+        this.ivPromise = new Promise(resolve =>
+            resolve(newIV || randomValues(Config.cipher.ivLength))
+        );
+        this.aesPromise = this.createAesEncryptor();
+    }
+
+    /**
      * It creates new instance of encryptor, which is used for encrypting
-     * file or metadata
+     * file or metadata. It uses ivPromise and keyPromise for that, so
+     * these attributes must be defined.
+     *
      * @return Promise AES-GCM encryptor
      */
     private async createAesEncryptor(): Promise<AesGcmEncryptor> {
@@ -200,41 +257,50 @@ export class Decryption {
     private readonly keyPromise: Promise<Uint8Array>;
     private readonly aesPromise: Promise<AesGcmDecryptor>;
 
-    constructor(key: Uint8Array, iv: Uint8Array);
-    constructor(password: string, iv: Uint8Array, salt: Uint8Array);
-
+    /**
+     * It constructs new instance of Decryption class.
+     *
+     * @param keyMaterial - key from URL - if type of keyMaterial is string,
+     * the key is in base64 format, otherwise key is raw
+     * @param iv - initialization vector
+     * @param password
+     * @param salt
+     */
     public constructor(
         keyMaterial: string | Uint8Array,
         iv: Uint8Array,
+        password?: string,
         salt?: Uint8Array
     ) {
         this.ivPromise = new Promise(resolve => resolve(iv));
-        if (typeof keyMaterial === "string") {
+
+        const key: Promise<Uint8Array> =
+            typeof keyMaterial === "string"
+                ? this.importKey(keyMaterial)
+                : new Promise(resolve => resolve(keyMaterial));
+
+        // password
+        if (password) {
             if (!salt) {
-                throw new Error("Salt is not defined");
+                throw new Error("Salt must be defined");
             }
-            this.keyPromise = deriveKey(
-                keyMaterial,
+            const pwKey = pbkdf2(
+                password,
                 new Promise(resolve => resolve(salt))
             );
-        } else {
-            this.keyPromise = new Promise(resolve => resolve(keyMaterial));
+
+            this.keyPromise = createKeyFromKeys(key, pwKey);
+            this.aesPromise = this.createAesDecryptor();
+            return;
         }
 
+        // without password
+        this.keyPromise = key;
         this.aesPromise = this.createAesDecryptor();
     }
 
     /**
-     * It returns iv, which is used for decryption
-     *
-     * @return Promise with iv
-     */
-    public getInitializationVector(): Promise<Uint8Array> {
-        return this.ivPromise;
-    }
-
-    /**
-     * It returns key, which is used for decryption
+     * It returns key, which is used for decryption.
      *
      * @return Promise with key
      */
@@ -243,7 +309,8 @@ export class Decryption {
     }
 
     /**
-     * It decrypts the data, which is given
+     * It decrypts chunk of the data, which is given.
+     *
      * @param chunk
      * @return Promise with decrypted data
      */
@@ -253,28 +320,34 @@ export class Decryption {
     }
 
     /**
-     * It checks correctness of authTag and decrypts last data before decryptor
-     * is closed. AuthTag is part of chunk, which is given
-     * to method as param or whole chunk param is authTag and nothing is decrypted.
+     * It checks correctness of authTag and it decrypts last data before decryptor
+     * is closed. AuthTag is part of chunk param and the other part is decrypted,
+     * or whole chunk param is authTag and nothing is decrypted.
+     *
+     * @throws Error if authTag is invalid
      * @return Promise with decrypted data. If chunk param === only authTag
      * it returns empty Uint8Array
      */
     public async final(chunk: Uint8Array): Promise<Uint8Array> {
         const decryptor = await this.aesPromise;
         const { authTagLength } = Config.cipher;
+
         // separate authTag
         const tag = chunk.slice(-authTagLength);
         chunk = chunk.slice(0, -authTagLength);
 
         const result = decryptor.update(chunk);
         decryptor.setAuthTag(tag);
+        // it can throw exception, if authTag is invalid
         decryptor.final();
         return result;
     }
 
     /**
      * It creates new instance of decryptor, which is used for decrypting
-     * file or metadata
+     * file or metadata. It uses ivPromise and keyPromise for that, so
+     * these attributes must be defined.
+     *
      * @return Promise AES-GCM decryptor
      */
     private async createAesDecryptor(): Promise<AesGcmDecryptor> {
@@ -283,5 +356,15 @@ export class Decryption {
         const { authTagLength, keyLength } = Config.cipher;
         const algorithm = `aes-${keyLength * 8}-gcm`;
         return new AesGcmDecryptor(algorithm, key, iv, { authTagLength });
+    }
+
+    /**
+     * It converts key in base64 format to Uint8Array representation.
+     *
+     * @param key
+     * @return Promise with key
+     */
+    private importKey(key: string): Promise<Uint8Array> {
+        return new Promise(resolve => resolve(Utils.base64toUint8Array(key)));
     }
 }

@@ -1,4 +1,4 @@
-import IReceiver from "./interfaces/IReceiver";
+import IReceiver from "./interfaces/iReceiver";
 import Utils from "./utils";
 
 /**

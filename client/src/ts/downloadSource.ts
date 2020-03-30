@@ -1,14 +1,13 @@
 import Config from "./config";
-import IReceiver from "./interfaces/IReceiver";
+import IReceiver from "./interfaces/iReceiver";
+import { StorageType } from "./interfaces/storageType";
 import Metadata from "./metadata";
 import { ReceiverDropbox, ReceiverServer } from "./receiver";
-
-type ReceiverType = "server" | "dropbox";
 
 export class DownloadMetadataSource {
     private readonly receiver: IReceiver;
 
-    public constructor(id: string, receiver: ReceiverType) {
+    public constructor(id: string, receiver: StorageType) {
         switch (receiver) {
             case "server":
                 this.receiver = new ReceiverServer(id);
@@ -62,7 +61,7 @@ export class DownloadFileSource {
 
     public constructor(
         id: string,
-        receiver: ReceiverType,
+        receiver: StorageType,
         startFrom: number,
         encryptedSize: number
     ) {

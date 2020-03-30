@@ -146,7 +146,8 @@ export default class DownloadFile {
 
     /**
      * It calculates size of whole saved file and first position, where
-     * data of file starts
+     * data of file starts.
+     *
      * @return Object, which contains position, where data of file starts and
      * size of whole saved file
      */
@@ -157,9 +158,7 @@ export default class DownloadFile {
         const { ivLength, saltLength, authTagLength } = Config.cipher;
         const metadataSize = this.metadata.toUint8Array().length;
 
-        // ivLength + flagLength + saltLength + lengthOfMetadata + metadataSize + authTag
         const s = ivLength + 1 + saltLength + 2 + metadataSize + authTagLength;
-        // startFrom + fileSize + authTag
         const encryptedSize = s + this.metadata.getSize() + authTagLength;
         return { startFrom: s, encryptedSize };
     }

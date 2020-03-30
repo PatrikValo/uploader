@@ -18,6 +18,7 @@ interface IReturnValue {
 export default class DownloadMetadata {
     private readonly source: DownloadMetadataSource;
     private readonly plainData: Promise<IPlainData>;
+    private readonly metadata: Promise<Uint8Array>;
 
     public constructor(id: string, sharing: string) {
         if (sharing) {
@@ -29,6 +30,7 @@ export default class DownloadMetadata {
             this.source = new DownloadMetadataSource(id, "server");
         }
         this.plainData = this.source.downloadPlainData();
+        this.metadata = this.downloadMetadata();
     }
 
     public async passwordIsRequired(): Promise<boolean> {
@@ -36,26 +38,23 @@ export default class DownloadMetadata {
         return data.flag[0] === 1;
     }
 
-    public download(key: Uint8Array): Promise<IReturnValue | null>;
-    public download(password: string): Promise<IReturnValue | null>;
-    public async download(
-        keyMaterial: Uint8Array | string
+    public async validate(
+        keyMaterial: Uint8Array | string,
+        password?: string
     ): Promise<IReturnValue | null> {
         const data = await this.plainData;
-        const encrypted = await this.source.downloadMetadata(data.len);
+        const encrypted = await this.metadata;
 
-        let decryptor;
-        if (typeof keyMaterial === "string") {
-            if (!(await this.passwordIsRequired())) {
-                throw new Error("Key is required, but password was given");
-            }
-            decryptor = new Decryption(keyMaterial, data.iv, data.salt);
-        } else {
-            if (await this.passwordIsRequired()) {
-                throw new Error("Password is required, but key was given");
-            }
-            decryptor = new Decryption(keyMaterial, data.iv);
+        const required = await this.passwordIsRequired();
+        if ((password && !required) || (!password && required)) {
+            throw new Error(
+                `Password param is${required ? "" : "n't"} required`
+            );
         }
+
+        const decryptor = password
+            ? new Decryption(keyMaterial, data.iv, password, data.salt)
+            : new Decryption(keyMaterial, data.iv);
 
         try {
             const m = await decryptor.final(encrypted);
@@ -71,5 +70,10 @@ export default class DownloadMetadata {
             // Key is not correct
             return null;
         }
+    }
+
+    private async downloadMetadata(): Promise<Uint8Array> {
+        const data = await this.plainData;
+        return this.source.downloadMetadata(data.len);
     }
 }

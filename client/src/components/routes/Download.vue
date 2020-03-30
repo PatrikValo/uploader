@@ -1,24 +1,24 @@
 <template>
     <b-container class="h-100">
-        <loading-page v-if="!mount"></loading-page>
+        <loading-page v-if="!this.mount"></loading-page>
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
                 <div v-if="showPasswordInput">
-                    <b-alert v-if="alert" show variant="warning">{{
-                        alert
+                    <b-alert v-if="this.alert" show variant="warning">{{
+                        this.alert
                     }}</b-alert>
                     <password-confirm
                         @confirm="verify"
-                        @focus="alert = ''"
+                        @focus="this.alert = ''"
                     ></password-confirm>
                 </div>
                 <download-area
                     v-if="showDownloadArea"
-                    :id="id"
-                    :sharing="sharing"
-                    :metadata="metadata"
-                    :decryption="decryption"
+                    :id="this.id"
+                    :sharing="this.sharing"
+                    :metadata="this.metadata"
+                    :decryption="this.decryption"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
@@ -42,7 +42,6 @@ import ProgressBar from "../ProgressBar.vue";
 import DownloadArea from "../DownloadArea.vue";
 import BoxImage from "../BoxImage.vue";
 import AuthDropbox from "../../ts/authDropbox";
-import Utils from "../../ts/utils";
 import Metadata from "../../ts/metadata";
 
 @Component({
@@ -80,28 +79,27 @@ export default class Download extends Vue {
             return await this.$router.push("/compatibility");
         }
 
+        if (this.$route.hash.length <= 1) {
+            return await this.$router.push("/error");
+        }
+        console.log(this.$route.fullPath.split("/")[1]);
         this.id = this.$route.params.id;
         this.sharing = this.$route.params.sharing;
         this.downloadMetadata = new DownloadMetadata(this.id, this.sharing);
 
         try {
-            // file with password
             const pw = await this.downloadMetadata.passwordIsRequired();
+
             if (!pw) {
                 // file without password
-                if (this.$route.hash.length <= 1) {
-                    return await this.$router.push("/error");
-                }
-
-                const key = Utils.base64toUint8Array(
+                const result = await this.downloadMetadata.validate(
                     this.$route.hash.substr(1)
                 );
-
-                const result = await this.downloadMetadata.download(key);
 
                 if (!result) {
                     return await this.$router.push("/error");
                 }
+
                 this.metadata = result.metadata;
                 this.decryption = result.decryptionForFile;
                 this.mount = true;
@@ -120,9 +118,12 @@ export default class Download extends Vue {
         if (!this.downloadMetadata) {
             return;
         }
-        this.mount = false;
+
         try {
-            const result = await this.downloadMetadata.download(password);
+            const result = await this.downloadMetadata.validate(
+                this.$route.hash.substr(1),
+                password
+            );
 
             if (!result) {
                 this.alert = "Nesprávne heslo";
@@ -136,7 +137,6 @@ export default class Download extends Vue {
         } catch (e) {
             this.alert = "Pri overovaní nastala chyba";
         }
-        this.mount = true;
     }
 
     public get showPasswordInput() {

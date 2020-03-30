@@ -1,3 +1,6 @@
+/**
+ * Wrapper crypto-browserify for easy integrating AES-GCM to Typescript code
+ */
 import cryptoBrowserify from "crypto-browserify";
 import safeBuffer from "safe-buffer";
 

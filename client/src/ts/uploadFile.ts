@@ -1,9 +1,8 @@
 import AuthDropbox from "./authDropbox";
-import ISender from "./interfaces/ISender";
+import ISender from "./interfaces/iSender";
+import { StorageType } from "./interfaces/storageType";
 import { SenderDropbox, SenderServer } from "./sender";
 import UploadSource from "./uploadSource";
-
-type SenderType = "server" | "dropbox";
 
 export default class UploadFile {
     private readonly sender: ISender;
@@ -16,7 +15,7 @@ export default class UploadFile {
 
     public constructor(
         file: File,
-        opts: { sender: SenderType; data?: any },
+        opts: { sender: StorageType; data?: any },
         password?: string
     ) {
         const sourceStream = new UploadSource(file, password);

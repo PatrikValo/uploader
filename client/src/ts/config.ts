@@ -5,18 +5,18 @@ const production = environment.NODE_ENV === "production";
 class CipherConfig {
     public readonly ivLength: number = 12;
     public readonly authTagLength: number = 16;
-    public readonly saltLength: number = 16;
+    public readonly saltLength: number = 32;
     public readonly keyLength: number = 16;
     public readonly deriveIterations: number = 100000;
 }
 
-class Server {
+class ServerConfig {
     public readonly host: string = environment.HOST || "localhost";
     public readonly port: string = production ? "" : "9998";
     public readonly protocol: string = production ? "https" : "http";
 }
 
-class Client {
+class ClientConfig {
     public readonly host: string = environment.HOST || "localhost";
     public readonly port: string = production ? "" : "8080";
     public readonly protocol: string = production ? "https" : "http";
@@ -27,7 +27,7 @@ class Client {
 }
 
 export default class Config {
-    public static readonly server: Server = new Server();
-    public static readonly client: Client = new Client();
-    public static readonly cipher: CipherConfig = new CipherConfig();
+    public static readonly server = new ServerConfig();
+    public static readonly client = new ClientConfig();
+    public static readonly cipher = new CipherConfig();
 }
