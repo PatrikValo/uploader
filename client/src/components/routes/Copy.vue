@@ -3,7 +3,7 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Kopírovať odkaz"></main-title>
-                <b-input id="input" v-model="url"></b-input>
+                <b-input id="input" v-model="url" readonly></b-input>
                 <copy-button :url="url"></copy-button>
                 <redirect-button title="Stiahnuť" :to="path"></redirect-button>
                 <redirect-button title="+" to="/"></redirect-button>
@@ -43,18 +43,20 @@ export default class Copy extends Vue {
         let key = this.key();
         let id = this.$route.params.id;
         const sharing = this.$route.params.sharing;
+        const destination = this.$route.params.destination;
 
         id = sharing ? sharing + "/" + id : id;
-        return Utils.buildUrl("download", id, key);
+        return Utils.buildUrl(destination, id, key);
     }
 
     get path(): string {
         let key = this.key();
         let id = this.$route.params.id;
         const sharing = this.$route.params.sharing;
+        const destination = this.$route.params.destination;
 
         id = sharing ? sharing + "/" + id : id;
-        return Utils.buildPath("download", id, key);
+        return Utils.buildPath(destination, id, key);
     }
 }
 </script>

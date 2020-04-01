@@ -92,7 +92,9 @@ export default class Upload extends Vue {
 
     public finish(e: { id: string; key: string }): void {
         this.file = null;
-        const path = Utils.buildPath("copy", e.id, e.key);
+        const destination = this.destination();
+
+        const path = Utils.buildPath(`copy/${destination}`, e.id, e.key);
         this.$router.push(path);
     }
 
@@ -126,6 +128,13 @@ export default class Upload extends Vue {
         if (e.dataTransfer && e.dataTransfer.files.length === 1) {
             this.file = e.dataTransfer.files[0];
         }
+    }
+
+    private destination(): string {
+        if (this.$props.auth.isLoggedIn()) {
+            return "dropbox";
+        }
+        return "download";
     }
 }
 </script>

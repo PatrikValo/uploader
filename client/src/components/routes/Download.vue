@@ -84,9 +84,14 @@ export default class Download extends Vue {
             return await this.$router.push("/error");
         }
 
-        const { id, receiver } = this.parseURL();
-        this.id = id;
-        this.receiver = receiver;
+        const parse = this.parseURL();
+
+        if (!parse) {
+            return await this.$router.push("/error");
+        }
+
+        this.id = parse.id;
+        this.receiver = parse.receiver;
 
         this.downloadMetadata = new DownloadMetadata(this.id, this.receiver);
         try {
@@ -142,14 +147,19 @@ export default class Download extends Vue {
         }
     }
 
-    public parseURL(): { id: string; receiver: StorageType } {
+    public parseURL(): { id: string; receiver: StorageType } | null {
+        const destination = this.$route.fullPath.split("/")[1];
         const sharing = this.$route.params.sharing;
-        if (sharing !== undefined) {
-            const id = sharing + "/" + this.$route.params.id;
-            const receiver = "dropbox";
-            return { id, receiver };
+        const id = this.$route.params.id;
+
+        switch (destination) {
+            case "download":
+                return { id, receiver: "server" };
+            case "dropbox":
+                return { id: `${sharing}/${id}`, receiver: "dropbox" };
+            default:
+                return null;
         }
-        return { id: this.$route.params.id, receiver: "server" };
     }
 
     public get showPasswordInput() {
