@@ -128,25 +128,16 @@ export class Encryption {
     private aesPromise: Promise<AesGcmEncryptor>;
     private readonly saltPromise: Promise<Uint8Array>;
 
-    constructor(password?: string);
-    constructor(key: Uint8Array, iv?: Uint8Array);
+    public constructor(password?: string) {
+        const { ivLength, keyLength, saltLength } = Config.cipher;
 
-    /**
-     * It creates new instance of Encryption class.
-     * @param keyMaterial - if type of keyMaterial is string, password is defined,
-     * otherwise key is defined
-     * @param iv - initialization vector
-     */
-    public constructor(keyMaterial?: string | Uint8Array, iv?: Uint8Array) {
-        this.ivPromise = new Promise(resolve =>
-            resolve(iv || randomValues(Config.cipher.ivLength))
-        );
+        this.ivPromise = randomValues(ivLength);
 
         // password
-        if (typeof keyMaterial === "string") {
-            this.saltPromise = randomValues(Config.cipher.saltLength);
-            this.exportableKey = randomValues(Config.cipher.keyLength);
-            const pwKey = pbkdf2(keyMaterial, this.saltPromise);
+        if (password) {
+            this.saltPromise = randomValues(saltLength);
+            this.exportableKey = randomValues(keyLength);
+            const pwKey = pbkdf2(password, this.saltPromise);
 
             this.keyPromise = createKeyFromKeys(this.exportableKey, pwKey);
             this.aesPromise = this.createAesEncryptor();
@@ -154,14 +145,9 @@ export class Encryption {
         }
 
         // without password
-        this.saltPromise = new Promise(resolve =>
-            resolve(new Uint8Array(Config.cipher.saltLength))
-        );
-        this.keyPromise = new Promise(resolve =>
-            resolve(keyMaterial || randomValues(Config.cipher.keyLength))
-        );
+        this.saltPromise = Promise.resolve(new Uint8Array(saltLength));
+        this.keyPromise = randomValues(keyLength);
         this.exportableKey = this.keyPromise;
-
         this.aesPromise = this.createAesEncryptor();
     }
 
@@ -173,6 +159,15 @@ export class Encryption {
      */
     public getInitializationVector(): Promise<Uint8Array> {
         return this.ivPromise;
+    }
+
+    /**
+     * It return key, which is used for encryption.
+     *
+     * @return Promise with key
+     */
+    public getEncryptionKey(): Promise<Uint8Array> {
+        return this.keyPromise;
     }
 
     /**
@@ -188,12 +183,12 @@ export class Encryption {
 
     /**
      * It returns key in base64 format, which can be part of URL.
-     * In case if password was defined, this key is different that
+     * In case password was defined, this key is different that
      * encryption key
      *
      * @return key in base64 format.
      */
-    public async exportKey(): Promise<string> {
+    public async getExportedKey(): Promise<string> {
         const exportableKey = await this.exportableKey;
         return Utils.Uint8ArrayToBase64(exportableKey);
     }
@@ -218,6 +213,7 @@ export class Encryption {
         const encryptor = await this.aesPromise;
         const final = encryptor.final();
         const tag = encryptor.getAuthTag();
+
         const returnValue = new Uint8Array(final.length + tag.length);
         returnValue.set(final);
         returnValue.set(tag, final.length);
@@ -230,8 +226,8 @@ export class Encryption {
      * @param newIV
      */
     public reset(newIV?: Uint8Array): void {
-        this.ivPromise = new Promise(resolve =>
-            resolve(newIV || randomValues(Config.cipher.ivLength))
+        this.ivPromise = Promise.resolve(
+            newIV || randomValues(Config.cipher.ivLength)
         );
         this.aesPromise = this.createAesEncryptor();
     }
@@ -257,13 +253,20 @@ export class Decryption {
     private readonly keyPromise: Promise<Uint8Array>;
     private readonly aesPromise: Promise<AesGcmDecryptor>;
 
+    constructor(keyMaterial: string | Uint8Array, iv: Uint8Array);
+    constructor(
+        keyMaterial: string | Uint8Array,
+        iv: Uint8Array,
+        password: string,
+        salt: Uint8Array
+    );
     /**
      * It constructs new instance of Decryption class.
      *
-     * @param keyMaterial - key from URL - if type of keyMaterial is string,
+     * @param keyMaterial - if type of keyMaterial is string,
      * the key is in base64 format, otherwise key is raw
      * @param iv - initialization vector
-     * @param password
+     * @param password - if password is defined, salt must be defined also
      * @param salt
      */
     public constructor(
@@ -272,22 +275,23 @@ export class Decryption {
         password?: string,
         salt?: Uint8Array
     ) {
-        this.ivPromise = new Promise(resolve => resolve(iv));
+        if (iv.length !== Config.cipher.ivLength) {
+            throw new Error("IV is not valid");
+        }
+
+        this.ivPromise = Promise.resolve(iv);
 
         const key: Promise<Uint8Array> =
             typeof keyMaterial === "string"
-                ? this.importKey(keyMaterial)
-                : new Promise(resolve => resolve(keyMaterial));
+                ? Promise.resolve(Utils.base64toUint8Array(keyMaterial))
+                : Promise.resolve(keyMaterial);
 
         // password
         if (password) {
             if (!salt) {
                 throw new Error("Salt must be defined");
             }
-            const pwKey = pbkdf2(
-                password,
-                new Promise(resolve => resolve(salt))
-            );
+            const pwKey = pbkdf2(password, Promise.resolve(salt));
 
             this.keyPromise = createKeyFromKeys(key, pwKey);
             this.aesPromise = this.createAesDecryptor();
@@ -304,7 +308,7 @@ export class Decryption {
      *
      * @return Promise with key
      */
-    public getKey(): Promise<Uint8Array> {
+    public getDecryptionKey(): Promise<Uint8Array> {
         return this.keyPromise;
     }
 
@@ -356,15 +360,5 @@ export class Decryption {
         const { authTagLength, keyLength } = Config.cipher;
         const algorithm = `aes-${keyLength * 8}-gcm`;
         return new AesGcmDecryptor(algorithm, key, iv, { authTagLength });
-    }
-
-    /**
-     * It converts key in base64 format to Uint8Array representation.
-     *
-     * @param key
-     * @return Promise with key
-     */
-    private importKey(key: string): Promise<Uint8Array> {
-        return new Promise(resolve => resolve(Utils.base64toUint8Array(key)));
     }
 }

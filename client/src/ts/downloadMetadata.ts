@@ -1,9 +1,10 @@
 import { Decryption } from "./cipher";
 import Config from "./config";
-import { DownloadMetadataSource } from "./downloadSource";
+import DownloadMetadataSource from "./downloadMetadataSource";
+import { StorageType } from "./interfaces/storageType";
 import Metadata from "./metadata";
 
-interface IPlainData {
+interface IAdditionalData {
     iv: Uint8Array;
     flag: Uint8Array;
     salt: Uint8Array;
@@ -17,36 +18,48 @@ interface IReturnValue {
 
 export default class DownloadMetadata {
     private readonly source: DownloadMetadataSource;
-    private readonly plainData: Promise<IPlainData>;
-    private readonly metadata: Promise<Uint8Array>;
+    private readonly additionalDataPromise: Promise<IAdditionalData>;
+    private readonly metadataPromise: Promise<Uint8Array>;
 
-    public constructor(id: string, sharing: string) {
-        if (sharing) {
-            this.source = new DownloadMetadataSource(
-                `${sharing}/${id}`,
-                "dropbox"
-            );
-        } else {
-            this.source = new DownloadMetadataSource(id, "server");
-        }
-        this.plainData = this.source.downloadPlainData();
-        this.metadata = this.downloadMetadata();
+    public constructor(id: string, receiver: StorageType) {
+        this.source = new DownloadMetadataSource(id, receiver);
+        this.additionalDataPromise = this.source.downloadAdditionalData();
+        this.metadataPromise = this.downloadMetadata();
     }
 
+    /**
+     * It checks if the password was used during encryption.
+     *
+     * @return Promise with boolean - true - password is required
+     *                                false - password isn't required
+     */
     public async passwordIsRequired(): Promise<boolean> {
-        const data = await this.plainData;
+        const data = await this.additionalDataPromise;
         return data.flag[0] === 1;
     }
 
+    /**
+     * It tries to decrypt the metadata of file. If decryption goes well
+     * and authTag is valid, it returns decrypted metadata and
+     * initialization vector + key that was used.
+     *
+     * @param keyMaterial - base64 key or raw key
+     * @param password
+     * @return Promise with null - if authTag of metadata is not valid
+     *                      metadata + iv + key - if authTag of metadata is valid
+     */
     public async validate(
         keyMaterial: Uint8Array | string,
         password?: string
     ): Promise<IReturnValue | null> {
-        const data = await this.plainData;
-        const encrypted = await this.metadata;
+        const data = await this.additionalDataPromise;
+        const encrypted = await this.metadataPromise;
 
         const required = await this.passwordIsRequired();
-        if ((password && !required) || (!password && required)) {
+        if (
+            (password !== undefined && !required) ||
+            (password === undefined && required)
+        ) {
             throw new Error(
                 `Password param is${required ? "" : "n't"} required`
             );
@@ -61,7 +74,7 @@ export default class DownloadMetadata {
             const metadata = new Metadata(m);
 
             const iv = encrypted.slice(-Config.cipher.ivLength);
-            const key = await decryptor.getKey();
+            const key = await decryptor.getDecryptionKey();
             return {
                 decryptionForFile: { iv, key },
                 metadata
@@ -72,8 +85,13 @@ export default class DownloadMetadata {
         }
     }
 
+    /**
+     * It downloads the metadata of file.
+     *
+     * @return Promise with raw metadata
+     */
     private async downloadMetadata(): Promise<Uint8Array> {
-        const data = await this.plainData;
+        const data = await this.additionalDataPromise;
         return this.source.downloadMetadata(data.len);
     }
 }

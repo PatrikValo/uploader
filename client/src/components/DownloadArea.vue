@@ -26,12 +26,13 @@ import DownloadFile from "../ts/downloadFile";
 import FileInfo from "./FileInfo.vue";
 import ProgressBar from "./ProgressBar.vue";
 import DownloadButton from "./DownloadButton.vue";
+import { StorageType } from "../ts/interfaces/storageType";
 
 @Component({
     components: { DownloadButton, ProgressBar, FileInfo },
     props: {
         id: String,
-        sharing: String,
+        receiver: String as () => StorageType,
         metadata: Metadata,
         decryption: Object as () => { key: Uint8Array; iv: Uint8Array }
     }
@@ -54,7 +55,7 @@ export default class DownloadArea extends Vue {
     public async download(): Promise<void> {
         this.downloader = new DownloadFile(
             this.$props.id,
-            this.$props.sharing,
+            this.$props.receiver,
             this.$props.metadata,
             this.$props.decryption
         );

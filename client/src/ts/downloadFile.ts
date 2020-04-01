@@ -4,32 +4,31 @@ import Metadata from "./metadata";
 const { createWriteStream } = streamSaver;
 import { Decryption } from "./cipher";
 import Config from "./config";
-import { DownloadFileSource } from "./downloadSource";
+import DownloadFileSource from "./downloadFileSource";
+import { StorageType } from "./interfaces/storageType";
 
 export default class DownloadFile {
     private readonly metadata: Metadata;
-    private readonly decryptor: Decryption;
     private readonly source: DownloadFileSource;
-    private stop: boolean;
+    private readonly decryptor: Decryption;
+    private stop: boolean = false;
 
     public constructor(
         id: string,
-        sharing: string,
+        receiver: StorageType,
         metadata: Metadata,
         decryption: { key: Uint8Array; iv: Uint8Array }
     ) {
         this.metadata = metadata;
         this.decryptor = new Decryption(decryption.key, decryption.iv);
+
         const { startFrom, encryptedSize } = this.paramOfEncryptedFile();
-        this.source = sharing
-            ? new DownloadFileSource(
-                  `${sharing}/${id}`,
-                  "dropbox",
-                  startFrom,
-                  encryptedSize
-              ) // dbx
-            : new DownloadFileSource(id, "server", startFrom, encryptedSize); // server
-        this.stop = false;
+        this.source = new DownloadFileSource(
+            id,
+            receiver,
+            startFrom,
+            encryptedSize
+        );
     }
 
     /**
@@ -57,7 +56,7 @@ export default class DownloadFile {
     }
 
     /**
-     * It downloads the file by using streamsaver
+     * It decrypts file and it downloads the file by using streamsaver
      *
      * @param progress - function, which is executed each time, when new chunk
      * is read
@@ -81,22 +80,20 @@ export default class DownloadFile {
         };
 
         try {
-            let chunk = await this.source.downloadChunk();
+            let downloaded = await this.source.downloadChunk();
 
-            while (chunk) {
+            while (downloaded) {
                 if (this.stop) {
                     await writer.abort("Cancel");
                     window.onunload = null;
                     return;
                 }
 
-                const decrypted = chunk.last
-                    ? await this.decryptor.final(chunk.value)
-                    : await this.decryptor.decrypt(chunk.value);
+                const decrypted = await this.decryptChunk(downloaded);
 
                 await writer.write(decrypted);
                 progress(decrypted.length);
-                chunk = await this.source.downloadChunk();
+                downloaded = await this.source.downloadChunk();
             }
         } catch (e) {
             await writer.abort("Exception");
@@ -118,22 +115,20 @@ export default class DownloadFile {
     private async downloadBlob(progress: (u: number) => any) {
         let blob = new Blob([], { type: "application/octet-stream" });
         try {
-            let chunk = await this.source.downloadChunk();
+            let downloaded = await this.source.downloadChunk();
 
-            while (chunk) {
+            while (downloaded) {
                 if (this.stop) {
                     return;
                 }
 
-                const decrypted = chunk.last
-                    ? await this.decryptor.final(chunk.value)
-                    : await this.decryptor.decrypt(chunk.value);
+                const decrypted = await this.decryptChunk(downloaded);
 
                 blob = new Blob([blob, decrypted], {
                     type: "application/octet-stream"
                 });
                 progress(decrypted.length);
-                chunk = await this.source.downloadChunk();
+                downloaded = await this.source.downloadChunk();
             }
         } catch (e) {
             throw e;
@@ -161,5 +156,23 @@ export default class DownloadFile {
         const s = ivLength + 1 + saltLength + 2 + metadataSize + authTagLength;
         const encryptedSize = s + this.metadata.getSize() + authTagLength;
         return { startFrom: s, encryptedSize };
+    }
+
+    /**
+     * It decrypts data defined by data.value param. If current
+     * chunk is last, decryptor is closed by final method and there is checked
+     * validity of authTag. If authTag isn't valid, it throws Exception.
+     *
+     * @param data
+     * @return Promise with decrypted chunk
+     */
+    private decryptChunk(data: {
+        value: Uint8Array;
+        last: boolean;
+    }): Promise<Uint8Array> {
+        if (data.last) {
+            return this.decryptor.final(data.value);
+        }
+        return this.decryptor.decrypt(data.value);
     }
 }

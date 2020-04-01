@@ -7,15 +7,10 @@ export default class UploadSource {
     private readonly fileStream: FileSource;
     private readonly metadata: Metadata;
     private readonly password: boolean;
-    private sendPlainData = false;
+    private sendAdditionalData = false;
     private sendMetadata = false;
     private sendFile = false;
 
-    /**
-     * It creates new instance of UploadSource class.
-     * @param file
-     * @param password
-     */
     public constructor(file: File, password?: string) {
         this.encryptor = new Encryption(password);
         this.fileStream = new FileSource(file);
@@ -29,7 +24,7 @@ export default class UploadSource {
      * @return Promise with exported key
      */
     public exportKey(): Promise<string> {
-        return this.encryptor.exportKey();
+        return this.encryptor.getExportedKey();
     }
 
     /**
@@ -43,9 +38,9 @@ export default class UploadSource {
     public async getContent(
         progress: (u: number) => any
     ): Promise<Uint8Array | null> {
-        if (!this.sendPlainData) {
-            this.sendPlainData = true;
-            return this.createPlainData();
+        if (!this.sendAdditionalData) {
+            this.sendAdditionalData = true;
+            return this.createAdditionalData();
         }
 
         if (!this.sendMetadata) {
@@ -63,7 +58,13 @@ export default class UploadSource {
         return null;
     }
 
-    private async createPlainData(): Promise<Uint8Array> {
+    /**
+     * It creates additional data such iv, flag, salt without length of
+     * encrypted metadata. It joins these elements into one chunk.
+     *
+     * @return Promise with additional data
+     */
+    private async createAdditionalData(): Promise<Uint8Array> {
         const iv = await this.encryptor.getInitializationVector();
         const flagUint = new Uint8Array([this.password ? 1 : 0]);
         const salt = await this.encryptor.getSalt();
@@ -80,7 +81,7 @@ export default class UploadSource {
     /**
      * It returns encrypted metadata with its length.
      *
-     * @return length joins with metadata
+     * @return Promise with length joins with metadata
      */
     private async createMetadata(): Promise<Uint8Array> {
         // encryption
@@ -119,8 +120,7 @@ export default class UploadSource {
         const chunk = await this.fileStream.read();
 
         if (chunk) {
-            const uploaded = chunk.length;
-            progress(uploaded); // users function
+            progress(chunk.length); // users function
             return await this.encryptor.encrypt(chunk);
         }
 
@@ -133,7 +133,7 @@ class FileSource {
     private file: File;
     private readonly size: number;
     private index: number = 0;
-    private chunkSize: number = Config.client.chunkSize - 16;
+    private chunkSize: number = Config.client.chunkSize;
 
     public constructor(file: File) {
         this.file = file;

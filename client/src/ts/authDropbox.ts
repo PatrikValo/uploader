@@ -3,6 +3,12 @@ import { EventEmitter } from "events";
 import fetch from "isomorphic-fetch";
 import Utils from "./utils";
 
+/**
+ * AuthDropbox provides methods for authentication to Dropbox.
+ * It provides methods for storing access token, methods for login and
+ * logout from Dropbox. And finally it stores Dropbox object, which
+ * provides interaction with API Dropbox.
+ */
 export default class AuthDropbox extends EventEmitter {
     private readonly clientId: string;
     private accessToken: string;

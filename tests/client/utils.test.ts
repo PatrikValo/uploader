@@ -163,9 +163,33 @@ describe("Utils tests", () => {
     describe("Base64", () => {
         const correctUint = new Uint8Array([106, 26, 35]);
         const correctStr = "ahoj";
+        const biggerUint = new Uint8Array([
+            105,
+            166,
+            219,
+            115,
+            151,
+            93,
+            121,
+            231,
+            223,
+            130,
+            8,
+            97,
+            166,
+            154,
+            190,
+            255
+        ]);
+        const biggerStr = "aabbc5ddeeffgghhppq-_w";
         test("classic base64toUint8Array", () => {
             const result = Utils.base64toUint8Array(correctStr);
             expect(result).toStrictEqual(correctUint);
+        });
+
+        test("bigger base64toUint8Array", () => {
+            const result = Utils.base64toUint8Array(biggerStr);
+            expect(result).toStrictEqual(biggerUint);
         });
 
         test("empty base64toUint8Array", () => {
@@ -176,6 +200,11 @@ describe("Utils tests", () => {
         test("classic Uint8ArrayToBase64", () => {
             const result = Utils.Uint8ArrayToBase64(correctUint);
             expect(result).toBe(correctStr);
+        });
+
+        test("bigger Uint8ArrayToBase64", () => {
+            const result = Utils.Uint8ArrayToBase64(biggerUint);
+            expect(result).toBe(biggerStr);
         });
 
         test("empty Uint8ArrayToBase64", () => {

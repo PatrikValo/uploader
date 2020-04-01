@@ -1,12 +1,12 @@
 <template>
     <b-container class="h-100">
-        <loading-page v-if="!this.mount"></loading-page>
+        <loading-page v-if="!mount"></loading-page>
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Stiahnuť súbor"></main-title>
                 <div v-if="showPasswordInput">
-                    <b-alert v-if="this.alert" show variant="warning">{{
-                        this.alert
+                    <b-alert v-if="alert" show variant="warning">{{
+                        alert
                     }}</b-alert>
                     <password-confirm
                         @confirm="verify"
@@ -15,10 +15,10 @@
                 </div>
                 <download-area
                     v-if="showDownloadArea"
-                    :id="this.id"
-                    :sharing="this.sharing"
-                    :metadata="this.metadata"
-                    :decryption="this.decryption"
+                    :id="id"
+                    :receiver="receiver"
+                    :metadata="metadata"
+                    :decryption="decryption"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
@@ -43,6 +43,7 @@ import DownloadArea from "../DownloadArea.vue";
 import BoxImage from "../BoxImage.vue";
 import AuthDropbox from "../../ts/authDropbox";
 import Metadata from "../../ts/metadata";
+import { StorageType } from "../../ts/interfaces/storageType";
 
 @Component({
     components: {
@@ -64,7 +65,7 @@ export default class Download extends Vue {
     private mount: boolean = false;
     private alert: string = "";
     private id: string = "";
-    private sharing: string = "";
+    private receiver: StorageType | null = null;
     private metadata: Metadata | null = null;
     private decryption: { key: Uint8Array; iv: Uint8Array } | null = null;
     private downloadMetadata: DownloadMetadata | null = null;
@@ -82,11 +83,12 @@ export default class Download extends Vue {
         if (this.$route.hash.length <= 1) {
             return await this.$router.push("/error");
         }
-        console.log(this.$route.fullPath.split("/")[1]);
-        this.id = this.$route.params.id;
-        this.sharing = this.$route.params.sharing;
-        this.downloadMetadata = new DownloadMetadata(this.id, this.sharing);
 
+        const { id, receiver } = this.parseURL();
+        this.id = id;
+        this.receiver = receiver;
+
+        this.downloadMetadata = new DownloadMetadata(this.id, this.receiver);
         try {
             const pw = await this.downloadMetadata.passwordIsRequired();
 
@@ -135,8 +137,19 @@ export default class Download extends Vue {
             this.decryption = result.decryptionForFile;
             this.showInput = false;
         } catch (e) {
+            console.log(e);
             this.alert = "Pri overovaní nastala chyba";
         }
+    }
+
+    public parseURL(): { id: string; receiver: StorageType } {
+        const sharing = this.$route.params.sharing;
+        if (sharing !== undefined) {
+            const id = sharing + "/" + this.$route.params.id;
+            const receiver = "dropbox";
+            return { id, receiver };
+        }
+        return { id: this.$route.params.id, receiver: "server" };
     }
 
     public get showPasswordInput() {

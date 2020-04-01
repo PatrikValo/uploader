@@ -4,7 +4,6 @@ import express from "express";
 import expressWs from "express-ws";
 import path from "path";
 import Config from "./config";
-import download from "./routes/download";
 import random from "./routes/random";
 import range from "./routes/range";
 import upload from "./routes/upload";
@@ -17,8 +16,6 @@ const app = expressWs(express()).app;
 app.use(cors());
 
 app.get("/api/random/:size", random);
-
-app.get("/api/download/:id", download);
 
 app.get("/api/range/:id", range);
 
@@ -70,11 +67,10 @@ app.listen(Config.port, () =>
 );
 
 const job = new CronJob(
-    "25 * * * *",
+    "0 * * * *",
     async () => {
-        console.log(new Date());
         const st = new Storage();
-        await st.removeAllFilesOlderThan(0);
+        await st.removeAllFilesOlderThan(7);
     },
     null,
     true

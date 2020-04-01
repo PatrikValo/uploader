@@ -18,13 +18,13 @@ export default class UploadFile {
         opts: { sender: StorageType; data?: any },
         password?: string
     ) {
-        const sourceStream = new UploadSource(file, password);
+        const uploadSource = new UploadSource(file, password);
         switch (opts.sender) {
             case "server":
-                this.sender = new SenderServer(sourceStream);
+                this.sender = new SenderServer(uploadSource);
                 break;
             case "dropbox":
-                this.sender = new SenderDropbox(sourceStream, opts.data);
+                this.sender = new SenderDropbox(uploadSource, opts.data);
                 break;
             default:
                 throw new Error("Sender is not correct");

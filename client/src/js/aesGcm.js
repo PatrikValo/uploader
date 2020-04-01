@@ -18,15 +18,30 @@ export class AesGcmEncryptor {
 
     update(chunk) {
         const chunkBuff = new safeBuffer.Buffer(chunk);
-        return this.cipher.update(chunkBuff);
+        const upd = this.cipher.update(chunkBuff);
+        return new Uint8Array(
+            upd.buffer,
+            upd.byteOffset,
+            upd.byteLength / Uint8Array.BYTES_PER_ELEMENT
+        );
     }
 
     final() {
-        return this.cipher.final();
+        const final = this.cipher.final();
+        return new Uint8Array(
+            final.buffer,
+            final.byteOffset,
+            final.byteLength / Uint8Array.BYTES_PER_ELEMENT
+        );
     }
 
     getAuthTag() {
-        return this.cipher.getAuthTag();
+        const auth = this.cipher.getAuthTag();
+        return new Uint8Array(
+            auth.buffer,
+            auth.byteOffset,
+            auth.byteLength / Uint8Array.BYTES_PER_ELEMENT
+        );
     }
 }
 
@@ -44,14 +59,25 @@ export class AesGcmDecryptor {
 
     update(chunk) {
         const chunkBuff = new safeBuffer.Buffer(chunk);
-        return this.decipher.update(chunkBuff);
+        const upd = this.decipher.update(chunkBuff);
+        return new Uint8Array(
+            upd.buffer,
+            upd.byteOffset,
+            upd.byteLength / Uint8Array.BYTES_PER_ELEMENT
+        );
     }
 
     final() {
-        return this.decipher.final();
+        const final = this.decipher.final();
+        return new Uint8Array(
+            final.buffer,
+            final.byteOffset,
+            final.byteLength / Uint8Array.BYTES_PER_ELEMENT
+        );
     }
 
     setAuthTag(tag) {
-        this.decipher.setAuthTag(tag);
+        const tagBuff = new safeBuffer.Buffer(tag);
+        this.decipher.setAuthTag(tagBuff);
     }
 }
