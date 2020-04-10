@@ -164,11 +164,9 @@ describe("Cipher tests", () => {
             test("It should throw error, because key is too small", async () => {
                 const key = new Uint8Array(2).fill(25);
 
-                const a = new Decryption(key, new Uint8Array(ivLength));
-
-                await expect(
-                    a.decrypt(new Uint8Array(0))
-                ).rejects.not.toBeNull();
+                expect(() => {
+                    const a = new Decryption(key, new Uint8Array(ivLength));
+                }).toThrow();
             });
 
             test("It should throw error, because salt is not given", async () => {
@@ -179,6 +177,18 @@ describe("Cipher tests", () => {
                         new Uint8Array(ivLength),
                         "password",
                         null as any
+                    );
+                }).toThrow();
+            });
+
+            test("It should throw error, because salt is not valid", async () => {
+                const key = new Uint8Array(keyLength).fill(25);
+                expect(() => {
+                    const a = new Decryption(
+                        key,
+                        new Uint8Array(ivLength),
+                        "password",
+                        new Uint8Array(0)
                     );
                 }).toThrow();
             });

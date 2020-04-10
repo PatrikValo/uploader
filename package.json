@@ -37,6 +37,7 @@
     "file-saver": "^2.0.2",
     "isomorphic-fetch": "^2.2.1",
     "path": "^0.12.7",
+    "qrcode-generator": "^1.4.4",
     "safe-buffer": "^5.2.0",
     "streamsaver": "^2.0.3",
     "text-encoding-shim": "^1.0.4",

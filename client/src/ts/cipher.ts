@@ -135,8 +135,8 @@ export class Encryption {
 
         // password
         if (password) {
-            this.saltPromise = randomValues(saltLength);
             this.exportableKey = randomValues(keyLength);
+            this.saltPromise = randomValues(saltLength);
             const pwKey = pbkdf2(password, this.saltPromise);
 
             this.keyPromise = createKeyFromKeys(this.exportableKey, pwKey);
@@ -281,25 +281,29 @@ export class Decryption {
 
         this.ivPromise = Promise.resolve(iv);
 
-        const key: Promise<Uint8Array> =
+        const key =
             typeof keyMaterial === "string"
-                ? Promise.resolve(Utils.base64toUint8Array(keyMaterial))
-                : Promise.resolve(keyMaterial);
+                ? Utils.base64toUint8Array(keyMaterial)
+                : keyMaterial;
+
+        if (key.length !== Config.cipher.keyLength) {
+            throw new Error("Key is not valid");
+        }
 
         // password
         if (password) {
-            if (!salt) {
-                throw new Error("Salt must be defined");
+            if (!salt || salt.length !== Config.cipher.saltLength) {
+                throw new Error("Salt is not valid");
             }
             const pwKey = pbkdf2(password, Promise.resolve(salt));
 
-            this.keyPromise = createKeyFromKeys(key, pwKey);
+            this.keyPromise = createKeyFromKeys(Promise.resolve(key), pwKey);
             this.aesPromise = this.createAesDecryptor();
             return;
         }
 
         // without password
-        this.keyPromise = key;
+        this.keyPromise = Promise.resolve(key);
         this.aesPromise = this.createAesDecryptor();
     }
 

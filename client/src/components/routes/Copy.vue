@@ -3,6 +3,7 @@
         <b-row align-v="center" class="h-100">
             <b-col lg="6" md="8" class="text-center">
                 <main-title title="Kopírovať odkaz"></main-title>
+                <div v-html="qrContent()"></div>
                 <b-input id="input" v-model="url" readonly></b-input>
                 <copy-button :url="url"></copy-button>
                 <redirect-button title="Stiahnuť" :to="path"></redirect-button>
@@ -23,12 +24,21 @@ import MainTitle from "../MainTitle.vue";
 import RedirectButton from "../RedirectButton.vue";
 import CopyButton from "../CopyButton.vue";
 import PlaneImage from "../PlaneImage.vue";
+import qrcode from "qrcode-generator";
+
 @Component({
     components: { PlaneImage, RedirectButton, CopyButton, MainTitle }
 })
 export default class Copy extends Vue {
     public constructor() {
         super();
+    }
+
+    public qrContent() {
+        const qr = qrcode(0, "L");
+        qr.addData(this.url);
+        qr.make();
+        return qr.createImgTag(4);
     }
 
     public key(): string {
