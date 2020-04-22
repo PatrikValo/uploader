@@ -22,14 +22,14 @@ mock.get(/random\/*/, (req, res) => {
 describe("UploadSource tests", () => {
     describe("UploadSource Without Password", () => {
         const file = new FileSmallerThanChunk();
-        const uploadSource = new UploadSource(file.getFile());
 
         test("It should return correct values in correct order", async () => {
             expect.assertions(11);
             const progress = jest.fn();
+            const uploadSource = new UploadSource(file.getFile(), progress);
 
             // additional data without length
-            let result = uploadSource.getContent(progress);
+            let result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(
                 file.additionalData(false)
             );
@@ -37,7 +37,7 @@ describe("UploadSource tests", () => {
             expect(progress.mock.calls.length).toBe(0);
 
             // encryptedMetadata with length
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(
                 await file.encryptedMetadataWithLength()
             );
@@ -47,20 +47,20 @@ describe("UploadSource tests", () => {
             const arr = await file.encryptFile();
 
             // first and also last chunk
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(arr[0]);
 
             expect(progress.mock.calls.length).toBe(1);
             expect(progress.mock.calls[0][0]).toBe(file.getFile().size);
 
             // authTag
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(arr[1]);
 
             expect(progress.mock.calls.length).toBe(1);
 
             // end
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toBeNull();
 
             // key
@@ -73,14 +73,19 @@ describe("UploadSource tests", () => {
     describe("UploadSource With Password", () => {
         const file = new FileSmallerThanChunk();
         const password = "heslo";
-        const uploadSource = new UploadSource(file.getFile(), password);
 
         test("It should return correct values in correct order", async () => {
             expect.assertions(14);
             const progress = jest.fn();
 
+            const uploadSource = new UploadSource(
+                file.getFile(),
+                progress,
+                password
+            );
+
             // additional data
-            let result = uploadSource.getContent(progress);
+            let result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(
                 file.additionalData(true)
             );
@@ -88,7 +93,7 @@ describe("UploadSource tests", () => {
             expect(progress.mock.calls.length).toBe(0);
 
             // encrypted metadata with length
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(
                 await file.encryptedMetadataWithLength(password)
             );
@@ -107,7 +112,7 @@ describe("UploadSource tests", () => {
             const arrBad = await file.encryptFile();
 
             // first and also last chunk
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(arr[0]);
             await expect(result).resolves.not.toStrictEqual(arrBad[0]);
 
@@ -115,14 +120,14 @@ describe("UploadSource tests", () => {
             expect(progress.mock.calls[0][0]).toBe(file.getFile().size);
 
             // authTag
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toStrictEqual(arr[1]);
             await expect(result).resolves.not.toStrictEqual(arrBad[1]);
 
             expect(progress.mock.calls.length).toBe(1);
 
             // end
-            result = uploadSource.getContent(progress);
+            result = uploadSource.getContent();
             await expect(result).resolves.toBeNull();
 
             // key
