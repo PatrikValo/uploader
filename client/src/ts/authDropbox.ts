@@ -47,6 +47,7 @@ export default class AuthDropbox extends EventEmitter {
         const items = data.split("&");
         const accessToken: string = items[0].split("=")[1];
         const accountId: string = decodeURIComponent(items[3].split("=")[1]);
+
         this.setAccessToken(accessToken);
         this.setAccountId(accountId);
         this.emit("changeStatus", true);

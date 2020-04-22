@@ -28,11 +28,9 @@ export default class FileName extends Vue {
             return "file";
         }
 
-        let format: string | undefined = arr.pop();
-        if (format) {
-            return format.length > 7 ? "file" : "." + format;
-        }
-        return "file";
+        const format = arr.pop();
+
+        return !format || format.length > 7 ? "file" : "." + format;
     }
 }
 </script>

@@ -3,9 +3,8 @@ export default class Limiter {
     private readonly size: number;
 
     public constructor(isDropbox: boolean) {
-        this.size = isDropbox
-            ? Config.client.fileSizeLimitDropbox
-            : Config.client.fileSizeLimit;
+        const { fileSizeLimit, fileSizeLimitDropbox } = Config.client;
+        this.size = isDropbox ? fileSizeLimitDropbox : fileSizeLimit;
     }
 
     /**

@@ -49,9 +49,6 @@ export default class DownloadArea extends Vue {
         this.blob = DownloadCompatibility.blob();
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    public mounted() {}
-
     public async download(): Promise<void> {
         this.downloader = new DownloadFile(
             this.$props.id,

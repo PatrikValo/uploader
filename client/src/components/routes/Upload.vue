@@ -77,10 +77,10 @@ export default class Upload extends Vue {
             this.$router.push("/compatibility");
         }
 
+        // drag and drop
         document.body.ondragover = function(e) {
             e.preventDefault();
         };
-
         document.body.ondrop = this.onDrop;
     }
 
@@ -110,12 +110,14 @@ export default class Upload extends Vue {
 
     public limit(): void {
         this.file = null;
+        const { fileSizeLimit, fileSizeLimitDropbox } = Config.client;
         const gb = 1024 * 1024 * 1024;
-        this.alert = `Veľkosť súboru presahuje ${
-            this.$props.auth.isLoggedIn()
-                ? Config.client.fileSizeLimitDropbox / gb
-                : Config.client.fileSizeLimit / gb
-        }GB`;
+
+        const size = this.$props.auth.isLoggedIn()
+            ? fileSizeLimitDropbox / gb
+            : fileSizeLimit / gb;
+
+        this.alert = `Veľkosť súboru presahuje ${size}GB`;
     }
 
     public clearAlert(): void {
@@ -134,6 +136,7 @@ export default class Upload extends Vue {
         if (this.$props.auth.isLoggedIn()) {
             return "dropbox";
         }
+
         return "download";
     }
 }

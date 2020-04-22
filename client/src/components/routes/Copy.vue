@@ -41,32 +41,32 @@ export default class Copy extends Vue {
         return qr.createImgTag(4);
     }
 
-    public key(): string {
-        let key: string = this.$route.hash;
-        if (key.length > 1) {
-            key = key.substr(1);
-        }
-        return key;
-    }
-
     get url(): string {
-        let key = this.key();
-        let id = this.$route.params.id;
-        const sharing = this.$route.params.sharing;
-        const destination = this.$route.params.destination;
+        const key = this.fragment();
+        const id = this.id();
+        const { destination } = this.$route.params;
 
-        id = sharing ? sharing + "/" + id : id;
         return Utils.buildUrl(destination, id, key);
     }
 
     get path(): string {
-        let key = this.key();
-        let id = this.$route.params.id;
-        const sharing = this.$route.params.sharing;
-        const destination = this.$route.params.destination;
+        const key = this.fragment();
+        const id = this.id();
+        const { destination } = this.$route.params;
 
-        id = sharing ? sharing + "/" + id : id;
         return Utils.buildPath(destination, id, key);
+    }
+
+    private fragment(): string {
+        const fragment: string = this.$route.hash;
+
+        return fragment.length > 1 ? fragment.substr(1) : fragment;
+    }
+
+    private id(): string {
+        const { id, sharing } = this.$route.params;
+
+        return sharing ? sharing + "/" + id : id;
     }
 }
 </script>

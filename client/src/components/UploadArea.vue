@@ -31,6 +31,7 @@ import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
 import Limiter from "../ts/limiter";
 import AuthDropbox from "../ts/authDropbox";
+import { StorageType } from "../ts/interfaces/storageType";
 
 @Component({
     components: {
@@ -60,9 +61,11 @@ export default class UploadArea extends Vue {
 
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
+        const { file, auth } = this.$props;
+
         // control of size limit
-        const limiter = new Limiter(this.$props.auth.isLoggedIn());
-        const file: File = this.$props.file;
+        const limiter = new Limiter(auth.isLoggedIn());
+
         if (!limiter.validateFileSize(file.size)) {
             this.$emit("limit");
         }
@@ -73,21 +76,17 @@ export default class UploadArea extends Vue {
             return;
         }
 
-        if (this.$props.auth.isLoggedIn()) {
-            this.uploader = new UploadFile(
-                this.$props.file,
-                { sender: "dropbox", data: this.$props.auth },
-                this.onProgress,
-                this.hasPassword ? this.password : undefined
-            );
-        } else {
-            this.uploader = new UploadFile(
-                this.$props.file,
-                { sender: "server" },
-                this.onProgress,
-                this.hasPassword ? this.password : undefined
-            );
-        }
+        const { file, auth } = this.$props;
+        const opts = auth.isLoggedIn()
+            ? { sender: "dropbox" as StorageType, data: auth as AuthDropbox }
+            : { sender: "server" as StorageType };
+
+        this.uploader = new UploadFile(
+            file,
+            opts,
+            this.onProgress,
+            this.hasPassword ? this.password : undefined
+        );
 
         this.startUploading = true;
 

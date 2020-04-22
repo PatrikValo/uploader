@@ -21,7 +21,7 @@ import Vue from "vue";
     }
 })
 export default class ProgressBar extends Vue {
-    private interval: number | undefined; // setInterval
+    private interval?: number; // setInterval
     private percentage: number = 0;
 
     public constructor() {
@@ -32,8 +32,8 @@ export default class ProgressBar extends Vue {
     public mounted() {
         // rendering each 500ms
         this.interval = window.setInterval(() => {
-            const uploaded = this.$props.uploaded;
-            const total = this.$props.total;
+            const { total, uploaded } = this.$props;
+
             this.percentage = Math.round((uploaded / total) * 100);
         }, 500);
     }

@@ -33,9 +33,7 @@ export default class Utils {
      * @return websocket url
      */
     public static serverWebsocketUrl(path?: string): string {
-        const protocol = Config.server.protocol;
-        const host = Config.server.host;
-        const port = Config.server.port;
+        const { protocol, host, port } = Config.server;
 
         let url = protocol === "http" ? "ws" : "wss";
         url += "://" + basicUrl(host, port, path);
@@ -50,9 +48,7 @@ export default class Utils {
      * @return server url
      */
     public static serverClassicUrl(path?: string): string {
-        const protocol = Config.server.protocol;
-        const host = Config.server.host;
-        const port = Config.server.port;
+        const { protocol, host, port } = Config.server;
 
         return protocol + "://" + basicUrl(host, port, path);
     }
@@ -67,9 +63,7 @@ export default class Utils {
      * @return client url
      */
     public static buildUrl(base: string, id: string, key: string): string {
-        const protocol = Config.client.protocol;
-        const host = Config.client.host;
-        const port = Config.client.port;
+        const { protocol, host, port } = Config.client;
 
         const path = Utils.buildPath(base, id, key);
         return protocol + "://" + basicUrl(host, port, path);

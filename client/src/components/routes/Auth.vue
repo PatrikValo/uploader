@@ -23,7 +23,8 @@ export default class Auth extends Vue {
 
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
-        const hash = this.$route.hash;
+        const { hash } = this.$route;
+
         if (!hash) {
             return this.$router.push("/");
         }
@@ -31,6 +32,7 @@ export default class Auth extends Vue {
         try {
             const a: AuthDropbox = this.$props.auth;
             a.login(hash);
+
             setTimeout(() => {
                 return this.$router.push("/");
             }, 500);

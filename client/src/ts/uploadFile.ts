@@ -8,13 +8,6 @@ export default class UploadFile {
     private readonly sender: ISender;
     private readonly source: UploadSource;
 
-    constructor(
-        file: File,
-        opts: { sender: "server" } | { sender: "dropbox"; data: AuthDropbox },
-        progress: (u: number) => any,
-        password?: string
-    );
-
     public constructor(
         file: File,
         opts: { sender: StorageType; data?: any },
@@ -28,6 +21,10 @@ export default class UploadFile {
                 this.sender = new SenderServer();
                 break;
             case "dropbox":
+                if (!opts.data) {
+                    throw new Error("Data is required");
+                }
+
                 this.sender = new SenderDropbox(opts.data);
                 break;
             default:

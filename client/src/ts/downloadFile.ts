@@ -7,6 +7,24 @@ import Config from "./config";
 import DownloadFileSource from "./downloadFileSource";
 import { StorageType } from "./interfaces/storageType";
 
+/**
+ * It sets up listener for close tab event. If browser tab is close,
+ * writer param is aborted.
+ * @param writer
+ */
+function setCloseTabEvent(writer: { abort: (reason?: any) => Promise<void> }) {
+    window.onunload = async () => {
+        await writer.abort("Close window");
+    };
+}
+
+/**
+ * It clears close tab event.
+ */
+function clearCloseTabEvent() {
+    window.onunload = null;
+}
+
 export default class DownloadFile {
     private readonly metadata: Metadata;
     private readonly source: DownloadFileSource;
@@ -65,19 +83,16 @@ export default class DownloadFile {
         streamSaver.TransformStream = TransformStream;
         streamSaver.WritableStream = WritableStream;
 
+        const size = this.metadata.getSize();
         const writeStream: WritableStream = createWriteStream(
             this.metadata.getName(),
-            {
-                size: this.metadata.getSize()
-            },
-            this.metadata.getSize()
+            { size },
+            size
         );
 
         const writer = writeStream.getWriter();
 
-        window.onunload = async () => {
-            await writer.abort("Close window");
-        };
+        setCloseTabEvent(writer);
 
         try {
             let downloaded = await this.source.downloadChunk();
@@ -85,8 +100,7 @@ export default class DownloadFile {
             while (downloaded) {
                 if (this.stop) {
                     await writer.abort("Cancel");
-                    window.onunload = null;
-                    return;
+                    return clearCloseTabEvent();
                 }
 
                 const decrypted = await this.decryptChunk(downloaded);
@@ -97,13 +111,13 @@ export default class DownloadFile {
             }
         } catch (e) {
             await writer.abort("Exception");
-            window.onunload = null;
+            clearCloseTabEvent();
 
             throw e;
         }
 
         await writer.close();
-        window.onunload = null;
+        clearCloseTabEvent();
     }
 
     /**
