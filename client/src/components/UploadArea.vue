@@ -77,12 +77,14 @@ export default class UploadArea extends Vue {
             this.uploader = new UploadFile(
                 this.$props.file,
                 { sender: "dropbox", data: this.$props.auth },
+                this.onProgress,
                 this.hasPassword ? this.password : undefined
             );
         } else {
             this.uploader = new UploadFile(
                 this.$props.file,
                 { sender: "server" },
+                this.onProgress,
                 this.hasPassword ? this.password : undefined
             );
         }
@@ -90,7 +92,7 @@ export default class UploadArea extends Vue {
         this.startUploading = true;
 
         try {
-            const result = await this.uploader.upload(this.onProgress);
+            const result = await this.uploader.upload();
             if (!result.id) {
                 this.$emit("cancel");
                 return;

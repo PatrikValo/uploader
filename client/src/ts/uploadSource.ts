@@ -7,19 +7,25 @@ export default class UploadSource {
     private readonly fileStream: FileSource;
     private readonly metadata: Metadata;
     private readonly password: boolean;
+    private readonly progress: (u: number) => any;
     private sendAdditionalData = false;
     private sendMetadata = false;
     private sendFile = false;
 
-    public constructor(file: File, password?: string) {
+    public constructor(
+        file: File,
+        progress: (u: number) => any,
+        password?: string
+    ) {
         this.encryptor = new Encryption(password);
         this.fileStream = new FileSource(file);
         this.metadata = new Metadata(file);
         this.password = !!password;
+        this.progress = progress;
     }
 
     /**
-     * It exports the key, which was used for encryption
+     * It exports the key, which must be saved to URL
      *
      * @return Promise with exported key
      */
@@ -31,13 +37,10 @@ export default class UploadSource {
      * Each time when this method is called, it returns part of file or
      * metadata (iv, flag, ..., file's metadata), which should be send to server next.
      *
-     * @param progress - it is executed, if chunk of file was read
      * @return null - there is nothing to read from file
      *         data - otherwise
      */
-    public async getContent(
-        progress: (u: number) => any
-    ): Promise<Uint8Array | null> {
+    public async getContent(): Promise<Uint8Array | null> {
         if (!this.sendAdditionalData) {
             this.sendAdditionalData = true;
             return this.createAdditionalData();
@@ -52,7 +55,7 @@ export default class UploadSource {
         }
 
         if (!this.sendFile) {
-            return this.createChunk(progress);
+            return this.createChunk();
         }
 
         return null;
@@ -110,17 +113,14 @@ export default class UploadSource {
      * of chunk before encryption. Method returns null, if there is nothing
      * to read from file.
      *
-     * @param progress
      * @return null - whole file was returned in previous callings of this method
      *         chunk - otherwise
      */
-    private async createChunk(
-        progress: (u: number) => any
-    ): Promise<Uint8Array> {
+    private async createChunk(): Promise<Uint8Array> {
         const chunk = await this.fileStream.read();
 
         if (chunk) {
-            progress(chunk.length); // users function
+            this.progress(chunk.length); // users function
             return await this.encryptor.encrypt(chunk);
         }
 

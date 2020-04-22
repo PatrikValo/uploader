@@ -6,35 +6,37 @@ import UploadSource from "./uploadSource";
 
 export default class UploadFile {
     private readonly sender: ISender;
+    private readonly source: UploadSource;
 
     constructor(
         file: File,
         opts: { sender: "server" } | { sender: "dropbox"; data: AuthDropbox },
+        progress: (u: number) => any,
         password?: string
     );
 
     public constructor(
         file: File,
         opts: { sender: StorageType; data?: any },
+        progress: (u: number) => any,
         password?: string
     ) {
-        const uploadSource = new UploadSource(file, password);
+        this.source = new UploadSource(file, progress, password);
+
         switch (opts.sender) {
             case "server":
-                this.sender = new SenderServer(uploadSource);
+                this.sender = new SenderServer();
                 break;
             case "dropbox":
-                this.sender = new SenderDropbox(uploadSource, opts.data);
+                this.sender = new SenderDropbox(opts.data);
                 break;
             default:
                 throw new Error("Sender is not correct");
         }
     }
 
-    public async upload(
-        progress: (u: number) => any
-    ): Promise<{ id: string; key: string }> {
-        return await this.sender.send(progress);
+    public async upload(): Promise<{ id: string; key: string }> {
+        return await this.sender.send(this.source);
     }
 
     public cancel(): void {

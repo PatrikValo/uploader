@@ -6,19 +6,14 @@ import Utils from "./utils";
 
 export class SenderServer implements ISender {
     private id: string = "";
-    private readonly source: UploadSource;
     private stop: boolean = false;
-
-    public constructor(source: UploadSource) {
-        this.source = source;
-    }
 
     public cancel(): void {
         this.stop = true;
     }
 
     public async send(
-        progress: (u: number) => any
+        source: UploadSource
     ): Promise<{ id: string; key: string }> {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(
@@ -40,7 +35,7 @@ export class SenderServer implements ISender {
                 }
 
                 try {
-                    const answer = await this.source.getContent(progress);
+                    const answer = await source.getContent();
                     if (!answer) {
                         return socket.send("null");
                     }
@@ -54,7 +49,7 @@ export class SenderServer implements ISender {
                 if (this.stop) {
                     return resolve({ id: "", key: "" });
                 }
-                const key = await this.source.exportKey();
+                const key = await source.exportKey();
                 return this.id
                     ? resolve({ id: this.id, key })
                     : reject(new Error("An error occurred during uploading"));
@@ -67,14 +62,91 @@ export class SenderServer implements ISender {
     }
 }
 
+export class UploadFileXHR implements ISender {
+    private id: string = "";
+    private stop: boolean = false;
+
+    public cancel(): void {
+        this.stop = true;
+    }
+
+    public async send(
+        source: UploadSource
+    ): Promise<{ id: string; key: string }> {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const idObj = await this.post(
+                    Utils.serverClassicUrl("/api/upload"),
+                    [],
+                    new Uint8Array(0)
+                );
+
+                let answer = await source.getContent();
+
+                while (answer) {
+                    if (this.stop) {
+                        return resolve({ id: "", key: "" });
+                    }
+
+                    await this.post(
+                        Utils.serverClassicUrl("/api/upload/" + idObj.id),
+                        [
+                            {
+                                header: "Content-Type",
+                                value: "application/octet-stream"
+                            }
+                        ],
+                        answer
+                    );
+
+                    answer = await source.getContent();
+                }
+
+                return resolve({
+                    id: idObj.id,
+                    key: await source.exportKey()
+                });
+            } catch (e) {
+                return reject(e);
+            }
+        });
+    }
+
+    private post(
+        url: string,
+        headers: Array<{ header: string; value: string }>,
+        body: Uint8Array
+    ): Promise<any> {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onloadend = async () => {
+                if (xhr.status < 200 || xhr.status >= 300) {
+                    return reject(new Error(String(xhr.status)));
+                }
+
+                return resolve(xhr.response);
+            };
+
+            xhr.onabort = reject;
+            xhr.onerror = reject;
+            xhr.open("post", url);
+
+            headers.forEach(value => {
+                xhr.setRequestHeader(value.header, value.value);
+            });
+
+            xhr.responseType = "json";
+            xhr.send(body);
+        });
+    }
+}
+
 export class SenderDropbox implements ISender {
-    private readonly source: UploadSource;
     private readonly auth: AuthDropbox;
     private readonly sessionPromise: Promise<string>;
     private stop: boolean = false;
 
-    public constructor(source: UploadSource, auth: AuthDropbox) {
-        this.source = source;
+    public constructor(auth: AuthDropbox) {
         this.auth = auth;
         this.sessionPromise = this.createSessionId();
     }
@@ -84,10 +156,10 @@ export class SenderDropbox implements ISender {
     }
 
     public async send(
-        progress: (u: number) => any
+        source: UploadSource
     ): Promise<{ id: string; key: string }> {
         try {
-            let content = await this.source.getContent(progress);
+            let content = await source.getContent();
             let uploaded: number = 0;
 
             while (content !== null) {
@@ -99,14 +171,14 @@ export class SenderDropbox implements ISender {
 
                 await this.upload(uploaded, content);
                 uploaded += content.length;
-                content = await this.source.getContent(progress);
+                content = await source.getContent();
             }
 
             const filename = await this.finish(uploaded);
 
             // final ID has two parts join with slash character
             const id = await this.shareUploadedFile(filename);
-            return { id, key: await this.source.exportKey() };
+            return { id, key: await source.exportKey() };
         } catch (e) {
             if (e instanceof Error) {
                 throw e;
