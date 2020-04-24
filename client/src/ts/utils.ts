@@ -165,6 +165,25 @@ export default class Utils {
     }
 
     /**
+     * It joins any count of Uint8Array together
+     * @param arrays
+     * @return concat array
+     */
+    public static concatUint8Arrays(...arrays: Uint8Array[]): Uint8Array {
+        const size = arrays.reduce((acc, value) => acc + value.length, 0);
+
+        const final = new Uint8Array(size);
+        let start = 0;
+
+        for (const uint of arrays) {
+            final.set(uint, start);
+            start += uint.length;
+        }
+
+        return final;
+    }
+
+    /**
      * It makes GET request
      *
      * @param url - destination where is sent the request

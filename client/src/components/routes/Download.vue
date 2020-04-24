@@ -81,13 +81,13 @@ export default class Download extends Vue {
         }
 
         if (this.$route.hash.length <= 1) {
-            return await this.$router.push("/error");
+            return await this.$router.replace("/error");
         }
 
         const parse = this.parseURL();
 
         if (!parse) {
-            return await this.$router.push("/error");
+            return await this.$router.replace("/error");
         }
 
         this.id = parse.id;
@@ -104,7 +104,7 @@ export default class Download extends Vue {
                 );
 
                 if (!result) {
-                    return await this.$router.push("/error");
+                    return await this.$router.replace("/error");
                 }
 
                 this.metadata = result.metadata;
@@ -117,7 +117,7 @@ export default class Download extends Vue {
             this.showInput = true;
             this.mount = true;
         } catch (e) {
-            return await this.$router.push("/error");
+            return await this.$router.replace("/error");
         }
     }
 
@@ -147,7 +147,17 @@ export default class Download extends Vue {
         }
     }
 
-    public parseURL(): { id: string; receiver: StorageType } | null {
+    public get showPasswordInput() {
+        return this.mount && this.showInput;
+    }
+
+    public get showDownloadArea() {
+        return (
+            this.mount && !this.showInput && this.metadata && this.decryption
+        );
+    }
+
+    private parseURL(): { id: string; receiver: StorageType } | null {
         const destination = this.$route.fullPath.split("/")[1];
         const sharing = this.$route.params.sharing;
         const id = this.$route.params.id;
@@ -160,16 +170,6 @@ export default class Download extends Vue {
             default:
                 return null;
         }
-    }
-
-    public get showPasswordInput() {
-        return this.mount && this.showInput;
-    }
-
-    public get showDownloadArea() {
-        return (
-            this.mount && !this.showInput && this.metadata && this.decryption
-        );
     }
 }
 </script>

@@ -5,7 +5,7 @@ const production = environment.NODE_ENV === "production";
 class CipherConfig {
     public readonly ivLength: number = 12;
     public readonly authTagLength: number = 16;
-    public readonly saltLength: number = 32;
+    public readonly saltLength: number = 16;
     public readonly keyLength: number = 16;
     public readonly deriveIterations: number = 100000;
 }

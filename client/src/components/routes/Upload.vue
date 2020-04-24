@@ -90,11 +90,11 @@ export default class Upload extends Vue {
         }
     }
 
-    public finish(e: { id: string; key: string }): void {
+    public finish(e: { id: string; fragment: string }): void {
         this.file = null;
         const destination = this.destination();
 
-        const path = Utils.buildPath(`copy/${destination}`, e.id, e.key);
+        const path = Utils.buildPath(`copy/${destination}`, e.id, e.fragment);
         this.$router.push(path);
     }
 

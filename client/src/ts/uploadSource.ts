@@ -1,6 +1,7 @@
 import { Encryption } from "./cipher";
 import Config from "./config";
 import Metadata from "./metadata";
+import Utils from "./utils";
 
 export default class UploadSource {
     private encryptor: Encryption;
@@ -29,8 +30,8 @@ export default class UploadSource {
      *
      * @return Promise with exported key
      */
-    public exportKey(): Promise<string> {
-        return this.encryptor.getExportedKey();
+    public fragment(): Promise<string> {
+        return this.encryptor.getExportedFragment();
     }
 
     /**
@@ -62,7 +63,7 @@ export default class UploadSource {
     }
 
     /**
-     * It creates additional data such iv, flag, salt without length of
+     * It creates additional data such iv, flag without length of
      * encrypted metadata. It joins these elements into one chunk.
      *
      * @return Promise with additional data
@@ -70,15 +71,8 @@ export default class UploadSource {
     private async createAdditionalData(): Promise<Uint8Array> {
         const iv = await this.encryptor.getInitializationVector();
         const flagUint = new Uint8Array([this.password ? 1 : 0]);
-        const salt = await this.encryptor.getSalt();
 
-        const result = new Uint8Array(
-            iv.length + flagUint.length + salt.length
-        );
-        result.set(iv);
-        result.set(flagUint, iv.length);
-        result.set(salt, iv.length + flagUint.length);
-        return result;
+        return Utils.concatUint8Arrays(iv, flagUint);
     }
 
     /**
@@ -91,6 +85,8 @@ export default class UploadSource {
         const metadata = await this.encryptor.encrypt(
             this.metadata.toUint8Array()
         );
+
+        // tag
         const final = await this.encryptor.final();
 
         // length
@@ -98,14 +94,7 @@ export default class UploadSource {
             metadata.length + final.length
         );
 
-        // concat
-        const m = new Uint8Array(
-            length.length + metadata.length + final.length
-        );
-        m.set(length);
-        m.set(metadata, length.length);
-        m.set(final, length.length + metadata.length);
-        return m;
+        return Utils.concatUint8Arrays(length, metadata, final);
     }
 
     /**

@@ -164,10 +164,10 @@ export default class DownloadFile {
         startFrom: number;
         encryptedSize: number;
     } {
-        const { ivLength, saltLength, authTagLength } = Config.cipher;
+        const { ivLength, authTagLength } = Config.cipher;
         const metadataSize = this.metadata.toUint8Array().length;
 
-        const s = ivLength + 1 + saltLength + 2 + metadataSize + authTagLength;
+        const s = ivLength + 1 + 2 + metadataSize + authTagLength;
         const encryptedSize = s + this.metadata.getSize() + authTagLength;
         return { startFrom: s, encryptedSize };
     }

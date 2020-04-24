@@ -7,7 +7,6 @@ import Metadata from "./metadata";
 interface IAdditionalData {
     iv: Uint8Array;
     flag: Uint8Array;
-    salt: Uint8Array;
     len: number;
 }
 
@@ -43,31 +42,27 @@ export default class DownloadMetadata {
      * and authTag is valid, it returns decrypted metadata and
      * initialization vector + key that was used.
      *
-     * @param keyMaterial - base64 key or raw key
+     * @param fragment - base64 key or raw key
      * @param password
      * @return Promise with null - if authTag of metadata is not valid
      *                      metadata + iv + key - if authTag of metadata is valid
      */
     public async validate(
-        keyMaterial: Uint8Array | string,
+        fragment: string,
         password?: string
     ): Promise<IReturnValue | null> {
         const data = await this.additionalDataPromise;
         const encrypted = await this.metadataPromise;
 
-        const required = await this.passwordIsRequired();
-        if (
-            (password !== undefined && !required) ||
-            (password === undefined && required)
-        ) {
-            throw new Error(
-                `Password param is${required ? "" : "n't"} required`
-            );
+        // check if password has correct type
+        const r = await this.passwordIsRequired();
+        if ((password !== undefined && !r) || (password === undefined && r)) {
+            throw new Error(`Password param is${r ? "" : "n't"} required`);
         }
 
         const decryptor = password
-            ? new Decryption(keyMaterial, data.iv, password, data.salt)
-            : new Decryption(keyMaterial, data.iv);
+            ? new Decryption(fragment, data.iv, password)
+            : new Decryption(fragment, data.iv);
 
         try {
             const m = await decryptor.final(encrypted);

@@ -49,9 +49,7 @@ export function randomValues(size: number): Promise<Uint8Array> {
         try {
             const serverRandom = await serverRandomValues(size);
 
-            const concat = new Uint8Array(2 * size);
-            concat.set(clientRandom);
-            concat.set(serverRandom, size);
+            const concat = Utils.concatUint8Arrays(clientRandom, serverRandom);
 
             const hash = await window.crypto.subtle.digest("SHA-512", concat);
 
@@ -98,32 +96,9 @@ async function pbkdf2(pw: string, s: Promise<Uint8Array>): Promise<Uint8Array> {
     return new Uint8Array(key);
 }
 
-/**
- * It creates key, which is combination of key1 and key2 params. For this
- * purpose it uses sha-512 function.
- *
- * @param k1 - first key
- * @param k2 - second key
- * @return Promise with key
- */
-async function createKeyFromKeys(
-    k1: Promise<Uint8Array>,
-    k2: Promise<Uint8Array>
-): Promise<Uint8Array> {
-    const key1 = await k1;
-    const key2 = await k2;
-
-    const concat = new Uint8Array(key1.length + key2.length);
-    concat.set(key1);
-    concat.set(key2, key1.length);
-
-    const mixed = await window.crypto.subtle.digest("sha-512", concat);
-    return new Uint8Array(mixed).slice(0, Config.cipher.keyLength);
-}
-
 export class Encryption {
+    private readonly password: boolean;
     private ivPromise: Promise<Uint8Array>;
-    private readonly exportableKey: Promise<Uint8Array>;
     private readonly keyPromise: Promise<Uint8Array>;
     private aesPromise: Promise<AesGcmEncryptor>;
     private readonly saltPromise: Promise<Uint8Array>;
@@ -135,19 +110,18 @@ export class Encryption {
 
         // password
         if (password) {
-            this.exportableKey = randomValues(keyLength);
+            this.password = true;
             this.saltPromise = randomValues(saltLength);
-            const pwKey = pbkdf2(password, this.saltPromise);
 
-            this.keyPromise = createKeyFromKeys(this.exportableKey, pwKey);
+            this.keyPromise = pbkdf2(password, this.saltPromise);
             this.aesPromise = this.createAesEncryptor();
             return;
         }
 
         // without password
-        this.saltPromise = Promise.resolve(new Uint8Array(saltLength));
+        this.password = false;
         this.keyPromise = randomValues(keyLength);
-        this.exportableKey = this.keyPromise;
+        this.saltPromise = Promise.resolve(new Uint8Array(0));
         this.aesPromise = this.createAesEncryptor();
     }
 
@@ -171,26 +145,21 @@ export class Encryption {
     }
 
     /**
-     * It returns salt, which was used for deriving key from password. If password
-     * wasn't used, it returns result, which contains only zeros. Length of salt
-     * is defined in Config.cipher.saltLength
+     * It returns fragment in base64 format, which can be part of URL.
+     * If password is defined, fragment is exported salt, which was used
+     * for deriving encryption key
+     * OTHERWISE fragment is exported encryption key
      *
-     * @return Promise with salt
+     * @return fragment in base64 format.
      */
-    public getSalt(): Promise<Uint8Array> {
-        return this.saltPromise;
-    }
+    public async getExportedFragment(): Promise<string> {
+        if (this.password) {
+            const salt = await this.saltPromise;
+            return Utils.Uint8ArrayToBase64(salt);
+        }
 
-    /**
-     * It returns key in base64 format, which can be part of URL.
-     * In case password was defined, this key is different that
-     * encryption key
-     *
-     * @return key in base64 format.
-     */
-    public async getExportedKey(): Promise<string> {
-        const exportableKey = await this.exportableKey;
-        return Utils.Uint8ArrayToBase64(exportableKey);
+        const key = await this.keyPromise;
+        return Utils.Uint8ArrayToBase64(key);
     }
 
     /**
@@ -214,10 +183,7 @@ export class Encryption {
         const final = encryptor.final();
         const tag = encryptor.getAuthTag();
 
-        const returnValue = new Uint8Array(final.length + tag.length);
-        returnValue.set(final);
-        returnValue.set(tag, final.length);
-        return returnValue;
+        return Utils.concatUint8Arrays(final, tag);
     }
 
     /**
@@ -243,6 +209,7 @@ export class Encryption {
         const iv = await this.ivPromise;
         const key = await this.keyPromise;
         const { authTagLength, keyLength } = Config.cipher;
+
         const algorithm = `aes-${keyLength * 8}-gcm`;
         return new AesGcmEncryptor(algorithm, key, iv, { authTagLength });
     }
@@ -253,27 +220,12 @@ export class Decryption {
     private readonly keyPromise: Promise<Uint8Array>;
     private readonly aesPromise: Promise<AesGcmDecryptor>;
 
-    constructor(keyMaterial: string | Uint8Array, iv: Uint8Array);
-    constructor(
-        keyMaterial: string | Uint8Array,
-        iv: Uint8Array,
-        password: string,
-        salt: Uint8Array
-    );
-    /**
-     * It constructs new instance of Decryption class.
-     *
-     * @param keyMaterial - if type of keyMaterial is string,
-     * the key is in base64 format, otherwise key is raw
-     * @param iv - initialization vector
-     * @param password - if password is defined, salt must be defined also
-     * @param salt
-     */
+    constructor(key: string | Uint8Array, iv: Uint8Array);
+    constructor(salt: string, iv: Uint8Array, password: string);
     public constructor(
-        keyMaterial: string | Uint8Array,
+        keyOrSalt: string | Uint8Array,
         iv: Uint8Array,
-        password?: string,
-        salt?: Uint8Array
+        password?: string
     ) {
         if (iv.length !== Config.cipher.ivLength) {
             throw new Error("IV is not valid");
@@ -281,28 +233,30 @@ export class Decryption {
 
         this.ivPromise = Promise.resolve(iv);
 
-        const key =
-            typeof keyMaterial === "string"
-                ? Utils.base64toUint8Array(keyMaterial)
-                : keyMaterial;
-
-        if (key.length !== Config.cipher.keyLength) {
-            throw new Error("Key is not valid");
-        }
+        // convert to Uint8Array
+        const uint8Array =
+            typeof keyOrSalt === "string"
+                ? Utils.base64toUint8Array(keyOrSalt)
+                : keyOrSalt;
 
         // password
         if (password) {
+            const salt = uint8Array;
+
             if (!salt || salt.length !== Config.cipher.saltLength) {
                 throw new Error("Salt is not valid");
             }
-            const pwKey = pbkdf2(password, Promise.resolve(salt));
 
-            this.keyPromise = createKeyFromKeys(Promise.resolve(key), pwKey);
+            this.keyPromise = pbkdf2(password, Promise.resolve(salt));
             this.aesPromise = this.createAesDecryptor();
             return;
         }
 
         // without password
+        const key = uint8Array;
+        if (key.length !== Config.cipher.keyLength) {
+            throw new Error("Key is not valid");
+        }
         this.keyPromise = Promise.resolve(key);
         this.aesPromise = this.createAesDecryptor();
     }
@@ -346,6 +300,7 @@ export class Decryption {
 
         const result = decryptor.update(chunk);
         decryptor.setAuthTag(tag);
+
         // it can throw exception, if authTag is invalid
         decryptor.final();
         return result;
@@ -362,6 +317,7 @@ export class Decryption {
         const iv = await this.ivPromise;
         const key = await this.keyPromise;
         const { authTagLength, keyLength } = Config.cipher;
+
         const algorithm = `aes-${keyLength * 8}-gcm`;
         return new AesGcmDecryptor(algorithm, key, iv, { authTagLength });
     }

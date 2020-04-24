@@ -10,7 +10,7 @@ export default class UploadFile {
 
     public constructor(
         file: File,
-        opts: { sender: StorageType; data?: any },
+        opts: { sender: StorageType; data?: AuthDropbox },
         progress: (u: number) => any,
         password?: string
     ) {
@@ -32,7 +32,7 @@ export default class UploadFile {
         }
     }
 
-    public async upload(): Promise<{ id: string; key: string }> {
+    public async upload(): Promise<{ id: string; fragment: string }> {
         return await this.sender.send(this.source);
     }
 

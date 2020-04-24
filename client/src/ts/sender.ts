@@ -14,7 +14,7 @@ export class SenderServer implements ISender {
 
     public async send(
         source: UploadSource
-    ): Promise<{ id: string; key: string }> {
+    ): Promise<{ id: string; fragment: string }> {
         return new Promise(async (resolve, reject) => {
             const socket = new WebSocket(
                 Utils.serverWebsocketUrl("/api/upload")
@@ -47,11 +47,11 @@ export class SenderServer implements ISender {
 
             socket.onclose = async () => {
                 if (this.stop) {
-                    return resolve({ id: "", key: "" });
+                    return resolve({ id: "", fragment: "" });
                 }
-                const key = await source.exportKey();
+                const fragment = await source.fragment();
                 return this.id
-                    ? resolve({ id: this.id, key })
+                    ? resolve({ id: this.id, fragment })
                     : reject(new Error("An error occurred during uploading"));
             };
 
@@ -72,7 +72,7 @@ export class UploadFileXHR implements ISender {
 
     public async send(
         source: UploadSource
-    ): Promise<{ id: string; key: string }> {
+    ): Promise<{ id: string; fragment: string }> {
         return new Promise(async (resolve, reject) => {
             try {
                 const idObj = await this.post(
@@ -85,7 +85,7 @@ export class UploadFileXHR implements ISender {
 
                 while (answer) {
                     if (this.stop) {
-                        return resolve({ id: "", key: "" });
+                        return resolve({ id: "", fragment: "" });
                     }
 
                     await this.post(
@@ -103,8 +103,8 @@ export class UploadFileXHR implements ISender {
                 }
 
                 return resolve({
-                    id: idObj.id,
-                    key: await source.exportKey()
+                    fragment: await source.fragment(),
+                    id: idObj.id
                 });
             } catch (e) {
                 return reject(e);
@@ -157,7 +157,7 @@ export class SenderDropbox implements ISender {
 
     public async send(
         source: UploadSource
-    ): Promise<{ id: string; key: string }> {
+    ): Promise<{ id: string; fragment: string }> {
         try {
             let content = await source.getContent();
             let uploaded: number = 0;
@@ -166,7 +166,7 @@ export class SenderDropbox implements ISender {
                 // stop uploading
                 if (this.stop) {
                     await this.upload(uploaded, new Uint8Array(0), true);
-                    return { id: "", key: "" };
+                    return { id: "", fragment: "" };
                 }
 
                 await this.upload(uploaded, content);
@@ -178,7 +178,7 @@ export class SenderDropbox implements ISender {
 
             // final ID has two parts join with slash character
             const id = await this.shareUploadedFile(filename);
-            return { id, key: await source.exportKey() };
+            return { id, fragment: await source.fragment() };
         } catch (e) {
             if (e instanceof Error) {
                 throw e;

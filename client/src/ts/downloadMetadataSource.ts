@@ -22,7 +22,7 @@ export default class DownloadMetadataSource {
 
     /**
      * It download additional data (iv, flag
-     * for UI, salt, length of metadata) of file, which is stored
+     * for UI, length of metadata) of file, which is stored
      * on receiver storage.
      *
      * @return {iv, flag, salt, len}
@@ -30,20 +30,18 @@ export default class DownloadMetadataSource {
     public async downloadAdditionalData(): Promise<{
         iv: Uint8Array;
         flag: Uint8Array;
-        salt: Uint8Array;
         len: number;
     }> {
-        const { ivLength, saltLength } = Config.cipher;
-        const end = ivLength + 1 + saltLength + 2;
+        const { ivLength } = Config.cipher;
+        const end = ivLength + 1 + 2;
 
         const result = await this.receiver.receive(0, end);
 
         const iv = result.slice(0, ivLength);
         const flag = result.slice(ivLength, ivLength + 1);
-        const salt = result.slice(ivLength + 1, ivLength + 1 + saltLength);
         const len = Metadata.lengthToNumber(result.slice(-2));
 
-        return { iv, flag, salt, len };
+        return { iv, flag, len };
     }
 
     /**
@@ -53,8 +51,8 @@ export default class DownloadMetadataSource {
      * @return Promise with metadata
      */
     public async downloadMetadata(len: number): Promise<Uint8Array> {
-        const { ivLength, saltLength } = Config.cipher;
-        const start = ivLength + 1 + saltLength + 2;
+        const { ivLength } = Config.cipher;
+        const start = ivLength + 1 + 2;
         return this.receiver.receive(start, start + len);
     }
 }
