@@ -6,4 +6,5 @@ export default class Config {
         process.env.NODE_ENV || "development";
     public static readonly fileSizeLimit: number = 1024 * 1024 * 1024 * 5;
     public static readonly spacePath: string = __dirname + "/files";
+    public static readonly expiredAfterDays: number = 7;
 }

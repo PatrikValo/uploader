@@ -97,11 +97,10 @@ async function pbkdf2(pw: string, s: Promise<Uint8Array>): Promise<Uint8Array> {
 }
 
 export class Encryption {
-    private readonly password: boolean;
     private ivPromise: Promise<Uint8Array>;
+    private readonly exportableKeyPromise: Promise<Uint8Array>;
     private readonly keyPromise: Promise<Uint8Array>;
     private aesPromise: Promise<AesGcmEncryptor>;
-    private readonly saltPromise: Promise<Uint8Array>;
 
     public constructor(password?: string) {
         const { ivLength, keyLength, saltLength } = Config.cipher;
@@ -110,18 +109,16 @@ export class Encryption {
 
         // password
         if (password) {
-            this.password = true;
-            this.saltPromise = randomValues(saltLength);
+            this.exportableKeyPromise = randomValues(saltLength);
 
-            this.keyPromise = pbkdf2(password, this.saltPromise);
+            this.keyPromise = pbkdf2(password, this.exportableKeyPromise);
             this.aesPromise = this.createAesEncryptor();
             return;
         }
 
         // without password
-        this.password = false;
         this.keyPromise = randomValues(keyLength);
-        this.saltPromise = Promise.resolve(new Uint8Array(0));
+        this.exportableKeyPromise = this.keyPromise;
         this.aesPromise = this.createAesEncryptor();
     }
 
@@ -147,19 +144,13 @@ export class Encryption {
     /**
      * It returns fragment in base64 format, which can be part of URL.
      * If password is defined, fragment is exported salt, which was used
-     * for deriving encryption key
-     * OTHERWISE fragment is exported encryption key
+     * for deriving encryption key OTHERWISE fragment is exported encryption key
      *
      * @return fragment in base64 format.
      */
     public async getExportedFragment(): Promise<string> {
-        if (this.password) {
-            const salt = await this.saltPromise;
-            return Utils.Uint8ArrayToBase64(salt);
-        }
-
-        const key = await this.keyPromise;
-        return Utils.Uint8ArrayToBase64(key);
+        const exportableKey = await this.exportableKeyPromise;
+        return Utils.Uint8ArrayToBase64(exportableKey);
     }
 
     /**

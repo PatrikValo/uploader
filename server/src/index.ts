@@ -70,7 +70,7 @@ const job = new CronJob(
     "0 * * * *",
     async () => {
         const st = new Storage();
-        await st.removeAllFilesOlderThan(7);
+        await st.removeAllFilesOlderThan(Config.expiredAfterDays);
     },
     null,
     true
