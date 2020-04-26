@@ -8,7 +8,6 @@
             :total="metadata.size"
         ></progress-bar>
         <download-button
-            v-if="showDownloadButton"
             :downloading="downloading"
             @download="download"
             @cancel="cancel"
@@ -49,6 +48,17 @@ export default class DownloadArea extends Vue {
         this.blob = DownloadCompatibility.blob();
     }
 
+    // noinspection JSUnusedGlobalSymbols
+    public mounted() {
+        const { blobFileSizeLimit } = Config.client;
+        const { size } = this.$props.metadata;
+
+        if (this.blob && blobFileSizeLimit < size) {
+            this.alert =
+                "Sťahovanie súboru na Vašom prehliadači nemusí byť úspešné";
+        }
+    }
+
     public async download(): Promise<void> {
         this.downloader = new DownloadFile(
             this.$props.id,
@@ -78,17 +88,6 @@ export default class DownloadArea extends Vue {
         if (this.downloader) {
             this.downloader.cancel();
         }
-    }
-
-    get showDownloadButton(): boolean {
-        const blobLimit = Config.client.blobFileSizeLimit;
-
-        if (this.blob && blobLimit < this.$props.metadata.size) {
-            this.alert = "Na Vašom prehliadači je možnosť stiahnuť max. 250MB";
-            return false;
-        }
-
-        return true;
     }
 }
 </script>

@@ -7,8 +7,6 @@ import {
     TransformStream as TrS,
     WritableStream as WrS
 } from "web-streams-polyfill/ponyfill";
-import streamSaver from "streamsaver";
-const { createWriteStream } = streamSaver;
 
 class BaseCompatibility {
     /**
@@ -96,18 +94,6 @@ export class DownloadCompatibility {
         const safari = browser.satisfies({
             safari: ">=0"
         });
-
-        try {
-            streamSaver.TransformStream = TransformStream;
-            streamSaver.WritableStream = WritableStream;
-
-            (createWriteStream("", { size: 0 }, 0) as WritableStream)
-                .getWriter()
-                .abort("Test");
-        } catch (e) {
-            console.log("Blob", e);
-            return true;
-        }
 
         return (
             safari ||
