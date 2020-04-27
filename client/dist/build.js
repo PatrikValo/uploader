@@ -87797,6 +87797,7 @@ var UploadArea = /** @class */ (function (_super) {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
+                        console.time("uploadTime");
                         return [4 /*yield*/, this.uploader.upload()];
                     case 2:
                         result = _b.sent();
@@ -87804,6 +87805,7 @@ var UploadArea = /** @class */ (function (_super) {
                             this.$emit("cancel");
                             return [2 /*return*/];
                         }
+                        console.timeEnd("uploadTime");
                         this.$emit("finish", result);
                         return [3 /*break*/, 4];
                     case 3:
