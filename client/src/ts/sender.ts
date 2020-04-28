@@ -3,6 +3,7 @@ import AuthDropbox from "./authDropbox";
 import ISender from "./interfaces/iSender";
 import UploadSource from "./uploadSource";
 import Utils from "./utils";
+import Dropbox = DropboxTypes.Dropbox;
 
 export class SenderServer implements ISender {
     private id: string = "";
@@ -142,12 +143,12 @@ export class UploadFileXHR implements ISender {
 }
 
 export class SenderDropbox implements ISender {
-    private readonly auth: AuthDropbox;
+    private readonly dbx: Dropbox;
     private readonly sessionPromise: Promise<string>;
     private stop: boolean = false;
 
     public constructor(auth: AuthDropbox) {
-        this.auth = auth;
+        this.dbx = auth.getDropboxObject();
         this.sessionPromise = this.createSessionId();
     }
 
@@ -195,9 +196,7 @@ export class SenderDropbox implements ISender {
      * @return session_id of current uploading session
      */
     private async createSessionId(): Promise<string> {
-        const dbx = this.auth.getDropboxObject();
-
-        const result = await dbx.filesUploadSessionStart({
+        const result = await this.dbx.filesUploadSessionStart({
             close: false,
             contents: new Uint8Array(0)
         });
@@ -220,8 +219,7 @@ export class SenderDropbox implements ISender {
     ): Promise<void> {
         const sessionId = await this.sessionPromise;
 
-        const dbx = this.auth.getDropboxObject();
-        await dbx.filesUploadSessionAppendV2({
+        await this.dbx.filesUploadSessionAppendV2({
             close,
             contents: content,
             cursor: {
@@ -241,10 +239,9 @@ export class SenderDropbox implements ISender {
     private async finish(offset: number): Promise<string> {
         const sessionId = await this.sessionPromise;
 
-        const dbx = this.auth.getDropboxObject();
         const filename = uuid().replace(/-/g, "");
 
-        const metadata = await dbx.filesUploadSessionFinish({
+        const metadata = await this.dbx.filesUploadSessionFinish({
             commit: {
                 autorename: true,
                 contents: Object,
@@ -267,8 +264,7 @@ export class SenderDropbox implements ISender {
      * @return ID of file
      */
     private async shareUploadedFile(filename: string): Promise<string> {
-        const dbx = this.auth.getDropboxObject();
-        const result = await dbx.sharingCreateSharedLinkWithSettings({
+        const result = await this.dbx.sharingCreateSharedLinkWithSettings({
             path: `/${filename}`,
             settings: {
                 access: { ".tag": "viewer" },

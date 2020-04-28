@@ -88168,7 +88168,7 @@ var UploadFileXHR = /** @class */ (function () {
 var SenderDropbox = /** @class */ (function () {
     function SenderDropbox(auth) {
         this.stop = false;
-        this.auth = auth;
+        this.dbx = auth.getDropboxObject();
         this.sessionPromise = this.createSessionId();
     }
     SenderDropbox.prototype.cancel = function () {
@@ -88229,15 +88229,13 @@ var SenderDropbox = /** @class */ (function () {
      */
     SenderDropbox.prototype.createSessionId = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var dbx, result;
+            var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        dbx = this.auth.getDropboxObject();
-                        return [4 /*yield*/, dbx.filesUploadSessionStart({
-                                close: false,
-                                contents: new Uint8Array(0)
-                            })];
+                    case 0: return [4 /*yield*/, this.dbx.filesUploadSessionStart({
+                            close: false,
+                            contents: new Uint8Array(0)
+                        })];
                     case 1:
                         result = _a.sent();
                         return [2 /*return*/, result.session_id];
@@ -88256,14 +88254,13 @@ var SenderDropbox = /** @class */ (function () {
     SenderDropbox.prototype.upload = function (offset, content, close) {
         if (close === void 0) { close = false; }
         return __awaiter(this, void 0, void 0, function () {
-            var sessionId, dbx;
+            var sessionId;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.sessionPromise];
                     case 1:
                         sessionId = _a.sent();
-                        dbx = this.auth.getDropboxObject();
-                        return [4 /*yield*/, dbx.filesUploadSessionAppendV2({
+                        return [4 /*yield*/, this.dbx.filesUploadSessionAppendV2({
                                 close: close,
                                 contents: content,
                                 cursor: {
@@ -88287,15 +88284,14 @@ var SenderDropbox = /** @class */ (function () {
      */
     SenderDropbox.prototype.finish = function (offset) {
         return __awaiter(this, void 0, void 0, function () {
-            var sessionId, dbx, filename, metadata;
+            var sessionId, filename, metadata;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0: return [4 /*yield*/, this.sessionPromise];
                     case 1:
                         sessionId = _a.sent();
-                        dbx = this.auth.getDropboxObject();
                         filename = __WEBPACK_IMPORTED_MODULE_0_uuid_v1___default()().replace(/-/g, "");
-                        return [4 /*yield*/, dbx.filesUploadSessionFinish({
+                        return [4 /*yield*/, this.dbx.filesUploadSessionFinish({
                                 commit: {
                                     autorename: true,
                                     contents: Object,
@@ -88322,18 +88318,16 @@ var SenderDropbox = /** @class */ (function () {
      */
     SenderDropbox.prototype.shareUploadedFile = function (filename) {
         return __awaiter(this, void 0, void 0, function () {
-            var dbx, result;
+            var result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0:
-                        dbx = this.auth.getDropboxObject();
-                        return [4 /*yield*/, dbx.sharingCreateSharedLinkWithSettings({
-                                path: "/" + filename,
-                                settings: {
-                                    access: { ".tag": "viewer" },
-                                    requested_visibility: { ".tag": "public" }
-                                }
-                            })];
+                    case 0: return [4 /*yield*/, this.dbx.sharingCreateSharedLinkWithSettings({
+                            path: "/" + filename,
+                            settings: {
+                                access: { ".tag": "viewer" },
+                                requested_visibility: { ".tag": "public" }
+                            }
+                        })];
                     case 1:
                         result = _a.sent();
                         // parse URL and take only ID part
