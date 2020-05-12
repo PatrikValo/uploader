@@ -8,7 +8,7 @@
   },
   "scripts": {
     "start": "node server/dist/index.js",
-    "build": "cd server; tsc",
+    "build": "cd server; tsc; npm run build:prod",
     "test": "jest ./tests",
     "test:server": "jest ./tests/server",
     "test:client": "jest ./tests/client",
