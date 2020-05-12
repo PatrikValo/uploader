@@ -3,8 +3,6 @@
         <b-progress
             :value="percentage"
             variant="warning"
-            striped
-            :animated="true"
             height="1.5rem"
             class="mt-2"
         ></b-progress>
@@ -23,8 +21,8 @@ import Vue from "vue";
     }
 })
 export default class ProgressBar extends Vue {
-    private interval: number | undefined; // setInterval
-    public percentage: number = 0;
+    private interval?: number; // setInterval
+    private percentage: number = 0;
 
     public constructor() {
         super();
@@ -33,9 +31,9 @@ export default class ProgressBar extends Vue {
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
         // rendering each 500ms
-        this.interval = setInterval(() => {
-            const uploaded = this.$props.uploaded;
-            const total = this.$props.total;
+        this.interval = window.setInterval(() => {
+            const { total, uploaded } = this.$props;
+
             this.percentage = Math.round((uploaded / total) * 100);
         }, 500);
     }

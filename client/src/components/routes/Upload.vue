@@ -6,6 +6,11 @@
                 <b-alert v-if="alert" show variant="warning">{{
                     alert
                 }}</b-alert>
+                <b-row v-if="!file" align-v="center">
+                    <b-col>
+                        <upload-image></upload-image>
+                    </b-col>
+                </b-row>
                 <input
                     id="file-upload"
                     v-if="!file"
@@ -24,6 +29,7 @@
                 <upload-area
                     v-if="file"
                     :file="file"
+                    :auth="auth"
                     @finish="finish"
                     @error="error"
                     @cancel="cancel"
@@ -31,11 +37,7 @@
                 ></upload-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/image.svg"
-                    alt="Paper planes"
-                />
+                <plane-image></plane-image>
             </b-col>
         </b-row>
     </b-container>
@@ -48,13 +50,20 @@ import UploadArea from "../UploadArea.vue";
 import Vue from "vue";
 import Utils from "../../ts/utils";
 import { UploadCompatibility } from "../../ts/compatibility";
+import PlaneImage from "../PlaneImage.vue";
+import AuthDropbox from "../../ts/authDropbox";
+import UploadImage from "../UploadImage.vue";
+import Config from "../../ts/config";
 
 @Component({
-    components: { UploadArea, MainTitle }
+    components: { UploadImage, PlaneImage, UploadArea, MainTitle },
+    props: {
+        auth: AuthDropbox
+    }
 })
 export default class Upload extends Vue {
-    public file: File | null;
-    public alert: string;
+    private file: File | null;
+    private alert: string;
 
     public constructor() {
         super();
@@ -68,10 +77,10 @@ export default class Upload extends Vue {
             this.$router.push("/compatibility");
         }
 
+        // drag and drop
         document.body.ondragover = function(e) {
             e.preventDefault();
         };
-
         document.body.ondrop = this.onDrop;
     }
 
@@ -81,26 +90,34 @@ export default class Upload extends Vue {
         }
     }
 
-    public finish(e: { id: string; key: string }): void {
+    public finish(e: { id: string; fragment: string }): void {
         this.file = null;
-        const path = Utils.buildPath("copy", e.id, e.key);
+        const destination = this.destination();
+
+        const path = Utils.buildPath(`copy/${destination}`, e.id, e.fragment);
         this.$router.push(path);
     }
 
     public error(e: Error): void {
         this.alert = "Počas nahrávania nastala chyba";
-        console.error(e.message);
+        console.error("Nastala chyba!", e);
         this.file = null;
     }
 
     public cancel(): void {
-        this.alert = "Nahrávanie bolo zastavené";
         this.file = null;
     }
 
     public limit(): void {
         this.file = null;
-        this.alert = "Veľkosť súboru presahuje 1GB";
+        const { fileSizeLimit, fileSizeLimitDropbox } = Config.client;
+        const gb = 1024 * 1024 * 1024;
+
+        const size = this.$props.auth.isLoggedIn()
+            ? fileSizeLimitDropbox / gb
+            : fileSizeLimit / gb;
+
+        this.alert = `Veľkosť súboru presahuje ${size}GB`;
     }
 
     public clearAlert(): void {
@@ -114,6 +131,14 @@ export default class Upload extends Vue {
             this.file = e.dataTransfer.files[0];
         }
     }
+
+    private destination(): string {
+        if (this.$props.auth.isLoggedIn()) {
+            return "dropbox";
+        }
+
+        return "download";
+    }
 }
 </script>
 <style scoped>
@@ -125,7 +150,7 @@ export default class Upload extends Vue {
 }
 
 #file-upload-label {
-    margin-top: 5px;
+    margin-top: 20px;
 }
 
 label {

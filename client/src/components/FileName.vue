@@ -19,7 +19,7 @@ import Vue from "vue";
     }
 })
 export default class FileName extends Vue {
-    public truncate: boolean = true;
+    private truncate: boolean = true;
 
     public constructor() {
         super();

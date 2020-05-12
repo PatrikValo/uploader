@@ -8,9 +8,9 @@
             :total="metadata.size"
         ></progress-bar>
         <download-button
-            v-if="showDownloadButton"
             :downloading="downloading"
             @download="download"
+            @cancel="cancel"
         ></download-button>
     </div>
 </template>
@@ -19,27 +19,28 @@
 import Component from "vue-class-component";
 import Vue from "vue";
 import Metadata from "../ts/metadata";
-import { Cipher } from "../ts/cipher";
 import { DownloadCompatibility } from "../ts/compatibility";
 import Config from "../ts/config";
 import DownloadFile from "../ts/downloadFile";
 import FileInfo from "./FileInfo.vue";
 import ProgressBar from "./ProgressBar.vue";
 import DownloadButton from "./DownloadButton.vue";
+import { StorageType } from "../ts/interfaces/storageType";
 
 @Component({
     components: { DownloadButton, ProgressBar, FileInfo },
     props: {
         id: String,
+        receiver: String as () => StorageType,
         metadata: Metadata,
-        cipher: Object as () => Cipher,
-        startFrom: Number
+        decryption: Object as () => { key: Uint8Array; iv: Uint8Array }
     }
 })
 export default class DownloadArea extends Vue {
-    public downloading: boolean = false;
-    public uploaded: number = 0;
-    public alert: string = "";
+    private downloading: boolean = false;
+    private uploaded: number = 0;
+    private alert: string = "";
+    private downloader: DownloadFile | null = null;
     private readonly blob: boolean;
 
     public constructor() {
@@ -48,18 +49,22 @@ export default class DownloadArea extends Vue {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    public mounted() {}
+    public mounted() {
+        const { blobFileSizeLimit } = Config.client;
+        const { size } = this.$props.metadata;
+
+        if (this.blob && blobFileSizeLimit < size) {
+            this.alert =
+                "Sťahovanie súboru na Vašom prehliadači nemusí byť úspešné";
+        }
+    }
 
     public async download(): Promise<void> {
-        if (!this.$props.cipher) {
-            return;
-        }
-
-        const download = new DownloadFile(
+        this.downloader = new DownloadFile(
             this.$props.id,
+            this.$props.receiver,
             this.$props.metadata,
-            this.$props.cipher,
-            this.$props.startFrom
+            this.$props.decryption
         );
 
         const progress = (u: number) => {
@@ -68,25 +73,21 @@ export default class DownloadArea extends Vue {
 
         try {
             this.downloading = true;
-            await download.download(this.blob, progress);
+            await this.downloader.download(this.blob, progress);
         } catch (e) {
             this.alert = "Pri sťahovaní nastala chyba";
-            console.log("Nastala chyba!", e);
+            console.error("Nastala chyba!", e);
         }
 
+        this.downloader = null;
         this.downloading = false;
         this.uploaded = 0;
     }
 
-    public get showDownloadButton(): boolean {
-        const blobLimit = Config.client.blobFileSizeLimit;
-
-        if (this.blob && blobLimit < this.$props.metadata.size) {
-            this.alert = "Na Vašom prehliadači je možnosť stiahnuť max. 250MB";
-            return false;
+    public cancel() {
+        if (this.downloader) {
+            this.downloader.cancel();
         }
-
-        return true;
     }
 }
 </script>

@@ -23,18 +23,18 @@ import Vue from "vue";
 
 @Component({})
 export default class UploadButton extends Vue {
-    public uploadButton: boolean = true;
-    public cancelButton: boolean = false;
+    private uploadButton: boolean = true;
+    private cancelButton: boolean = false;
 
     public constructor() {
         super();
     }
 
     get name() {
-        return this.cancelButton ? "Nahrávanie sa ruší..." : "Zastaviť";
+        return this.cancelButton ? "Nahrávanie sa ruší..." : "Zrušiť";
     }
 
-    public upload(e: any): void {
+    public upload(): void {
         this.$emit("upload", (v: boolean) => {
             if (v) {
                 this.uploadButton = false;

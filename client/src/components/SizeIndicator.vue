@@ -13,23 +13,26 @@ import Vue from "vue";
 })
 export default class SizeIndicator extends Vue {
     get computedSize() {
-        if (this.$props.size < 1000) {
-            return this.$props.size + " B";
+        const { size } = this.$props;
+        if (size < 1024) {
+            return size + " B";
         }
 
-        if (this.$props.size < 1000000) {
-            return Math.round(this.$props.size / 100) / 10 + " kB";
+        if (size < 1024 * 1024) {
+            return Math.round((size / 1024) * 10) / 10 + " kB";
         }
 
-        if (this.$props.size < 1000000000) {
-            return Math.round(this.$props.size / 100000) / 10 + " MB";
+        if (size < 1024 * 1024 * 1024) {
+            return Math.round((size / (1024 * 1024)) * 10) / 10 + " MB";
         }
 
-        if (this.$props.size < 1000000000000) {
-            return Math.round(this.$props.size / 100000000) / 10 + " GB";
+        if (this.$props.size < 1024 * 1024 * 1024 * 1024) {
+            return Math.round((size / (1024 * 1024 * 1024)) * 10) / 10 + " GB";
         }
 
-        return Math.round(this.$props.size / 100000000000) / 10 + " TB";
+        return (
+            Math.round((size / (1024 * 1024 * 1024 * 1024)) * 10) / 10 + " TB"
+        );
     }
 }
 </script>

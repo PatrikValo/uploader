@@ -1,8 +1,9 @@
 const path = require("path");
 const webpack = require("webpack");
+require("@babel/polyfill");
 
 module.exports = {
-    entry: "./client/src/index.ts",
+    entry: ["@babel/polyfill", "./client/src/index.ts"],
     output: {
         path: path.resolve(__dirname, "./client/dist"),
         publicPath: "/dist/",
@@ -54,6 +55,16 @@ module.exports = {
                     // Compiles Sass to CSS
                     "sass-loader"
                 ]
+            },
+            {
+                test: /\.m?js$/,
+                exclude: /node_modules\/(?!streamsaver)/,
+                use: {
+                    loader: "babel-loader",
+                    options: {
+                        presets: ["@babel/preset-env"]
+                    }
+                }
             }
         ]
     },

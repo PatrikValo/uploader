@@ -1,6 +1,6 @@
 import fs from "fs";
 import pathObj from "path";
-import Config from "../../server/src/config";
+import Config from "../../client/src/ts/config";
 const path = pathObj.join(__dirname, "files");
 import FileSaver from "../../server/src/fileSaver";
 import { Storage } from "../../server/src/storage";
@@ -17,7 +17,7 @@ for (let i = 65; i < 32 + 65; i++) {
 const metadata: number[] = [200, 100, 33, 24, 15, 98];
 const sizeMet = [0, 6];
 const firstChunk: number[] = [];
-for (let i = 0; i < Config.chunkSize; i++) {
+for (let i = 0; i < Config.client.chunkSize; i++) {
     firstChunk.push(15);
 }
 

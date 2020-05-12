@@ -1,212 +1,315 @@
+import { AesGcmDecryptor, AesGcmEncryptor } from "../js/aesGcm";
 import Config from "./config";
-import Metadata from "./metadata";
 import Utils from "./utils";
 
-export abstract class Cipher {
-    protected readonly crypto: Crypto = window.crypto;
-    protected abstract readonly keyPromise: Promise<CryptoKey>;
-    protected abstract readonly iv: Uint8Array;
+/**
+ * It generates random values on client side.
+ *
+ * @param size
+ * @return random values
+ */
+function clientRandomValues(size: number): Uint8Array {
+    const buff = new Uint8Array(size);
+    return window.crypto.getRandomValues(buff);
+}
 
-    public abstract getSalt(): Promise<Uint8Array>;
+/**
+ * It downloads random values generated on server side.
+ *
+ * @param size
+ * @return Promise with random values
+ */
+async function serverRandomValues(size: number): Promise<Uint8Array> {
+    const url = Utils.serverClassicUrl("/api/random/" + size);
+    const result = await Utils.getRequest(url, [], "arraybuffer");
 
-    public clientRandomValues(size: number): Uint8Array {
-        const buff = new Uint8Array(size);
-        return this.crypto.getRandomValues(buff);
+    if (!result || result.byteLength !== size) {
+        throw new Error("Incorrect response");
     }
 
-    public serverRandomValues(size: number): Promise<Uint8Array> {
-        return new Promise((resolve, reject) => {
-            const xhr = new XMLHttpRequest();
-            xhr.onloadend = async () => {
-                if (xhr.status !== 200) {
-                    return reject(new Error(String(xhr.status)));
-                }
+    return new Uint8Array(result);
+}
 
-                if (xhr.response) {
-                    return resolve(new Uint8Array(xhr.response));
-                }
+/**
+ * It creates random values, which are combination of client and server
+ * random values. If server isn't available, only client values are returned.
+ * Number of random values is limited by 32 values.
+ *
+ * @param size - length of Uint8Array, which contains random values
+ * @return Promise with random values
+ */
+export function randomValues(size: number): Promise<Uint8Array> {
+    return new Promise(async (resolve, reject) => {
+        if (size > 32) {
+            return reject(new Error("Size param is limited by 32"));
+        }
 
-                return reject(new Error("Empty Response"));
-            };
-            xhr.onabort = reject;
-            xhr.onerror = reject;
-            const url = Utils.server.classicUrl("/api/random/" + size);
-            xhr.open("get", url);
-            xhr.responseType = "arraybuffer";
-            xhr.send();
-        });
+        const clientRandom = clientRandomValues(size);
+
+        try {
+            const serverRandom = await serverRandomValues(size);
+
+            const concat = Utils.concatUint8Arrays(clientRandom, serverRandom);
+
+            const hash = await window.crypto.subtle.digest("SHA-256", concat);
+
+            return resolve(new Uint8Array(hash.slice(0, size)));
+        } catch (e) {
+            return resolve(clientRandom);
+        }
+    });
+}
+
+/**
+ * It derives the key from password and salt by using PBKDF2
+ *
+ * @param pw - password
+ * @param s - salt
+ * @return Promise with key
+ */
+async function pbkdf2(pw: string, s: Promise<Uint8Array>): Promise<Uint8Array> {
+    const buff = Utils.stringToUint8Array(pw);
+    const salt = await s;
+
+    const keyMaterial = await window.crypto.subtle.importKey(
+        "raw",
+        buff,
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+    );
+
+    const derived = await window.crypto.subtle.deriveKey(
+        {
+            hash: "SHA-256",
+            iterations: Config.cipher.deriveIterations,
+            name: "PBKDF2",
+            salt
+        },
+        keyMaterial,
+        { name: "AES-GCM", length: Config.cipher.keyLength * 8 },
+        true,
+        ["encrypt", "decrypt"]
+    );
+
+    const key = await window.crypto.subtle.exportKey("raw", derived);
+    return new Uint8Array(key);
+}
+
+export class Encryption {
+    private ivPromise: Promise<Uint8Array>;
+    private readonly exportableKeyPromise: Promise<Uint8Array>;
+    private readonly keyPromise: Promise<Uint8Array>;
+    private aesPromise: Promise<AesGcmEncryptor>;
+
+    public constructor(password?: string) {
+        const { ivLength, keyLength, saltLength } = Config.cipher;
+
+        this.ivPromise = randomValues(ivLength);
+
+        // password
+        if (password) {
+            this.exportableKeyPromise = randomValues(saltLength);
+
+            this.keyPromise = pbkdf2(password, this.exportableKeyPromise);
+            this.aesPromise = this.createAesEncryptor();
+            return;
+        }
+
+        // without password
+        this.keyPromise = randomValues(keyLength);
+        this.exportableKeyPromise = this.keyPromise;
+        this.aesPromise = this.createAesEncryptor();
     }
 
-    public randomValues(size: number): Promise<Uint8Array> {
-        return new Promise(async resolve => {
-            const clientRandom = this.clientRandomValues(size);
+    /**
+     * It returns iv, which is used for encryption. Length of iv is defined in
+     * Config.cipher.ivLength.
+     *
+     * @return Promise with iv
+     */
+    public getInitializationVector(): Promise<Uint8Array> {
+        return this.ivPromise;
+    }
 
-            try {
-                const serverRandom = await this.serverRandomValues(size);
+    /**
+     * It return key, which is used for encryption.
+     *
+     * @return Promise with key
+     */
+    public getEncryptionKey(): Promise<Uint8Array> {
+        return this.keyPromise;
+    }
 
-                const concat = new Uint8Array(2 * size);
-                concat.set(clientRandom);
-                concat.set(serverRandom, size);
+    /**
+     * It returns fragment in base64 format, which can be part of URL.
+     * If password is defined, fragment is exported salt, which was used
+     * for deriving encryption key OTHERWISE fragment is exported encryption key
+     *
+     * @return fragment in base64 format.
+     */
+    public async getExportedFragment(): Promise<string> {
+        const exportableKey = await this.exportableKeyPromise;
+        return Utils.Uint8ArrayToBase64(exportableKey);
+    }
 
-                const result = await this.digest(concat);
-                return resolve(result);
-            } catch (e) {
-                return resolve(clientRandom);
+    /**
+     * It encrypts chunk of the data, which is given.
+     *
+     * @param chunk
+     * @return Promise with encrypted data
+     */
+    public async encrypt(chunk: Uint8Array): Promise<Uint8Array> {
+        const encryptor = await this.aesPromise;
+        return encryptor.update(chunk);
+    }
+
+    /**
+     * It closes the current encryptor and it returns authTag.
+     *
+     * @return Promise with authTag
+     */
+    public async final(): Promise<Uint8Array> {
+        const encryptor = await this.aesPromise;
+        const final = encryptor.final();
+        const tag = encryptor.getAuthTag();
+
+        return Utils.concatUint8Arrays(final, tag);
+    }
+
+    /**
+     * It resets the encryptor and it sets up new iv for encryptor.
+     *
+     * @param newIV
+     */
+    public reset(newIV?: Uint8Array): void {
+        this.ivPromise = Promise.resolve(
+            newIV || randomValues(Config.cipher.ivLength)
+        );
+        this.aesPromise = this.createAesEncryptor();
+    }
+
+    /**
+     * It creates new instance of encryptor, which is used for encrypting
+     * file or metadata. It uses ivPromise and keyPromise for that, so
+     * these attributes must be defined.
+     *
+     * @return Promise AES-GCM encryptor
+     */
+    private async createAesEncryptor(): Promise<AesGcmEncryptor> {
+        const iv = await this.ivPromise;
+        const key = await this.keyPromise;
+        const { authTagLength, keyLength } = Config.cipher;
+
+        const algorithm = `aes-${keyLength * 8}-gcm`;
+        return new AesGcmEncryptor(algorithm, key, iv, { authTagLength });
+    }
+}
+
+export class Decryption {
+    private readonly ivPromise: Promise<Uint8Array>;
+    private readonly keyPromise: Promise<Uint8Array>;
+    private readonly aesPromise: Promise<AesGcmDecryptor>;
+
+    constructor(key: string | Uint8Array, iv: Uint8Array);
+    constructor(salt: string, iv: Uint8Array, password: string);
+    public constructor(
+        keyOrSalt: string | Uint8Array,
+        iv: Uint8Array,
+        password?: string
+    ) {
+        if (iv.length !== Config.cipher.ivLength) {
+            throw new Error("IV is not valid");
+        }
+
+        this.ivPromise = Promise.resolve(iv);
+
+        // convert to Uint8Array
+        const uint8Array =
+            typeof keyOrSalt === "string"
+                ? Utils.base64toUint8Array(keyOrSalt)
+                : keyOrSalt;
+
+        // password
+        if (password) {
+            const salt = uint8Array;
+
+            if (!salt || salt.length !== Config.cipher.saltLength) {
+                throw new Error("Salt is not valid");
             }
-        });
-    }
 
-    public initializationVector(): Uint8Array {
-        return this.iv;
-    }
-
-    public async digest(array: Uint8Array): Promise<Uint8Array> {
-        const short: ArrayBuffer = await this.crypto.subtle.digest(
-            "SHA-256",
-            array
-        );
-        return new Uint8Array(short);
-    }
-
-    public async exportedKey(): Promise<string> {
-        const key: CryptoKey = await this.keyPromise;
-        const buffer = await this.crypto.subtle.exportKey("raw", key);
-        return Utils.Uint8ArrayToBase64(new Uint8Array(buffer));
-    }
-
-    public async encryptMetadata(metadata: Metadata): Promise<Uint8Array> {
-        const metadataArray: Uint8Array = metadata.toUint8Array();
-        return await this.encryptChunk(metadataArray);
-    }
-
-    public async decryptMetadata(metadata: Uint8Array): Promise<Metadata> {
-        const decryptMetadata = await this.decryptChunk(metadata);
-        return new Metadata(decryptMetadata);
-    }
-
-    public async encryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-        const key: CryptoKey = await this.keyPromise;
-        const encrypted: ArrayBuffer = await this.crypto.subtle.encrypt(
-            {
-                iv: this.iv,
-                name: "AES-GCM"
-            },
-            key,
-            chunk
-        );
-        return new Uint8Array(encrypted);
-    }
-
-    public async decryptChunk(chunk: Uint8Array): Promise<Uint8Array> {
-        const key: CryptoKey = await this.keyPromise;
-        const decrypted: ArrayBuffer = await this.crypto.subtle.decrypt(
-            {
-                iv: this.iv,
-                name: "AES-GCM"
-            },
-            key,
-            chunk
-        );
-        return new Uint8Array(decrypted);
-    }
-}
-
-export class ClassicCipher extends Cipher {
-    protected readonly keyPromise: Promise<CryptoKey>;
-    protected readonly iv: Uint8Array;
-
-    public constructor(key?: CryptoKey | string, iv?: Uint8Array) {
-        super();
-        this.keyPromise = this.initKeyPromise(key);
-        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
-    }
-
-    public getSalt(): Promise<Uint8Array> {
-        return new Promise(resolve => {
-            return resolve(new Uint8Array(Config.cipher.saltLength));
-        });
-    }
-
-    private async initKeyPromise(key?: CryptoKey | string): Promise<CryptoKey> {
-        if (!key) {
-            return await this.generateKey();
+            this.keyPromise = pbkdf2(password, Promise.resolve(salt));
+            this.aesPromise = this.createAesDecryptor();
+            return;
         }
 
-        if (key instanceof CryptoKey) {
-            return new Promise(resolve => {
-                resolve(key);
-            });
+        // without password
+        const key = uint8Array;
+        if (key.length !== Config.cipher.keyLength) {
+            throw new Error("Key is not valid");
         }
-
-        return await this.importKey(key);
+        this.keyPromise = Promise.resolve(key);
+        this.aesPromise = this.createAesDecryptor();
     }
 
-    private async importKey(key: string): Promise<CryptoKey> {
-        const uint = Utils.base64toUint8Array(key);
-        return await this.crypto.subtle.importKey(
-            "raw",
-            uint,
-            "AES-GCM",
-            true,
-            ["encrypt", "decrypt"]
-        );
+    /**
+     * It returns key, which is used for decryption.
+     *
+     * @return Promise with key
+     */
+    public getDecryptionKey(): Promise<Uint8Array> {
+        return this.keyPromise;
     }
 
-    private async generateKey(): Promise<CryptoKey> {
-        const random = await this.randomValues(Config.cipher.saltLength);
-
-        return await this.crypto.subtle.importKey(
-            "raw",
-            random,
-            "AES-GCM",
-            true,
-            ["encrypt", "decrypt"]
-        );
-    }
-}
-
-export class PasswordCipher extends Cipher {
-    protected readonly keyPromise: Promise<CryptoKey>;
-    protected readonly iv: Uint8Array;
-    protected readonly salt: Promise<Uint8Array>;
-
-    public constructor(password: string, salt?: Uint8Array, iv?: Uint8Array) {
-        super();
-        this.keyPromise = this.deriveKey(password);
-        this.iv = iv || this.clientRandomValues(Config.cipher.ivLength);
-        this.salt = new Promise(resolve => {
-            return resolve(salt || this.randomValues(Config.cipher.saltLength));
-        });
+    /**
+     * It decrypts chunk of the data, which is given.
+     *
+     * @param chunk
+     * @return Promise with decrypted data
+     */
+    public async decrypt(chunk: Uint8Array): Promise<Uint8Array> {
+        const decryptor = await this.aesPromise;
+        return decryptor.update(chunk);
     }
 
-    public getSalt(): Promise<Uint8Array> {
-        return this.salt;
+    /**
+     * It checks correctness of authTag and it decrypts last data before decryptor
+     * is closed. AuthTag is part of chunk param and the other part is decrypted,
+     * or whole chunk param is authTag and nothing is decrypted.
+     *
+     * @throws Error if authTag is invalid
+     * @return Promise with decrypted data. If chunk param === only authTag
+     * it returns empty Uint8Array
+     */
+    public async final(chunk: Uint8Array): Promise<Uint8Array> {
+        const decryptor = await this.aesPromise;
+        const { authTagLength } = Config.cipher;
+
+        // separate authTag
+        const tag = chunk.slice(-authTagLength);
+        chunk = chunk.slice(0, -authTagLength);
+
+        const result = decryptor.update(chunk);
+        decryptor.setAuthTag(tag);
+
+        // it can throw exception, if authTag is invalid
+        decryptor.final();
+        return result;
     }
 
-    private async deriveKey(pw: string): Promise<CryptoKey> {
-        const buff = Utils.stringToUint8Array(pw);
+    /**
+     * It creates new instance of decryptor, which is used for decrypting
+     * file or metadata. It uses ivPromise and keyPromise for that, so
+     * these attributes must be defined.
+     *
+     * @return Promise AES-GCM decryptor
+     */
+    private async createAesDecryptor(): Promise<AesGcmDecryptor> {
+        const iv = await this.ivPromise;
+        const key = await this.keyPromise;
+        const { authTagLength, keyLength } = Config.cipher;
 
-        const keyMaterial = await this.crypto.subtle.importKey(
-            "raw",
-            buff,
-            "PBKDF2",
-            false,
-            ["deriveKey"]
-        );
-
-        const salt = await this.salt;
-
-        return await this.crypto.subtle.deriveKey(
-            {
-                hash: "SHA-256",
-                iterations: Config.cipher.deriveIterations,
-                name: "PBKDF2",
-                salt
-            },
-            keyMaterial,
-            { name: "AES-GCM", length: Config.cipher.keyLength },
-            true,
-            ["encrypt", "decrypt"]
-        );
+        const algorithm = `aes-${keyLength * 8}-gcm`;
+        return new AesGcmDecryptor(algorithm, key, iv, { authTagLength });
     }
 }

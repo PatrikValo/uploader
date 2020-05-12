@@ -1,6 +1,6 @@
 <template>
     <div>
-        <b-alert v-if="emptyPassword" show variant="warning" fade
+        <b-alert v-if="emptyPassword" show variant="warning"
             >Heslo nemôže byť prázdne</b-alert
         >
         <file-info :name="file.name" :size="file.size"></file-info>
@@ -30,6 +30,8 @@ import FileInfo from "./FileInfo.vue";
 import PasswordToggle from "./PasswordToggle.vue";
 import UploadButton from "./UploadButton.vue";
 import Limiter from "../ts/limiter";
+import AuthDropbox from "../ts/authDropbox";
+import { StorageType } from "../ts/interfaces/storageType";
 
 @Component({
     components: {
@@ -42,13 +44,14 @@ import Limiter from "../ts/limiter";
         SizeIndicator
     },
     props: {
-        file: File
+        file: File,
+        auth: AuthDropbox
     }
 })
 export default class UploadArea extends Vue {
-    public startUploading: boolean = false;
-    public uploaded: number = 0;
-    public hasPassword: boolean = false;
+    private startUploading: boolean = false;
+    private uploaded: number = 0;
+    private hasPassword: boolean = false;
     private uploader: UploadFile | null = null;
     private password: string = "";
 
@@ -58,9 +61,11 @@ export default class UploadArea extends Vue {
 
     // noinspection JSUnusedGlobalSymbols
     public mounted() {
+        const { file, auth } = this.$props;
+
         // control of size limit
-        const limiter = new Limiter();
-        const file: File = this.$props.file;
+        const limiter = new Limiter(auth.isLoggedIn());
+
         if (!limiter.validateFileSize(file.size)) {
             this.$emit("limit");
         }
@@ -71,22 +76,29 @@ export default class UploadArea extends Vue {
             return;
         }
 
+        const { file, auth } = this.$props;
+        const opts = auth.isLoggedIn()
+            ? { sender: "dropbox" as StorageType, data: auth as AuthDropbox }
+            : { sender: "server" as StorageType };
+
         this.uploader = new UploadFile(
-            this.$props.file,
+            file,
+            opts,
+            this.onProgress,
             this.hasPassword ? this.password : undefined
         );
 
         this.startUploading = true;
 
         try {
-            const result = await this.uploader.upload(this.onProgress);
+            const result = await this.uploader.upload();
             if (!result.id) {
                 this.$emit("cancel");
                 return;
             }
             this.$emit("finish", result);
         } catch (e) {
-            this.$emit("error", new Error("Error during sending file"));
+            this.$emit("error", e);
         }
     }
 
@@ -105,7 +117,7 @@ export default class UploadArea extends Vue {
         this.password = "";
     }
 
-    public get emptyPassword() {
+    get emptyPassword() {
         return this.hasPassword && !this.password;
     }
 

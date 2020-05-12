@@ -10,23 +10,19 @@
                     }}</b-alert>
                     <password-confirm
                         @confirm="verify"
-                        @focus="alert = ''"
+                        @focus="this.alert = ''"
                     ></password-confirm>
                 </div>
                 <download-area
                     v-if="showDownloadArea"
                     :id="id"
+                    :receiver="receiver"
                     :metadata="metadata"
-                    :cipher="cipher"
-                    :start-from="startFrom"
+                    :decryption="decryption"
                 ></download-area>
             </b-col>
             <b-col lg="6" md="4" class="d-none d-sm-none d-md-block">
-                <img
-                    id="image"
-                    src="../../assets/empty-box.svg"
-                    alt="Paper planes"
-                />
+                <box-image></box-image>
             </b-col>
         </b-row>
     </b-container>
@@ -39,16 +35,19 @@ import Vue from "vue";
 import MainTitle from "../MainTitle.vue";
 import FileInfo from "../FileInfo.vue";
 import DownloadButton from "../DownloadButton.vue";
-import Metadata from "../../ts/metadata";
 import PasswordConfirm from "../PasswordConfirm.vue";
 import LoadingPage from "../LoadingPage.vue";
 import { DownloadCompatibility } from "../../ts/compatibility";
 import ProgressBar from "../ProgressBar.vue";
-import { Cipher, PasswordCipher, ClassicCipher } from "../../ts/cipher";
 import DownloadArea from "../DownloadArea.vue";
+import BoxImage from "../BoxImage.vue";
+import AuthDropbox from "../../ts/authDropbox";
+import Metadata from "../../ts/metadata";
+import { StorageType } from "../../ts/interfaces/storageType";
 
 @Component({
     components: {
+        BoxImage,
         DownloadArea,
         ProgressBar,
         LoadingPage,
@@ -56,19 +55,20 @@ import DownloadArea from "../DownloadArea.vue";
         DownloadButton,
         FileInfo,
         MainTitle
+    },
+    props: {
+        auth: AuthDropbox
     }
 })
 export default class Download extends Vue {
-    public showInput: boolean = false;
-    public mount: boolean = false;
-    public alert: string = "";
-    public id: string = "";
-    public metadata: Metadata | null = null;
-    public cipher: Cipher | null = null;
-    private iv: Uint8Array | null = null;
-    private rawMetadata: Uint8Array | null = null;
-    private salt: Uint8Array | null = null;
-    private startFrom: number | null = null;
+    private showInput: boolean = false;
+    private mount: boolean = false;
+    private alert: string = "";
+    private id: string = "";
+    private receiver: StorageType | null = null;
+    private metadata: Metadata | null = null;
+    private decryption: { key: Uint8Array; iv: Uint8Array } | null = null;
+    private downloadMetadata: DownloadMetadata | null = null;
 
     public constructor() {
         super();
@@ -80,52 +80,70 @@ export default class Download extends Vue {
             return await this.$router.push("/compatibility");
         }
 
-        this.id = this.$route.params.id;
-        const downloadMetadata = new DownloadMetadata(this.id);
+        if (this.$route.hash.length <= 1) {
+            return await this.$router.replace("/error");
+        }
 
+        const parse = this.parseURL();
+
+        if (!parse) {
+            return await this.$router.replace("/error");
+        }
+
+        this.id = parse.id;
+        this.receiver = parse.receiver;
+
+        this.downloadMetadata = new DownloadMetadata(this.id, this.receiver);
         try {
-            const result = await downloadMetadata.download();
-            this.iv = result.iv;
-            this.rawMetadata = result.metadata;
-            this.salt = result.password.salt;
-            this.startFrom = result.startFrom;
+            const pw = await this.downloadMetadata.passwordIsRequired();
 
-            // file with password
-            if (result.password.flag) {
-                this.showInput = true;
-            } else {
+            if (!pw) {
                 // file without password
+                const result = await this.downloadMetadata.validate(
+                    this.$route.hash.substr(1)
+                );
 
-                if (this.$route.hash.length <= 1) {
-                    return await this.$router.push("/error");
+                if (!result) {
+                    return await this.$router.replace("/error");
                 }
 
-                const key = this.$route.hash.substr(1);
-
-                this.cipher = new ClassicCipher(key, this.iv);
-
-                this.metadata = await this.cipher.decryptMetadata(
-                    this.rawMetadata
-                );
+                this.metadata = result.metadata;
+                this.decryption = result.decryptionForFile;
+                this.mount = true;
+                return;
             }
+
+            // file with password
+            this.showInput = true;
             this.mount = true;
         } catch (e) {
-            return await this.$router.push("/error");
+            return await this.$router.replace("/error");
         }
     }
 
     public async verify(password: string): Promise<void> {
-        if (!this.iv || !this.rawMetadata || !this.salt) {
+        if (!this.downloadMetadata) {
             return;
         }
 
-        this.cipher = new PasswordCipher(password, this.salt, this.iv);
-
         try {
-            this.metadata = await this.cipher.decryptMetadata(this.rawMetadata);
+            const result = await this.downloadMetadata.validate(
+                this.$route.hash.substr(1),
+                password
+            );
+
+            if (!result) {
+                this.alert = "Nesprávne heslo";
+                this.mount = true;
+                return;
+            }
+
+            this.metadata = result.metadata;
+            this.decryption = result.decryptionForFile;
             this.showInput = false;
         } catch (e) {
-            this.alert = "Nesprávne heslo";
+            console.log(e);
+            this.alert = "Pri overovaní nastala chyba";
         }
     }
 
@@ -134,7 +152,24 @@ export default class Download extends Vue {
     }
 
     public get showDownloadArea() {
-        return this.mount && !this.showInput && this.metadata;
+        return (
+            this.mount && !this.showInput && this.metadata && this.decryption
+        );
+    }
+
+    private parseURL(): { id: string; receiver: StorageType } | null {
+        const destination = this.$route.fullPath.split("/")[1];
+        const sharing = this.$route.params.sharing;
+        const id = this.$route.params.id;
+
+        switch (destination) {
+            case "download":
+                return { id, receiver: "server" };
+            case "dropbox":
+                return { id: `${sharing}/${id}`, receiver: "dropbox" };
+            default:
+                return null;
+        }
     }
 }
 </script>

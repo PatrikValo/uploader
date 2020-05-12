@@ -1,30 +1,63 @@
 import { saveAs } from "file-saver";
 import streamSaver from "streamsaver";
-import { Cipher } from "./cipher";
-import DownloadStream from "./downloadStream";
 import Metadata from "./metadata";
-import Utils from "./utils";
 const { createWriteStream } = streamSaver;
+import { Decryption } from "./cipher";
+import Config from "./config";
+import DownloadFileSource from "./downloadFileSource";
+import { StorageType } from "./interfaces/storageType";
+
+/**
+ * It sets up listener for close tab event. If browser tab is close,
+ * writer param is aborted.
+ * @param writer
+ */
+function setCloseTabEvent(writer: { abort: (reason?: any) => Promise<void> }) {
+    window.onunload = async () => {
+        await writer.abort("Close window");
+    };
+}
+
+/**
+ * It clears close tab event.
+ */
+function clearCloseTabEvent() {
+    window.onunload = null;
+}
 
 export default class DownloadFile {
-    private readonly id: string;
     private readonly metadata: Metadata;
-    private readonly cipher: Cipher;
-    private readonly stream: DownloadStream;
+    private readonly source: DownloadFileSource;
+    private readonly decryptor: Decryption;
+    private stop: boolean = false;
 
     public constructor(
         id: string,
+        receiver: StorageType,
         metadata: Metadata,
-        cipher: Cipher,
-        startFrom: number
+        decryption: { key: Uint8Array; iv: Uint8Array }
     ) {
-        this.id = id;
         this.metadata = metadata;
-        this.cipher = cipher;
-        const url = Utils.server.classicUrl("/api/download/" + this.id);
-        this.stream = new DownloadStream(url, startFrom);
+        this.decryptor = new Decryption(decryption.key, decryption.iv);
+
+        const { startFrom, encryptedSize } = this.paramOfEncryptedFile();
+        this.source = new DownloadFileSource(
+            id,
+            receiver,
+            startFrom,
+            encryptedSize
+        );
     }
 
+    /**
+     * It downloads file to local filesystem of user
+     *
+     * @param blob - False - streamsaver can be used
+     *               True - streamsaver isn't supported and whole file is downloaded
+     * to memory before it is downloaded to user filesystem
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     public async download(blob: boolean, progress: (u: number) => any) {
         if (!blob) {
             return await this.downloadStream(progress);
@@ -33,72 +66,127 @@ export default class DownloadFile {
         return await this.downloadBlob(progress);
     }
 
+    /**
+     * Method, which stop downloading of file
+     */
+    public cancel(): void {
+        this.stop = true;
+    }
+
+    /**
+     * It decrypts file and it downloads the file by using streamsaver
+     *
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     private async downloadStream(progress: (u: number) => any) {
         streamSaver.TransformStream = TransformStream;
         streamSaver.WritableStream = WritableStream;
 
+        const size = this.metadata.getSize();
         const writeStream: WritableStream = createWriteStream(
-            this.metadata.name,
-            {
-                size: this.metadata.size
-            },
-            this.metadata.size
+            this.metadata.getName(),
+            { size },
+            size
         );
 
         const writer = writeStream.getWriter();
 
-        this.initAbortEvent(writer);
+        setCloseTabEvent(writer);
 
         try {
-            let chunk = await this.stream.read();
+            let downloaded = await this.source.downloadChunk();
 
-            while (!chunk.done) {
-                const decrypted = await this.cipher.decryptChunk(chunk.value);
+            while (downloaded) {
+                if (this.stop) {
+                    await writer.abort("Cancel");
+                    return clearCloseTabEvent();
+                }
+
+                const decrypted = await this.decryptChunk(downloaded);
+
                 await writer.write(decrypted);
                 progress(decrypted.length);
-                chunk = await this.stream.read();
+                downloaded = await this.source.downloadChunk();
             }
         } catch (e) {
-            // stop download window in browser
             await writer.abort("Exception");
-            this.termAbortEvent();
+            clearCloseTabEvent();
 
             throw e;
         }
 
         await writer.close();
-
-        this.termAbortEvent();
+        clearCloseTabEvent();
     }
 
+    /**
+     * It stores the file to memory and finally is downloaded to user filesystem
+     *
+     * @param progress - function, which is executed each time, when new chunk
+     * is read
+     */
     private async downloadBlob(progress: (u: number) => any) {
         let blob = new Blob([], { type: "application/octet-stream" });
         try {
-            let chunk = await this.stream.read();
+            let downloaded = await this.source.downloadChunk();
 
-            while (!chunk.done) {
-                const decrypted = await this.cipher.decryptChunk(chunk.value);
+            while (downloaded) {
+                if (this.stop) {
+                    return;
+                }
+
+                const decrypted = await this.decryptChunk(downloaded);
+
                 blob = new Blob([blob, decrypted], {
                     type: "application/octet-stream"
                 });
                 progress(decrypted.length);
-                chunk = await this.stream.read();
+                downloaded = await this.source.downloadChunk();
             }
         } catch (e) {
             throw e;
         }
 
-        saveAs(blob, this.metadata.name);
+        if (!this.stop) {
+            saveAs(blob, this.metadata.getName());
+        }
     }
 
-    private initAbortEvent(writer: WritableStreamDefaultWriter<any>): void {
-        window.onunload = async () => {
-            await writer.abort("Close window");
-        };
+    /**
+     * It calculates size of whole saved file and first position, where
+     * data of file starts.
+     *
+     * @return Object, which contains position, where data of file starts and
+     * size of whole saved file
+     */
+    private paramOfEncryptedFile(): {
+        startFrom: number;
+        encryptedSize: number;
+    } {
+        const { ivLength, authTagLength } = Config.cipher;
+        const metadataSize = this.metadata.toUint8Array().length;
+
+        const s = ivLength + 1 + 2 + metadataSize + authTagLength;
+        const encryptedSize = s + this.metadata.getSize() + authTagLength;
+        return { startFrom: s, encryptedSize };
     }
 
-    // noinspection JSMethodCanBeStatic
-    private termAbortEvent(): void {
-        window.onunload = null;
+    /**
+     * It decrypts data defined by data.value param. If current
+     * chunk is last, decryptor is closed by final method and there is checked
+     * validity of authTag. If authTag isn't valid, it throws Exception.
+     *
+     * @param data
+     * @return Promise with decrypted chunk
+     */
+    private decryptChunk(data: {
+        value: Uint8Array;
+        last: boolean;
+    }): Promise<Uint8Array> {
+        if (data.last) {
+            return this.decryptor.final(data.value);
+        }
+        return this.decryptor.decrypt(data.value);
     }
 }

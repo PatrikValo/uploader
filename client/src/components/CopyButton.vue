@@ -15,7 +15,7 @@ import copy from "copy-to-clipboard";
     }
 })
 export default class CopyButton extends Vue {
-    public copied: boolean = false;
+    private copied: boolean = false;
 
     public constructor() {
         super();

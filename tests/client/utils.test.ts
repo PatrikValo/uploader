@@ -2,6 +2,7 @@ import {
     TextDecoder as Decoder,
     TextEncoder as Encoder
 } from "text-encoding-shim";
+import mock from "xhr-mock";
 import Config from "../../client/src/ts/config";
 import Utils from "../../client/src/ts/utils";
 
@@ -17,38 +18,38 @@ describe("Utils tests", () => {
             const p = pro === "http" ? "ws" : "wss";
             test("It should return correct url without path as parameter", () => {
                 const correct = `${p}://${host}${port}`;
-                const result = Utils.server.websocketUrl();
+                const result = Utils.serverWebsocketUrl();
                 expect(result).toBe(correct);
             });
             test("It should return correct url with slash before path as parameter", () => {
                 const path = "/download/websocket/abc";
                 const correct = `${p}://${host}${port}${path}`;
-                const result = Utils.server.websocketUrl(path);
+                const result = Utils.serverWebsocketUrl(path);
                 expect(result).toBe(correct);
             });
             test("It should return correct url without slash before path as parameter", () => {
                 const path = "download/websocket/abc";
                 const correct = `${p}://${host}${port}/${path}`;
-                const result = Utils.server.websocketUrl(path);
+                const result = Utils.serverWebsocketUrl(path);
                 expect(result).toBe(correct);
             });
         });
         describe("ClassicUrl", () => {
             test("It should return correct url without path as parameter", () => {
                 const correct = `${pro}://${host}${port}`;
-                const result = Utils.server.classicUrl();
+                const result = Utils.serverClassicUrl();
                 expect(result).toBe(correct);
             });
             test("It should return correct url with slash before path as parameter", () => {
                 const path = "/download/abc";
                 const correct = `${pro}://${host}${port}${path}`;
-                const result = Utils.server.classicUrl(path);
+                const result = Utils.serverClassicUrl(path);
                 expect(result).toBe(correct);
             });
             test("It should return correct url without slash before path as parameter", () => {
                 const path = "download/abc";
                 const correct = `${pro}://${host}${port}/${path}`;
-                const result = Utils.server.classicUrl(path);
+                const result = Utils.serverClassicUrl(path);
                 expect(result).toBe(correct);
             });
         });
@@ -162,9 +163,33 @@ describe("Utils tests", () => {
     describe("Base64", () => {
         const correctUint = new Uint8Array([106, 26, 35]);
         const correctStr = "ahoj";
+        const biggerUint = new Uint8Array([
+            105,
+            166,
+            219,
+            115,
+            151,
+            93,
+            121,
+            231,
+            223,
+            130,
+            8,
+            97,
+            166,
+            154,
+            190,
+            255
+        ]);
+        const biggerStr = "aabbc5ddeeffgghhppq-_w";
         test("classic base64toUint8Array", () => {
             const result = Utils.base64toUint8Array(correctStr);
             expect(result).toStrictEqual(correctUint);
+        });
+
+        test("bigger base64toUint8Array", () => {
+            const result = Utils.base64toUint8Array(biggerStr);
+            expect(result).toStrictEqual(biggerUint);
         });
 
         test("empty base64toUint8Array", () => {
@@ -175,6 +200,11 @@ describe("Utils tests", () => {
         test("classic Uint8ArrayToBase64", () => {
             const result = Utils.Uint8ArrayToBase64(correctUint);
             expect(result).toBe(correctStr);
+        });
+
+        test("bigger Uint8ArrayToBase64", () => {
+            const result = Utils.Uint8ArrayToBase64(biggerUint);
+            expect(result).toBe(biggerStr);
         });
 
         test("empty Uint8ArrayToBase64", () => {
@@ -204,6 +234,163 @@ describe("Utils tests", () => {
         test("empty Uint8ArrayToString", () => {
             const result = Utils.Uint8ArrayToString(new Uint8Array(0));
             expect(result).toBe("");
+        });
+    });
+
+    describe("GetRequest", () => {
+        beforeEach(() => mock.setup());
+        afterEach(() => mock.teardown());
+        const url = Utils.serverClassicUrl("/api/download/25-id");
+        describe("arraybuffer", () => {
+            test("empty headers", async () => {
+                const correctUint = new Uint8Array([25, 15, 40]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(200).body(correctUint);
+                });
+
+                const result = Utils.getRequest(url, [], "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("not empty headers", async () => {
+                const correctUint = new Uint8Array([25, 15, 40, 60]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "start-from": "20",
+                        "x-chunk": "2"
+                    });
+                    return res.status(200).body(correctUint);
+                });
+
+                const headers = [
+                    { header: "X-Chunk", value: "2" },
+                    { header: "start-from", value: "20" }
+                ];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("correct status", async () => {
+                const correctUint = new Uint8Array([25, 15, 40, 60]);
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(206).body(correctUint);
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).resolves.toStrictEqual(correctUint);
+            });
+
+            test("incorrect status", async () => {
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(404).body(null);
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+
+            test("error occured", async () => {
+                mock.error(() => {
+                    return;
+                });
+                mock.get(url, () => Promise.reject(new Error()));
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+
+            test("null status", async () => {
+                mock.get(url, (req, res) => {
+                    return res.body(new Uint8Array(0));
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "arraybuffer");
+
+                await expect(result).rejects.not.toBeNull();
+            });
+        });
+        describe("json", () => {
+            test("empty headers", async () => {
+                const correctJson = { result: "OK" };
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(200).body(JSON.stringify(correctJson));
+                });
+
+                const result = Utils.getRequest(url, [], "json");
+
+                await expect(result).resolves.toStrictEqual(correctJson);
+            });
+
+            test("not empty headers", async () => {
+                mock.get(url, (req, res) => {
+                    return res.status(200).body(JSON.stringify(req.headers()));
+                });
+
+                const headers = [
+                    { header: "X-Chunk", value: "2" },
+                    { header: "start-from", value: "20" }
+                ];
+                const result = Utils.getRequest(url, headers, "json");
+
+                await expect(result).resolves.toStrictEqual({
+                    "cache-control": "no-cache",
+                    "start-from": "20",
+                    "x-chunk": "2"
+                });
+            });
+
+            test("correct status", async () => {
+                const correctJson = { result: "OK", chunk: 1 };
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache",
+                        "x-chunk": "2"
+                    });
+                    return res.status(206).body(JSON.stringify(correctJson));
+                });
+
+                const headers = [{ header: "X-Chunk", value: "2" }];
+                const result = Utils.getRequest(url, headers, "json");
+
+                await expect(result).resolves.toStrictEqual(correctJson);
+            });
+
+            test("incorrect status", async () => {
+                mock.get(url, (req, res) => {
+                    expect(req.headers()).toStrictEqual({
+                        "cache-control": "no-cache"
+                    });
+                    return res.status(404).body(null);
+                });
+
+                const result = Utils.getRequest(url, [], "json");
+
+                await expect(result).rejects.not.toBeNull();
+            });
         });
     });
 });
