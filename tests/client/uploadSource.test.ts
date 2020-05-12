@@ -65,7 +65,7 @@ describe("UploadSource tests", () => {
 
             // key
             const correctKey = await file.exportKey();
-            const key = uploadSource.exportKey();
+            const key = uploadSource.fragment();
             await expect(key).resolves.toEqual(correctKey);
         });
     });
@@ -132,7 +132,7 @@ describe("UploadSource tests", () => {
 
             // key
             const correctKey = await file.exportKey(password);
-            const key = uploadSource.exportKey();
+            const key = uploadSource.fragment();
             await expect(key).resolves.toEqual(correctKey);
         });
     });

@@ -33,15 +33,15 @@ async function serverRandomValues(size: number): Promise<Uint8Array> {
 /**
  * It creates random values, which are combination of client and server
  * random values. If server isn't available, only client values are returned.
- * Number of random values is limited by 64 values.
+ * Number of random values is limited by 32 values.
  *
  * @param size - length of Uint8Array, which contains random values
  * @return Promise with random values
  */
 export function randomValues(size: number): Promise<Uint8Array> {
     return new Promise(async (resolve, reject) => {
-        if (size > 64) {
-            return reject(new Error("Size param is limited by 64"));
+        if (size > 32) {
+            return reject(new Error("Size param is limited by 32"));
         }
 
         const clientRandom = clientRandomValues(size);
@@ -51,7 +51,7 @@ export function randomValues(size: number): Promise<Uint8Array> {
 
             const concat = Utils.concatUint8Arrays(clientRandom, serverRandom);
 
-            const hash = await window.crypto.subtle.digest("SHA-512", concat);
+            const hash = await window.crypto.subtle.digest("SHA-256", concat);
 
             return resolve(new Uint8Array(hash.slice(0, size)));
         } catch (e) {

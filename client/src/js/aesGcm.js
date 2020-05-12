@@ -6,8 +6,8 @@ import safeBuffer from "safe-buffer";
 
 export class AesGcmEncryptor {
     constructor(algorithm, key, iv, options) {
-        const keyBuff = new safeBuffer.Buffer(key);
-        const ivBuff = new safeBuffer.Buffer(iv);
+        const keyBuff = new safeBuffer.Buffer.from(key);
+        const ivBuff = new safeBuffer.Buffer.from(iv);
         this.cipher = cryptoBrowserify.createCipheriv(
             algorithm,
             keyBuff,
@@ -17,7 +17,7 @@ export class AesGcmEncryptor {
     }
 
     update(chunk) {
-        const chunkBuff = new safeBuffer.Buffer(chunk);
+        const chunkBuff = new safeBuffer.Buffer.from(chunk);
         const upd = this.cipher.update(chunkBuff);
         return new Uint8Array(
             upd.buffer,
@@ -47,8 +47,8 @@ export class AesGcmEncryptor {
 
 export class AesGcmDecryptor {
     constructor(algorithm, key, iv, options) {
-        const keyBuff = new safeBuffer.Buffer(key);
-        const ivBuff = new safeBuffer.Buffer(iv);
+        const keyBuff = new safeBuffer.Buffer.from(key);
+        const ivBuff = new safeBuffer.Buffer.from(iv);
         this.decipher = cryptoBrowserify.createDecipheriv(
             algorithm,
             keyBuff,
@@ -58,7 +58,7 @@ export class AesGcmDecryptor {
     }
 
     update(chunk) {
-        const chunkBuff = new safeBuffer.Buffer(chunk);
+        const chunkBuff = new safeBuffer.Buffer.from(chunk);
         const upd = this.decipher.update(chunkBuff);
         return new Uint8Array(
             upd.buffer,
@@ -77,7 +77,7 @@ export class AesGcmDecryptor {
     }
 
     setAuthTag(tag) {
-        const tagBuff = new safeBuffer.Buffer(tag);
+        const tagBuff = new safeBuffer.Buffer.from(tag);
         this.decipher.setAuthTag(tagBuff);
     }
 }

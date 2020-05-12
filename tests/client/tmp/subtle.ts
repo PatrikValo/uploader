@@ -31,7 +31,9 @@ class Subtle {
         extractable: boolean,
         p: string[]
     ): Promise<Uint8Array> {
-        return Promise.resolve(key);
+        return Promise.resolve(
+            new Uint8Array(derivedKeyType.length / 8).fill(25)
+        );
     }
 }
 

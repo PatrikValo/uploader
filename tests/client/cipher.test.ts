@@ -45,7 +45,9 @@ describe("Cipher tests", () => {
                 const enc = await a.getEncryptionKey();
                 const encBase64 = Utils.Uint8ArrayToBase64(enc);
 
-                await expect(a.getExportedKey()).resolves.toEqual(encBase64);
+                await expect(a.getExportedFragment()).resolves.toEqual(
+                    encBase64
+                );
             });
         });
 
@@ -53,7 +55,7 @@ describe("Cipher tests", () => {
             const a = new Encryption("password");
             test("It should combine keys and create random iv", async () => {
                 // mock digest function
-                const correctEncryption = new Uint8Array(keyLength).fill(8);
+                const correctEncryption = new Uint8Array(keyLength).fill(25);
 
                 const iv = await randomValues(ivLength);
 
@@ -72,17 +74,19 @@ describe("Cipher tests", () => {
                 const key = await randomValues(keyLength);
                 const keyBase64 = Utils.Uint8ArrayToBase64(key);
 
-                await expect(a.getExportedKey()).resolves.not.toEqual(
+                await expect(a.getExportedFragment()).resolves.not.toEqual(
                     encBase64
                 );
-                await expect(a.getExportedKey()).resolves.toEqual(keyBase64);
+                await expect(a.getExportedFragment()).resolves.toEqual(
+                    keyBase64
+                );
             });
         });
 
         describe("Reset", () => {
             const a = new Encryption("password");
             test("It should set new iv and key should be same", async () => {
-                const correctEncryption = new Uint8Array(keyLength).fill(8);
+                const correctEncryption = new Uint8Array(keyLength).fill(25);
                 const correctExportable = Utils.Uint8ArrayToBase64(
                     await randomValues(keyLength)
                 );
@@ -98,7 +102,7 @@ describe("Cipher tests", () => {
                     correctEncryption
                 );
 
-                await expect(a.getExportedKey()).resolves.toEqual(
+                await expect(a.getExportedFragment()).resolves.toEqual(
                     correctExportable
                 );
 
@@ -113,7 +117,7 @@ describe("Cipher tests", () => {
                     correctEncryption
                 );
 
-                await expect(a.getExportedKey()).resolves.toEqual(
+                await expect(a.getExportedFragment()).resolves.toEqual(
                     correctExportable
                 );
             });
@@ -145,18 +149,17 @@ describe("Cipher tests", () => {
         describe("new Decryption(key, iv, password, salt)", () => {
             test("It should combine keys", async () => {
                 const key = new Uint8Array(keyLength).fill(25);
-
-                const a = new Decryption(
-                    key,
-                    new Uint8Array(ivLength),
-                    "password",
+                const salt = Utils.Uint8ArrayToBase64(
                     new Uint8Array(saltLength)
                 );
 
-                const correctKey = new Uint8Array(keyLength).fill(8);
-                await expect(a.getDecryptionKey()).resolves.toStrictEqual(
-                    correctKey
+                const a = new Decryption(
+                    salt,
+                    new Uint8Array(ivLength),
+                    "password"
                 );
+
+                await expect(a.getDecryptionKey()).resolves.toStrictEqual(key);
             });
         });
 
@@ -173,10 +176,9 @@ describe("Cipher tests", () => {
                 const key = new Uint8Array(keyLength).fill(25);
                 expect(() => {
                     const a = new Decryption(
-                        key,
+                        null as any,
                         new Uint8Array(ivLength),
-                        "password",
-                        null as any
+                        "password"
                     );
                 }).toThrow();
             });
@@ -185,10 +187,9 @@ describe("Cipher tests", () => {
                 const key = new Uint8Array(keyLength).fill(25);
                 expect(() => {
                     const a = new Decryption(
-                        key,
+                        "0",
                         new Uint8Array(ivLength),
-                        "password",
-                        new Uint8Array(0)
+                        "password"
                     );
                 }).toThrow();
             });

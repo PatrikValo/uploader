@@ -1,14 +1,15 @@
 import { Encryption } from "../../../client/src/ts/cipher";
 import Config from "../../../client/src/ts/config";
 import Metadata from "../../../client/src/ts/metadata";
+import Utils from "../../../client/src/ts/utils";
 
 abstract class AClass {
     public abstract getFile(): File;
 
     public additionalData(password: boolean): Uint8Array {
         const flag = password ? 1 : 0;
-        const { ivLength, saltLength } = Config.cipher;
-        const u = new Uint8Array(ivLength + 1 + saltLength);
+        const { ivLength } = Config.cipher;
+        const u = new Uint8Array(ivLength + 1);
         u[ivLength] = flag;
         return u;
     }
@@ -22,10 +23,8 @@ abstract class AClass {
         const e = new Encryption(password);
         const first = await e.encrypt(m);
         const second = await e.final();
-        const r = new Uint8Array(first.length + second.length);
-        r.set(first);
-        r.set(second, first.length);
-        return r;
+
+        return Utils.concatUint8Arrays(first, second);
     }
 
     public async encryptedMetadataWithLength(
@@ -34,11 +33,8 @@ abstract class AClass {
         const m = await this.encryptedMetadata(password);
 
         const len = Metadata.lengthToUint8Array(m.length);
-        const ret = new Uint8Array(len.length + m.length);
-        ret.set(len);
-        ret.set(m, len.length);
 
-        return ret;
+        return Utils.concatUint8Arrays(len, m);
     }
 }
 
@@ -76,18 +72,17 @@ export class FileSmallerThanChunk extends AClass {
 
     public exportKey(password?: string): Promise<string> {
         const e = new Encryption(password);
-        return e.getExportedKey();
+        return e.getExportedFragment();
     }
 
     public async completeAdditionalData(password: boolean) {
         const { ivLength, saltLength } = Config.cipher;
         const flag = new Uint8Array([password ? 1 : 0]);
-        const salt = new Uint8Array(saltLength);
         const iv = new Uint8Array(ivLength);
         const len = Metadata.lengthToNumber(
             (await this.encryptedMetadataWithLength()).slice(0, 2)
         );
-        return { iv, flag, salt, len };
+        return { iv, flag, len };
     }
 }
 
