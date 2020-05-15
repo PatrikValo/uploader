@@ -31947,7 +31947,7 @@ function serverRandomValues(size) {
 /**
  * It creates random values, which are combination of client and server
  * random values. If server isn't available, only client values are returned.
- * Number of random values is limited by 64 values.
+ * Number of random values is limited by 32 values.
  *
  * @param size - length of Uint8Array, which contains random values
  * @return Promise with random values
@@ -31959,8 +31959,8 @@ function randomValues(size) {
         return __generator(this, function (_a) {
             switch (_a.label) {
                 case 0:
-                    if (size > 64) {
-                        return [2 /*return*/, reject(new Error("Size param is limited by 64"))];
+                    if (size > 32) {
+                        return [2 /*return*/, reject(new Error("Size param is limited by 32"))];
                     }
                     clientRandom = clientRandomValues(size);
                     _a.label = 1;
@@ -31970,7 +31970,7 @@ function randomValues(size) {
                 case 2:
                     serverRandom = _a.sent();
                     concat = __WEBPACK_IMPORTED_MODULE_2__utils__["a" /* default */].concatUint8Arrays(clientRandom, serverRandom);
-                    return [4 /*yield*/, window.crypto.subtle.digest("SHA-512", concat)];
+                    return [4 /*yield*/, window.crypto.subtle.digest("SHA-256", concat)];
                 case 3:
                     hash = _a.sent();
                     return [2 /*return*/, resolve(new Uint8Array(hash.slice(0, size)))];
@@ -73728,15 +73728,15 @@ function () {
   function AesGcmEncryptor(algorithm, key, iv, options) {
     _classCallCheck(this, AesGcmEncryptor);
 
-    var keyBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(key);
-    var ivBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(iv);
+    var keyBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(key);
+    var ivBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(iv);
     this.cipher = __WEBPACK_IMPORTED_MODULE_0_crypto_browserify___default.a.createCipheriv(algorithm, keyBuff, ivBuff, options);
   }
 
   _createClass(AesGcmEncryptor, [{
     key: "update",
     value: function update(chunk) {
-      var chunkBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(chunk);
+      var chunkBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(chunk);
       var upd = this.cipher.update(chunkBuff);
       return new Uint8Array(upd.buffer, upd.byteOffset, upd.byteLength / Uint8Array.BYTES_PER_ELEMENT);
     }
@@ -73763,15 +73763,15 @@ function () {
   function AesGcmDecryptor(algorithm, key, iv, options) {
     _classCallCheck(this, AesGcmDecryptor);
 
-    var keyBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(key);
-    var ivBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(iv);
+    var keyBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(key);
+    var ivBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(iv);
     this.decipher = __WEBPACK_IMPORTED_MODULE_0_crypto_browserify___default.a.createDecipheriv(algorithm, keyBuff, ivBuff, options);
   }
 
   _createClass(AesGcmDecryptor, [{
     key: "update",
     value: function update(chunk) {
-      var chunkBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(chunk);
+      var chunkBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(chunk);
       var upd = this.decipher.update(chunkBuff);
       return new Uint8Array(upd.buffer, upd.byteOffset, upd.byteLength / Uint8Array.BYTES_PER_ELEMENT);
     }
@@ -73785,7 +73785,7 @@ function () {
   }, {
     key: "setAuthTag",
     value: function setAuthTag(tag) {
-      var tagBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer(tag);
+      var tagBuff = new __WEBPACK_IMPORTED_MODULE_1_safe_buffer___default.a.Buffer.from(tag);
       this.decipher.setAuthTag(tagBuff);
     }
   }]);
@@ -87797,7 +87797,6 @@ var UploadArea = /** @class */ (function (_super) {
                         _b.label = 1;
                     case 1:
                         _b.trys.push([1, 3, , 4]);
-                        console.time("uploadTime");
                         return [4 /*yield*/, this.uploader.upload()];
                     case 2:
                         result = _b.sent();
@@ -87805,7 +87804,6 @@ var UploadArea = /** @class */ (function (_super) {
                             this.$emit("cancel");
                             return [2 /*return*/];
                         }
-                        console.timeEnd("uploadTime");
                         this.$emit("finish", result);
                         return [3 /*break*/, 4];
                     case 3:
