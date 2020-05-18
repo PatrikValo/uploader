@@ -6,8 +6,6 @@ import path from "path";
 import Config from "./config";
 import random from "./routes/random";
 import range from "./routes/range";
-import upload from "./routes/upload";
-import uploadInit from "./routes/uploadInit";
 import ws from "./routes/ws";
 import { Storage } from "./storage";
 
@@ -18,10 +16,6 @@ app.use(cors());
 app.get("/api/random/:size", random);
 
 app.get("/api/range/:id", range);
-
-app.post("/api/upload", uploadInit);
-
-app.post("/api/upload/:id", express.raw({ limit: "1mb" }), upload);
 
 app.ws("/api/upload", ws);
 
