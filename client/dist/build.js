@@ -18526,7 +18526,7 @@ var ClientConfig = /** @class */ (function () {
         this.host = __WEBPACK_IMPORTED_MODULE_0__environment__["a" /* environment */].HOST || "localhost";
         this.port = production ? "" : "8080";
         this.protocol = production ? "https" : "http";
-        this.fileSizeLimit = 1024 * 1024 * 1024 * 5;
+        this.fileSizeLimit = 1024 * 1024 * 1024 * 2;
         this.fileSizeLimitDropbox = 1024 * 1024 * 1024 * 350;
         this.chunkSize = 64 * 1024;
         this.blobFileSizeLimit = 1024 * 1024 * 250;
@@ -87957,7 +87957,6 @@ var UploadFile = /** @class */ (function () {
 
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return SenderServer; });
-/* unused harmony export UploadFileXHR */
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return SenderDropbox; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v1__ = __webpack_require__(835);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_uuid_v1___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_uuid_v1__);
@@ -88079,90 +88078,6 @@ var SenderServer = /** @class */ (function () {
     return SenderServer;
 }());
 
-var UploadFileXHR = /** @class */ (function () {
-    function UploadFileXHR() {
-        this.id = "";
-        this.stop = false;
-    }
-    UploadFileXHR.prototype.cancel = function () {
-        this.stop = true;
-    };
-    UploadFileXHR.prototype.send = function (source) {
-        return __awaiter(this, void 0, void 0, function () {
-            var _this = this;
-            return __generator(this, function (_a) {
-                return [2 /*return*/, new Promise(function (resolve, reject) { return __awaiter(_this, void 0, void 0, function () {
-                        var idObj, answer, _a, _b, e_2;
-                        return __generator(this, function (_c) {
-                            switch (_c.label) {
-                                case 0:
-                                    _c.trys.push([0, 8, , 9]);
-                                    return [4 /*yield*/, this.post(__WEBPACK_IMPORTED_MODULE_1__utils__["a" /* default */].serverClassicUrl("/api/upload"), [], new Uint8Array(0))];
-                                case 1:
-                                    idObj = _c.sent();
-                                    return [4 /*yield*/, source.getContent()];
-                                case 2:
-                                    answer = _c.sent();
-                                    _c.label = 3;
-                                case 3:
-                                    if (!answer) return [3 /*break*/, 6];
-                                    if (this.stop) {
-                                        return [2 /*return*/, resolve({ id: "", fragment: "" })];
-                                    }
-                                    return [4 /*yield*/, this.post(__WEBPACK_IMPORTED_MODULE_1__utils__["a" /* default */].serverClassicUrl("/api/upload/" + idObj.id), [
-                                            {
-                                                header: "Content-Type",
-                                                value: "application/octet-stream"
-                                            }
-                                        ], answer)];
-                                case 4:
-                                    _c.sent();
-                                    return [4 /*yield*/, source.getContent()];
-                                case 5:
-                                    answer = _c.sent();
-                                    return [3 /*break*/, 3];
-                                case 6:
-                                    _a = resolve;
-                                    _b = {};
-                                    return [4 /*yield*/, source.fragment()];
-                                case 7: return [2 /*return*/, _a.apply(void 0, [(_b.fragment = _c.sent(),
-                                            _b.id = idObj.id,
-                                            _b)])];
-                                case 8:
-                                    e_2 = _c.sent();
-                                    return [2 /*return*/, reject(e_2)];
-                                case 9: return [2 /*return*/];
-                            }
-                        });
-                    }); })];
-            });
-        });
-    };
-    UploadFileXHR.prototype.post = function (url, headers, body) {
-        var _this = this;
-        return new Promise(function (resolve, reject) {
-            var xhr = new XMLHttpRequest();
-            xhr.onloadend = function () { return __awaiter(_this, void 0, void 0, function () {
-                return __generator(this, function (_a) {
-                    if (xhr.status < 200 || xhr.status >= 300) {
-                        return [2 /*return*/, reject(new Error(String(xhr.status)))];
-                    }
-                    return [2 /*return*/, resolve(xhr.response)];
-                });
-            }); };
-            xhr.onabort = reject;
-            xhr.onerror = reject;
-            xhr.open("post", url);
-            headers.forEach(function (value) {
-                xhr.setRequestHeader(value.header, value.value);
-            });
-            xhr.responseType = "json";
-            xhr.send(body);
-        });
-    };
-    return UploadFileXHR;
-}());
-
 var SenderDropbox = /** @class */ (function () {
     function SenderDropbox(auth) {
         this.stop = false;
@@ -88174,7 +88089,7 @@ var SenderDropbox = /** @class */ (function () {
     };
     SenderDropbox.prototype.send = function (source) {
         return __awaiter(this, void 0, void 0, function () {
-            var content, uploaded, filename, id, _a, e_3;
+            var content, uploaded, filename, id, _a, e_2;
             return __generator(this, function (_b) {
                 switch (_b.label) {
                     case 0:
@@ -88209,9 +88124,9 @@ var SenderDropbox = /** @class */ (function () {
                         return [4 /*yield*/, source.fragment()];
                     case 10: return [2 /*return*/, (_a.fragment = _b.sent(), _a)];
                     case 11:
-                        e_3 = _b.sent();
-                        if (e_3 instanceof Error) {
-                            throw e_3;
+                        e_2 = _b.sent();
+                        if (e_2 instanceof Error) {
+                            throw e_2;
                         }
                         throw new Error("An error occurred during uploading of file");
                     case 12: return [2 /*return*/];
