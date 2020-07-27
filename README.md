@@ -1,3 +1,6 @@
+# Bakalárska práca
+https://is.muni.cz/th/tsxu8/
+
 # Návod
 
 Nainštalujte si Node.js v12 - https://nodejs.org/.
